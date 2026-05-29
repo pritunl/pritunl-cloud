@@ -85,7 +85,7 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 		_ = addr
 		_ = addr6
 
-		if nc.NetworkMode == node.Static {
+		if nc.NetworkMode == node.Static && pubAddr != "" {
 			iface := nc.SpaceExternalIfaceMod
 			if iface == "" {
 				iface = nc.SpaceExternalIface
@@ -102,20 +102,21 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 				PipeErr: true,
 			})
 
-			_, _ = commander.Exec(&commander.Opt{
-				Name: "ip",
-				Args: []string{
-					"netns", "exec", nc.Namespace, "arping",
-					"-I", iface, "-c", "2",
-					gatewayAddr,
-				},
-				Timeout: 6 * time.Second,
-				PipeOut: true,
-				PipeErr: true,
-			})
+			if gatewayAddr != "" {
+				_, _ = commander.Exec(&commander.Opt{
+					Name: "ip",
+					Args: []string{
+						"netns", "exec", nc.Namespace, "arping",
+						"-I", iface, "-c", "2", gatewayAddr,
+					},
+					Timeout: 6 * time.Second,
+					PipeOut: true,
+					PipeErr: true,
+				})
+			}
 		}
 
-		if nc.NetworkMode6 == node.Static {
+		if nc.NetworkMode6 == node.Static && pubAddr6 != "" {
 			iface := nc.SpaceExternalIfaceMod6
 			if iface == "" {
 				iface = nc.SpaceExternalIface
@@ -132,7 +133,7 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 				PipeErr: true,
 			})
 
-			if nc.ExternalGatewayAddr6 != nil {
+			if gatewayAddr6 != "" {
 				_, _ = commander.Exec(&commander.Opt{
 					Name: "ip",
 					Args: []string{
