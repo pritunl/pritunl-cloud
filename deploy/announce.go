@@ -82,10 +82,7 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 			gatewayAddr6 = strings.Split(inst.GatewayIps6[0], "/")[0]
 		}
 
-		_ = addr
-		_ = addr6
-
-		if nc.NetworkMode == node.Static && pubAddr != "" {
+		if nc.NetworkMode == node.Static && addr != "" && pubAddr != "" {
 			iface := nc.SpaceExternalIfaceMod
 			if iface == "" {
 				iface = nc.SpaceExternalIface
@@ -116,7 +113,7 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 			}
 		}
 
-		if nc.NetworkMode6 == node.Static && pubAddr6 != "" {
+		if nc.NetworkMode6 == node.Static && addr6 != "" && pubAddr6 != "" {
 			iface := nc.SpaceExternalIfaceMod6
 			if iface == "" {
 				iface = nc.SpaceExternalIface
