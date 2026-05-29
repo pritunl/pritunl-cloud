@@ -130,60 +130,84 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	err = n.Clear(db)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(200 * time.Millisecond)
 
 	err = n.Base(db)
 	if err != nil {
 		return
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	err = n.Oracle(db)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(200 * time.Millisecond)
 
 	err = n.External(db)
 	if err != nil {
 		return
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	err = n.Internal(db)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(200 * time.Millisecond)
 
 	err = n.Host(db)
 	if err != nil {
 		return
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	err = n.NodePort(db)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(200 * time.Millisecond)
 
 	err = n.Space(db)
 	if err != nil {
 		return
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	err = n.Vlan(db)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(200 * time.Millisecond)
 
 	err = n.Bridge(db)
 	if err != nil {
 		return
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	err = n.Imds(db)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(300 * time.Millisecond)
 
 	err = n.Ip(db)
 	if err != nil {
