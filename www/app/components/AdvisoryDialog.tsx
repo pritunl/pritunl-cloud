@@ -62,9 +62,11 @@ const css = {
 	updateHeader: {
 		alignItems: "center",
 		gap: "8px",
-		paddingBottom: "10px",
-		marginBottom: "10px",
+		margin: "-12px -12px 10px -12px",
+		padding: "10px 12px",
+		background: "rgba(138, 155, 168, 0.12)",
 		borderBottom: "1px solid rgba(138, 155, 168, 0.25)",
+		borderTopRightRadius: "3px",
 	} as React.CSSProperties,
 	cveCard: {
 		padding: "10px",
