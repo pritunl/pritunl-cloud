@@ -518,25 +518,27 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			>{detailsExpanded ? "Show less" : "Show more"}</button>}
 			{cvesToShow.map((p): JSX.Element =>
 				this.renderCveCard(entry, p))}
-			{hiddenCount > 0 && <button
-				className={"bp5-button bp5-minimal bp5-small " +
-					(cvesExpanded ?
-						"bp5-icon-chevron-up" :
-						"bp5-icon-chevron-down")}
-				type="button"
-				style={css.hiddenToggle}
-				onClick={(): void => {
-					this.setState({
-						...this.state,
-						expandedCves: {
-							...this.state.expandedCves,
-							[advisoryKey]: !cvesExpanded,
-						},
-					});
-				}}
-			>{cvesExpanded ?
-				`Hide ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}` :
-				`Show ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}`}</button>}
+			<div>
+				{hiddenCount > 0 && <button
+					className={"bp5-button bp5-minimal bp5-small " +
+						(cvesExpanded ?
+							"bp5-icon-chevron-up" :
+							"bp5-icon-chevron-down")}
+					type="button"
+					style={css.hiddenToggle}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							expandedCves: {
+								...this.state.expandedCves,
+								[advisoryKey]: !cvesExpanded,
+							},
+						});
+					}}
+				>{cvesExpanded ?
+					`Hide ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}` :
+					`Show ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}`}</button>}
+			</div>
 		</div>;
 	}
 
