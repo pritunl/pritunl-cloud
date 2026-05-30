@@ -121,7 +121,7 @@ const css = {
 		fontSize: "12px",
 		fontFamily: "monospace",
 		color: "var(--bp5-text-color-muted, #5f6b7c)",
-		marginBottom: "8px",
+		marginTop: "5px",
 		padding: "6px 8px",
 		background: "rgba(138, 155, 168, 0.08)",
 		borderRadius: "3px",
