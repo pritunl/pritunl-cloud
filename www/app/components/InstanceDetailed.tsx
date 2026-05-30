@@ -25,7 +25,7 @@ import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
 import PageTextArea from "./PageTextArea";
 import Relations from './Relations';
-import InstanceAdvDialog from './InstanceAdvDialog';
+import AdvisoryDialog from './AdvisoryDialog';
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -2061,7 +2061,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{instance.status}
 						</div>
 						<div className="flex tab-close"/>
-						<InstanceAdvDialog updates={this.props.instance.guest?.updates}/>
+						<AdvisoryDialog updates={this.props.instance.guest?.updates}/>
 						<Relations kind="instance" id={this.props.instance.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
