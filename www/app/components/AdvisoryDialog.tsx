@@ -56,6 +56,15 @@ const css = {
 	updateCard: {
 		padding: "12px",
 		marginBottom: "12px",
+		borderLeftWidth: "4px",
+		borderLeftStyle: "solid",
+	} as React.CSSProperties,
+	updateHeader: {
+		alignItems: "center",
+		gap: "8px",
+		paddingBottom: "10px",
+		marginBottom: "10px",
+		borderBottom: "1px solid rgba(138, 155, 168, 0.25)",
 	} as React.CSSProperties,
 	cveCard: {
 		padding: "10px",
@@ -201,6 +210,19 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				return Blueprint.Intent.PRIMARY;
 			default:
 				return Blueprint.Intent.NONE;
+		}
+	}
+
+	severityBarColor(severity: string): string {
+		switch ((severity || "").toLowerCase()) {
+			case "critical":
+				return "var(--bp5-intent-danger, #cd4246)";
+			case "high":
+				return "var(--bp5-intent-warning, #c87619)";
+			case "medium":
+				return "var(--bp5-intent-primary, #215db0)";
+			default:
+				return "rgba(138, 155, 168, 0.4)";
 		}
 	}
 
@@ -449,8 +471,11 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 		return <div key={update.advisory}
 			className="bp5-card bp5-elevation-0"
-			style={css.updateCard}>
-			<div className="layout horizontal" style={css.headerRow}>
+			style={{
+				...css.updateCard,
+				borderLeftColor: this.severityBarColor(entry.worstSeverity),
+			}}>
+			<div className="layout horizontal" style={css.updateHeader}>
 				<Blueprint.Tag
 					large={true}
 					intent={sevIntent}
