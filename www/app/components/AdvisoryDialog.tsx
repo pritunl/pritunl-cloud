@@ -103,7 +103,7 @@ const css = {
 		marginBottom: "4px",
 	} as React.CSSProperties,
 	packages: {
-		fontSize: "11px",
+		fontSize: "13px",
 		color: "var(--bp5-text-color-muted, #5f6b7c)",
 		marginBottom: "6px",
 		wordBreak: "break-all",
@@ -118,7 +118,7 @@ const css = {
 		wordBreak: "break-all",
 	} as React.CSSProperties,
 	packageList: {
-		fontSize: "11px",
+		fontSize: "12px",
 		fontFamily: "monospace",
 		color: "var(--bp5-text-color-muted, #5f6b7c)",
 		marginBottom: "8px",
@@ -129,7 +129,7 @@ const css = {
 		whiteSpace: "pre-wrap",
 	} as React.CSSProperties,
 	description: {
-		fontSize: "12px",
+		fontSize: "13px",
 		whiteSpace: "pre-wrap",
 		wordBreak: "break-word",
 		padding: "6px 8px",
@@ -146,13 +146,13 @@ const css = {
 		marginTop: "4px",
 		padding: "0",
 		minHeight: "0",
-		fontSize: "11px",
+		fontSize: "12px",
 	} as React.CSSProperties,
 	hiddenToggle: {
 		marginTop: "8px",
 		padding: "2px 6px",
 		minHeight: "0",
-		fontSize: "11px",
+		fontSize: "12px",
 	} as React.CSSProperties,
 }
 
