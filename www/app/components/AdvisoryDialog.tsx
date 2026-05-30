@@ -535,10 +535,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					});
 				}}
 			>{cvesExpanded ?
-				`Hide ${hiddenCount} lower risk CVE${hiddenCount === 1 ? "" : "s"}` :
-				(entry.importantCves.length === 0 ?
-					`Show ${hiddenCount} CVE${hiddenCount === 1 ? "" : "s"} (none rated high risk)` :
-					`Show ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}`)}</button>}
+				`Hide ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}` :
+				`Show ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}`}</button>}
 		</div>;
 	}
 
