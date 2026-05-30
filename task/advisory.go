@@ -3,6 +3,8 @@ package task
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
+	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -23,6 +25,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	vulnerabilities := map[string]*vulnerability.Vulnerability{}
 
 	coll := db.Instances()
+	advisories := map[string]*advisory.Advisory{}
 
 	cursor, err := coll.Find(db, &bson.M{})
 	if err != nil {
@@ -72,6 +75,13 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 			updtData.Score = updt.GetScore(updtVulns)
 			updtsData[updt.Id] = updtData
+
+			adv := advisories[updt.Id]
+			if adv == nil {
+				adv = advisory.FromUpdate(updt, updtData.Score, updtVulns)
+				advisories[updt.Id] = adv
+			}
+			adv.Instances = append(adv.Instances, inst.Id)
 		}
 		inst.Guest.UpdatesData = updtsData
 		inst.Guest.Vulnerabilities = vulns
@@ -137,6 +147,13 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 			updtData.Score = updt.GetScore(updtVulns)
 			updtsData[updt.Id] = updtData
+
+			adv := advisories[updt.Id]
+			if adv == nil {
+				adv = advisory.FromUpdate(updt, updtData.Score, updtVulns)
+				advisories[updt.Id] = adv
+			}
+			adv.Nodes = append(adv.Nodes, nde.Id)
 		}
 		nde.UpdatesData = updtsData
 		nde.Vulnerabilities = vulns
@@ -149,6 +166,42 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	}
 
 	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Advisories()
+	advIds := make([]string, 0, len(advisories))
+
+	for advId, adv := range advisories {
+		advIds = append(advIds, advId)
+
+		_, err = coll.UpdateOne(db, &bson.M{
+			"_id": advId,
+		}, &bson.M{
+			"$set": &bson.M{
+				"type":            adv.Type,
+				"severity":        adv.Severity,
+				"description":     adv.Description,
+				"score":           adv.Score,
+				"packages":        adv.Packages,
+				"vulnerabilities": adv.Vulnerabilities,
+				"instances":       adv.Instances,
+				"nodes":           adv.Nodes,
+			},
+		}, options.UpdateOne().SetUpsert(true))
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$nin": advIds,
+		},
+	})
 	if err != nil {
 		err = database.ParseError(err)
 		return
