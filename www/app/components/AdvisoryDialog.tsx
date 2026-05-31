@@ -283,12 +283,25 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		for (let update of updates) {
 			let cves = update.cves || [];
 			let details = update.details || [];
+			let detailMap: Record<string, InstanceTypes.Advisory> = {};
+			for (let detail of details) {
+				if (!detail || !detail.id) {
+					continue;
+				}
+				let parts = detail.id.split(":");
+				if (parts.length < 2) {
+					continue;
+				}
+				detailMap[parts[1]] = detail;
+			}
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
-			for (let i = 0; i < cves.length; i++) {
-				let cve = cves[i];
-				let detail = details[i];
-				if (!cve || !detail || seen.has(cve)) {
+			for (let cve of cves) {
+				if (!cve || seen.has(cve)) {
+					continue;
+				}
+				let detail = detailMap[cve];
+				if (!detail) {
 					continue;
 				}
 				seen.add(cve);
