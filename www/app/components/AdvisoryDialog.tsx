@@ -36,7 +36,7 @@ const css = {
 		maxWidth: "720px",
 	} as React.CSSProperties,
 	body: {
-		padding: "12px 16px",
+		padding: "12px 16px 0 16px",
 		maxHeight: "70vh",
 		overflow: "auto",
 	} as React.CSSProperties,
