@@ -610,8 +610,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		if (entries.length === 0) {
 			return <div style={css.body}>
 				<div className="bp5-callout bp5-intent-success"
-					style={{padding: "12px"}}>
-					<h5 className="bp5-heading">No security advisories</h5>
+					style={{padding: "12px"}}
+				>
 					No outstanding security advisories reported by the guest agent.
 				</div>
 			</div>;
