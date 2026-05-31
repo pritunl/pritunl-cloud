@@ -641,7 +641,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				{important.map((e): JSX.Element => this.renderUpdateCard(e))}
 			</> : <div className="bp5-callout bp5-intent-success"
 				style={{padding: "10px", marginBottom: "10px"}}>
-				No remotely exploitable or critical advisories.
+				No high risk advisories.
 			</div>}
 			{other.length > 0 ? <>
 				<button
