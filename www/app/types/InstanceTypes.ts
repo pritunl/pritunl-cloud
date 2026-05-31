@@ -177,6 +177,7 @@ export interface Advisory {
 	timestamp?: string;
 	status?: string;
 	description?: string;
+	statement?: string;
 	score?: number;
 	severity?: string;
 	vector?: string;
