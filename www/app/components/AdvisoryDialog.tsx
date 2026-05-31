@@ -83,7 +83,6 @@ const css = {
 	headerTag: {
 		paddingTop: "3px",
 		paddingBottom: "3px",
-		marginRight: "6px",
 	} as React.CSSProperties,
 	title: {
 		fontFamily: "monospace",
@@ -102,7 +101,6 @@ const css = {
 	tag: {
 		paddingTop: "3px",
 		paddingBottom: "3px",
-		marginRight: "6px",
 		marginBottom: "4px",
 	} as React.CSSProperties,
 	packages: {
