@@ -449,21 +449,24 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				style={css.tagRow}>
 				{tags}
 			</div>}
-			{d.description && this.renderDescription(key, d.description)}
-			{d.statement && this.renderStatement(key, d.statement)}
+			{this.renderDescription(key, d.description, d.statement)}
 		</div>;
 	}
 
-	renderDescription(key: string, text: string): JSX.Element {
+	renderDescription(key: string, text: string, statement: string): JSX.Element {
 		let expanded = !!this.state.expanded[key];
 		let style = expanded ? css.description : {
 			...css.description,
 			...css.descriptionLimited,
 		};
+		let statementStyle = expanded ? css.statement : css.statementLimited;
 
 		return <>
 			<div style={style}>
 				{text}
+			</div>
+			<div style={statementStyle} hidden={!statement}>
+				{statement}
 			</div>
 			<button
 				className="bp5-button bp5-minimal bp5-small"
