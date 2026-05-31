@@ -22,6 +22,7 @@ interface State {
 	open: boolean;
 	showLowSeverity: boolean;
 	expanded: {[key: string]: boolean};
+	expandedStatements: {[key: string]: boolean};
 	expandedCves: {[advisory: string]: boolean};
 }
 
@@ -144,6 +145,28 @@ const css = {
 		WebkitBoxOrient: "vertical",
 		overflow: "hidden",
 	} as React.CSSProperties,
+	statement: {
+		fontSize: "13px",
+		whiteSpace: "pre-wrap",
+		wordBreak: "break-word",
+		padding: "6px 8px",
+		background: "rgba(138, 155, 168, 0.1)",
+		borderRadius: "3px",
+		marginTop: "2px",
+	} as React.CSSProperties,
+	statementLimited: {
+		fontSize: "13px",
+		whiteSpace: "pre-wrap",
+		wordBreak: "break-word",
+		padding: "6px 8px",
+		background: "rgba(138, 155, 168, 0.1)",
+		borderRadius: "3px",
+		display: "-webkit-box",
+		WebkitLineClamp: 6,
+		WebkitBoxOrient: "vertical",
+		overflow: "hidden",
+		marginTop: "2px",
+	} as React.CSSProperties,
 	descriptionToggle: {
 		marginTop: "4px",
 		padding: "0",
@@ -165,6 +188,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			open: false,
 			showLowSeverity: false,
 			expanded: {},
+			expandedStatements: {},
 			expandedCves: {},
 		}
 	}
@@ -415,6 +439,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				{tags}
 			</div>}
 			{d.description && this.renderDescription(key, d.description)}
+			{d.statement && this.renderStatement(key, d.statement)}
 		</div>;
 	}
 
@@ -437,6 +462,31 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					this.setState({
 						...this.state,
 						expanded: {
+							...this.state.expanded,
+							[key]: !expanded,
+						},
+					});
+				}}
+			>{expanded ? "Show less" : "Show more"}</button>
+		</>;
+	}
+
+	renderStatement(key: string, text: string): JSX.Element {
+		let expanded = !!this.state.expandedStatements[key];
+		let style = expanded ? css.statement : css.statementLimited;
+
+		return <>
+			<div style={style}>
+				{text}
+			</div>
+			<button
+				className="bp5-button bp5-minimal bp5-small"
+				type="button"
+				style={css.descriptionToggle}
+				onClick={(): void => {
+					this.setState({
+						...this.state,
+						expandedStatements: {
 							...this.state.expanded,
 							[key]: !expanded,
 						},
