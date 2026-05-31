@@ -218,49 +218,6 @@ export function FirewallFields(info: Info): PageInfos.Field[] {
 	}));
 }
 
-export function UpdateFields(instance: Instance): PageInfos.Field[] {
-	if (!instance?.guest?.updates) {
-		return [];
-	}
-
-	let fields: PageInfos.Field[] = []
-	instance.guest.updates.forEach((update) => {
-		let link
-		let advisory = (update.advisory || "").replace(/[^a-zA-Z0-9:-]/g, '')
-		if (advisory.startsWith('ALSA') || advisory.startsWith('RLSA') ||
-				advisory.startsWith('RHSA')) {
-			link = `https://access.redhat.com/errata/RH${advisory.slice(2)}`
-		} else if (advisory.startsWith('ELSA')) {
-			link = `https://linux.oracle.com/errata/${advisory}.html`
-		} else if (advisory.startsWith('FEDORA')) {
-			link = `https://bodhi.fedoraproject.org/updates/${advisory}`
-		}
-
-		let className = ""
-		switch (update.severity) {
-			case "moderate":
-				className = "bp5-text-intent-primary"
-				break
-			case "important":
-				className = "bp5-text-intent-warning"
-				break
-			case "critical":
-				className = "bp5-text-intent-danger"
-				break
-		}
-
-		fields.push({
-			key: update.advisory,
-			label: `${update.advisory} - ${MiscUtils.capitalize(update.severity)}`,
-			value: update.packages || [],
-			valueClass: className,
-			link: link,
-		})
-	})
-
-	return fields
-}
-
 export function FilterNodePorts(nodePorts: NodePort[]): NodePort[] {
 	if (!nodePorts) {
 		return []
