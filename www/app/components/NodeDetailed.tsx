@@ -1652,17 +1652,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			},
 		]
 
-		if (node.updates?.length > 0) {
-			fields.push({
-				label: 'System Updates',
-				value: 'Hover to Expand',
-				valueClass: 'bp5-text-intent-warning',
-				embedded: {
-					fields: NodeTypes.UpdateFields(node),
-				},
-			});
-		}
-
 		return <td
 			className="bp5-cell"
 			colSpan={4}
