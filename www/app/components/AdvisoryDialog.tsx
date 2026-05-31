@@ -122,7 +122,7 @@ const css = {
 		fontSize: "12px",
 		fontFamily: "monospace",
 		color: "var(--bp5-text-color-muted, #5f6b7c)",
-		marginTop: "5px",
+		marginTop: "6px",
 		padding: "6px 8px",
 		background: "rgba(138, 155, 168, 0.08)",
 		borderRadius: "3px",
@@ -150,7 +150,7 @@ const css = {
 		padding: "6px 8px",
 		background: "rgba(138, 155, 168, 0.1)",
 		borderRadius: "3px",
-		marginTop: "2px",
+		marginTop: "6px",
 	} as React.CSSProperties,
 	statementLimited: {
 		fontSize: "13px",
@@ -163,7 +163,7 @@ const css = {
 		WebkitLineClamp: 6,
 		WebkitBoxOrient: "vertical",
 		overflow: "hidden",
-		marginTop: "2px",
+		marginTop: "6px",
 	} as React.CSSProperties,
 	descriptionToggle: {
 		marginTop: "4px",
