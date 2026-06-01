@@ -236,6 +236,11 @@ func (d *Database) Balancers() (coll *Collection) {
 	return
 }
 
+func (d *Database) Advisories() (coll *Collection) {
+	coll = d.GetCollection("advisories")
+	return
+}
+
 func (d *Database) Vulnerabilities() (coll *Collection) {
 	coll = d.GetCollection("vulnerabilities")
 	return
