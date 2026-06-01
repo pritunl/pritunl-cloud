@@ -1,6 +1,8 @@
 package advisory
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/vulnerability"
@@ -9,6 +11,7 @@ import (
 type Advisory struct {
 	Id              string                         `bson:"_id" json:"id"`
 	Type            string                         `bson:"type" json:"type"`
+	Updated         time.Time                      `bson:"updated" json:"updated"`
 	Severity        string                         `bson:"severity" json:"severity"`
 	Description     string                         `bson:"description" json:"description"`
 	Score           int                            `bson:"score" json:"score"`
