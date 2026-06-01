@@ -1,6 +1,8 @@
 package task
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
@@ -26,6 +28,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 	coll := db.Instances()
 	advisories := map[string]*advisory.Advisory{}
+	now := time.Now()
 
 	cursor, err := coll.Find(db, &bson.M{})
 	if err != nil {
@@ -78,7 +81,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 			adv := advisories[updt.Id]
 			if adv == nil {
-				adv = advisory.FromUpdate(updt, updtData.Score, updtVulns)
+				adv = advisory.FromUpdate(updt, now, updtData.Score, updtVulns)
 				advisories[updt.Id] = adv
 			}
 			adv.Instances = append(adv.Instances, inst.Id)
@@ -150,7 +153,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 			adv := advisories[updt.Id]
 			if adv == nil {
-				adv = advisory.FromUpdate(updt, updtData.Score, updtVulns)
+				adv = advisory.FromUpdate(updt, now, updtData.Score, updtVulns)
 				advisories[updt.Id] = adv
 			}
 			adv.Nodes = append(adv.Nodes, nde.Id)
@@ -172,16 +175,14 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	}
 
 	coll = db.Advisories()
-	advIds := make([]string, 0, len(advisories))
 
 	for advId, adv := range advisories {
-		advIds = append(advIds, advId)
-
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": advId,
 		}, &bson.M{
 			"$set": &bson.M{
 				"type":            adv.Type,
+				"updated":         adv.Updated,
 				"severity":        adv.Severity,
 				"description":     adv.Description,
 				"score":           adv.Score,
@@ -198,8 +199,8 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	}
 
 	_, err = coll.DeleteMany(db, &bson.M{
-		"_id": &bson.M{
-			"$nin": advIds,
+		"updated": &bson.M{
+			"$lt": now,
 		},
 	})
 	if err != nil {
