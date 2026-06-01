@@ -36,8 +36,8 @@ type Update struct {
 	Vulnerabilities []string `bson:"vulnerabilities" json:"vulnerabilities"`
 	Severity        string   `bson:"severity" json:"severity"`
 	Description     string   `bson:"description" json:"description"`
-	Score           int      `bson:"-" json:"score"`
 	Packages        []string `bson:"packages" json:"packages"`
+	Score           int      `bson:"-" json:"score"`
 }
 
 type UpdateData struct {
