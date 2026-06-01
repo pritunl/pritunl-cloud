@@ -9,7 +9,9 @@ import (
 )
 
 type Advisory struct {
-	Id              string                         `bson:"_id" json:"id"`
+	Id              bson.ObjectID                  `bson:"_id" json:"id"`
+	Organization    bson.ObjectID                  `bson:"organization" json:"organization"`
+	Reference       string                         `bson:"reference" json:"reference"`
 	Type            string                         `bson:"type" json:"type"`
 	Updated         time.Time                      `bson:"updated" json:"updated"`
 	Severity        string                         `bson:"severity" json:"severity"`
