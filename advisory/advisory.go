@@ -23,11 +23,12 @@ type Advisory struct {
 	Nodes           []bson.ObjectID                `bson:"nodes" json:"nodes"`
 }
 
-func FromUpdate(updt *telemetry.Update, now time.Time, score int,
-	vulns []*vulnerability.Vulnerability) *Advisory {
+func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
+	score int, vulns []*vulnerability.Vulnerability) *Advisory {
 
 	return &Advisory{
-		Id:              updt.Id,
+		Organization:    orgId,
+		Reference:       updt.Id,
 		Type:            RedHat,
 		Updated:         now,
 		Description:     updt.Description,
