@@ -168,6 +168,7 @@ export interface Update {
 	cves?: string[];
 	severity?: string;
 	description?: string;
+	score?: number;
 	packages?: string[];
 	details?: Advisory[];
 }
