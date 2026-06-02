@@ -151,28 +151,25 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		let updateElm: JSX.Element
-		let updateSev = 0
-		let updateClass = ""
+		let updateScore = 0
 		instance.guest?.updates?.forEach((update) => {
-			switch (update.severity) {
-				case "moderate":
-					if (updateSev < 1) {
-						updateSev = 1
-						updateClass = "bp5-icon-issue bp5-intent-primary"
-					}
-					break
-				case "important":
-					if (updateSev < 2) {
-						updateSev = 2
-						updateClass = "bp5-icon-issue bp5-intent-warning"
-					}
-					break
-				case "critical":
-					updateSev = 3
-					updateClass = "bp5-icon-issue bp5-intent-danger"
-					break
+			let score = update.score || 0
+			if (score > updateScore) {
+				updateScore = score
 			}
 		})
+		let updateClass = ""
+		switch (updateScore) {
+			case 4:
+				updateClass = "bp5-icon-issue bp5-intent-danger"
+				break
+			case 3:
+				updateClass = "bp5-icon-issue bp5-intent-warning"
+				break
+			case 2:
+				updateClass = "bp5-icon-issue bp5-intent-primary"
+				break
+		}
 
 		if (updateClass) {
 			updateElm = <Blueprint.Tooltip
