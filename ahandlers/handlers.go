@@ -106,6 +106,11 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/device/:resource_id/webauthn/register",
 		deviceWanRegisterPost)
 
+	csrfGroup.GET("/advisory", advisoriesGet)
+	csrfGroup.GET("/advisory/:advisory_id", advisoryGet)
+	csrfGroup.DELETE("/advisory", advisoriesDelete)
+	csrfGroup.DELETE("/advisory/:advisory_id", advisoryDelete)
+
 	csrfGroup.GET("/disk", disksGet)
 	csrfGroup.GET("/disk/:disk_id", diskGet)
 	csrfGroup.PUT("/disk", disksPut)
