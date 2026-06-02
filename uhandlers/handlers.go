@@ -104,6 +104,11 @@ func Register(engine *gin.Engine) {
 	orgGroup.DELETE("/domain", domainsDelete)
 	orgGroup.DELETE("/domain/:domain_id", domainDelete)
 
+	orgGroup.GET("/advisory", advisoriesGet)
+	orgGroup.GET("/advisory/:advisory_id", advisoryGet)
+	orgGroup.DELETE("/advisory", advisoriesDelete)
+	orgGroup.DELETE("/advisory/:advisory_id", advisoryDelete)
+
 	orgGroup.GET("/disk", disksGet)
 	orgGroup.GET("/disk/:disk_id", diskGet)
 	orgGroup.PUT("/disk", disksPut)
