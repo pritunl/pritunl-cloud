@@ -27,7 +27,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	vulnerabilities := map[string]*vulnerability.Vulnerability{}
 
 	coll := db.Instances()
-	advisories := map[string]*advisory.Advisory{}
+	advisories := map[bson.ObjectID]map[string]*advisory.Advisory{}
 	now := time.Now()
 
 	cursor, err := coll.Find(db, &bson.M{})
@@ -79,10 +79,17 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			updtData.Score = updt.GetScore(updtVulns)
 			updtsData[updt.Id] = updtData
 
-			adv := advisories[updt.Id]
+			orgAdvs := advisories[inst.Organization]
+			if orgAdvs == nil {
+				orgAdvs = map[string]*advisory.Advisory{}
+				advisories[inst.Organization] = orgAdvs
+			}
+
+			adv := orgAdvs[updt.Id]
 			if adv == nil {
-				adv = advisory.FromUpdate(updt, now, updtData.Score, updtVulns)
-				advisories[updt.Id] = adv
+				adv = advisory.FromUpdate(
+					updt, inst.Organization, now, updtData.Score, updtVulns)
+				orgAdvs[updt.Id] = adv
 			}
 			adv.Instances = append(adv.Instances, inst.Id)
 		}
@@ -151,10 +158,17 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			updtData.Score = updt.GetScore(updtVulns)
 			updtsData[updt.Id] = updtData
 
-			adv := advisories[updt.Id]
+			orgAdvs := advisories[advisory.Global]
+			if orgAdvs == nil {
+				orgAdvs = map[string]*advisory.Advisory{}
+				advisories[advisory.Global] = orgAdvs
+			}
+
+			adv := orgAdvs[updt.Id]
 			if adv == nil {
-				adv = advisory.FromUpdate(updt, now, updtData.Score, updtVulns)
-				advisories[updt.Id] = adv
+				adv = advisory.FromUpdate(
+					updt, advisory.Global, now, updtData.Score, updtVulns)
+				orgAdvs[updt.Id] = adv
 			}
 			adv.Nodes = append(adv.Nodes, nde.Id)
 		}
@@ -176,25 +190,30 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 	coll = db.Advisories()
 
-	for advId, adv := range advisories {
-		_, err = coll.UpdateOne(db, &bson.M{
-			"_id": advId,
-		}, &bson.M{
-			"$set": &bson.M{
-				"type":            adv.Type,
-				"updated":         adv.Updated,
-				"severity":        adv.Severity,
-				"description":     adv.Description,
-				"score":           adv.Score,
-				"packages":        adv.Packages,
-				"vulnerabilities": adv.Vulnerabilities,
-				"instances":       adv.Instances,
-				"nodes":           adv.Nodes,
-			},
-		}, options.UpdateOne().SetUpsert(true))
-		if err != nil {
-			err = database.ParseError(err)
-			return
+	for orgId, orgAdvs := range advisories {
+		for advId, adv := range orgAdvs {
+			_, err = coll.UpdateOne(db, &bson.M{
+				"organization": orgId,
+				"reference":    advId,
+			}, &bson.M{
+				"$set": &bson.M{
+					"organization":    orgId,
+					"reference":       advId,
+					"type":            adv.Type,
+					"updated":         adv.Updated,
+					"severity":        adv.Severity,
+					"description":     adv.Description,
+					"score":           adv.Score,
+					"packages":        adv.Packages,
+					"vulnerabilities": adv.Vulnerabilities,
+					"instances":       adv.Instances,
+					"nodes":           adv.Nodes,
+				},
+			}, options.UpdateOne().SetUpsert(true))
+			if err != nil {
+				err = database.ParseError(err)
+				return
+			}
 		}
 	}
 
