@@ -39,6 +39,46 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 	return
 }
 
+func upsertUpdates(db *database.Database, variant string,
+	resource bson.ObjectID, updates []*telemetry.Update) (err error) {
+
+	entry := &Updates{
+		Type:     UpdatesType,
+		Resource: resource,
+		Variant:  variant,
+		Updates:  updates,
+	}
+
+	err = entry.Upsert(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func UpsertInstanceUpdates(db *database.Database,
+	instId bson.ObjectID, updates []*telemetry.Update) (err error) {
+
+	err = upsertUpdates(db, InstanceVariant, instId, updates)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func UpsertNodeUpdates(db *database.Database,
+	instId bson.ObjectID, updates []*telemetry.Update) (err error) {
+
+	err = upsertUpdates(db, NodeVariant, instId, updates)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func FindUpdates(db *database.Database) (cursor *UpdatesCursor, err error) {
 	cur, err := findEntries(db, &bson.M{
 		"type": UpdatesType,
