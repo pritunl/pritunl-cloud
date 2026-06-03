@@ -97,18 +97,61 @@ func GetAdvisoryPaged(db *database.Database, query *bson.M, page,
 		},
 		&bson.M{
 			"$lookup": &bson.M{
-				"from":         "instances",
-				"localField":   "instances",
-				"foreignField": "_id",
-				"as":           "instance_docs",
+				"from": "instances",
+				"let": &bson.M{
+					"instance_ids": "$instances",
+				},
+				"pipeline": []*bson.M{
+					&bson.M{
+						"$match": &bson.M{
+							"$expr": &bson.M{
+								"$in": bson.A{"$_id", "$$instance_ids"},
+							},
+						},
+					},
+					&bson.M{
+						"$project": &bson.M{
+							"name":              1,
+							"action":            1,
+							"state":             1,
+							"timestamp":         1,
+							"public_ips":        1,
+							"public_ips6":       1,
+							"private_ips":       1,
+							"private_ips6":      1,
+							"cloud_public_ips":  1,
+							"cloud_public_ips6": 1,
+						},
+					},
+				},
+				"as": "instance_docs",
 			},
 		},
 		&bson.M{
 			"$lookup": &bson.M{
-				"from":         "nodes",
-				"localField":   "nodes",
-				"foreignField": "_id",
-				"as":           "node_docs",
+				"from": "nodes",
+				"let": &bson.M{
+					"node_ids": "$nodes",
+				},
+				"pipeline": []*bson.M{
+					&bson.M{
+						"$match": &bson.M{
+							"$expr": &bson.M{
+								"$in": bson.A{"$_id", "$$node_ids"},
+							},
+						},
+					},
+					&bson.M{
+						"$project": &bson.M{
+							"name":        1,
+							"timestamp":   1,
+							"public_ips":  1,
+							"public_ips6": 1,
+							"private_ips": 1,
+						},
+					},
+				},
+				"as": "node_docs",
 			},
 		},
 	})
