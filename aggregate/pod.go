@@ -1,6 +1,8 @@
 package aggregate
 
 import (
+	"sort"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -17,6 +19,12 @@ type PodPipe struct {
 type PodAggregate struct {
 	pod.Pod
 	Units []*unit.Unit `json:"units"`
+}
+
+func sortUnits(units []*unit.Unit) {
+	sort.SliceStable(units, func(i, j int) bool {
+		return units[i].Name < units[j].Name
+	})
 }
 
 func GetPod(db *database.Database, usrId bson.ObjectID, query *bson.M) (
@@ -56,6 +64,8 @@ func GetPod(db *database.Database, usrId bson.ObjectID, query *bson.M) (
 		err = database.ParseError(err)
 		return
 	}
+
+	sortUnits(doc.UnitDocs)
 
 	pd = &PodAggregate{
 		Pod:   doc.Pod,
@@ -141,6 +151,8 @@ func GetPodsPaged(db *database.Database, usrId bson.ObjectID,
 			err = database.ParseError(err)
 			return
 		}
+
+		sortUnits(doc.UnitDocs)
 
 		pd := &PodAggregate{
 			Pod:   doc.Pod,
