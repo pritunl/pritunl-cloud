@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -21,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
@@ -29,11 +27,6 @@ type InstancePipe struct {
 	NodeDocs          []*node.Node             `bson:"node_docs"`
 	DatacenterDocs    []*datacenter.Datacenter `bson:"datacenter_docs"`
 	DiskDocs          []*disk.Disk             `bson:"disk_docs"`
-}
-
-type InstancesPipe struct {
-	Metadata  []*Metadata     `bson:"meta"`
-	Instances []*InstancePipe `bson:"instances"`
 }
 
 type InstanceInfo struct {
@@ -62,17 +55,89 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 	coll := db.Instances()
 	insts = []*InstanceAggregate{}
 
+	if len(*query) == 0 {
+		count, err = coll.EstimatedDocumentCount(db)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	} else {
+		count, err = coll.CountDocuments(db, query)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
 	if pageCount == 0 {
 		pageCount = 20
 	}
-	skip := page * pageCount
+	maxPage := count / pageCount
+	if count == pageCount {
+		maxPage = 0
+	}
+	page = utils.Min64(page, maxPage)
+	skip := utils.Min64(page*pageCount, count)
+
+	cursor, err := coll.Aggregate(db, []*bson.M{
+		&bson.M{
+			"$match": query,
+		},
+		&bson.M{
+			"$sort": &bson.M{
+				"name": 1,
+			},
+		},
+		&bson.M{
+			"$skip": skip,
+		},
+		&bson.M{
+			"$limit": pageCount,
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "nodes",
+				"localField":   "node",
+				"foreignField": "_id",
+				"as":           "node_docs",
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "datacenters",
+				"localField":   "datacenter",
+				"foreignField": "_id",
+				"as":           "datacenter_docs",
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "disks",
+				"localField":   "_id",
+				"foreignField": "instance",
+				"as":           "disk_docs",
+			},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
 
 	firesOrg := map[bson.ObjectID]map[string][]*firewall.Firewall{}
 	firesRoles := map[bson.ObjectID]set.Set{}
 	authrsOrg := map[bson.ObjectID]map[string][]*authority.Authority{}
 	authrsRoles := map[bson.ObjectID]set.Set{}
 
-	addInstance := func(doc *InstancePipe) error {
+	for cursor.Next(db) {
+		doc := &InstancePipe{}
+		err = cursor.Decode(doc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		info := &InstanceInfo{
 			Node:          "Unknown",
 			Disks:         []string{},
@@ -129,10 +194,9 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 
 		fires := firesOrg[doc.Organization]
 		if fires == nil {
-			var e error
-			fires, e = firewall.GetOrgMapRoles(db, doc.Organization)
-			if e != nil {
-				return e
+			fires, err = firewall.GetOrgMapRoles(db, doc.Organization)
+			if err != nil {
+				return
 			}
 
 			for _, roleFires := range fires {
@@ -154,10 +218,9 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 
 		authrs := authrsOrg[doc.Organization]
 		if authrs == nil {
-			var e error
-			authrs, e = authority.GetOrgMapRoles(db, doc.Organization)
-			if e != nil {
-				return e
+			authrs, err = authority.GetOrgMapRoles(db, doc.Organization)
+			if err != nil {
+				return
 			}
 
 			for _, roleAuthrs := range authrs {
@@ -224,7 +287,8 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			specRules, _, e := firewall.GetSpecRulesSlow(
 				db, doc.Instance.Node, []*instance.Instance{&doc.Instance})
 			if e != nil {
-				return e
+				err = e
+				return
 			}
 
 			instNamespace := vm.GetNamespace(doc.Instance.Id, 0)
@@ -280,172 +344,6 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		}
 
 		insts = append(insts, inst)
-		return nil
-	}
-
-	var cursor *mongo.Cursor
-	if len(*query) == 0 {
-		waiter := &sync.WaitGroup{}
-		var countErr error
-
-		waiter.Add(1)
-		go func() {
-			defer waiter.Done()
-
-			count, countErr = coll.EstimatedDocumentCount(db)
-			if countErr != nil {
-				countErr = database.ParseError(countErr)
-				return
-			}
-		}()
-
-		cursor, err = coll.Aggregate(db, []*bson.M{
-			&bson.M{
-				"$match": query,
-			},
-			&bson.M{
-				"$sort": &bson.M{
-					"name": 1,
-				},
-			},
-			&bson.M{
-				"$skip": skip,
-			},
-			&bson.M{
-				"$limit": pageCount,
-			},
-			&bson.M{
-				"$lookup": &bson.M{
-					"from":         "nodes",
-					"localField":   "node",
-					"foreignField": "_id",
-					"as":           "node_docs",
-				},
-			},
-			&bson.M{
-				"$lookup": &bson.M{
-					"from":         "datacenters",
-					"localField":   "datacenter",
-					"foreignField": "_id",
-					"as":           "datacenter_docs",
-				},
-			},
-			&bson.M{
-				"$lookup": &bson.M{
-					"from":         "disks",
-					"localField":   "_id",
-					"foreignField": "instance",
-					"as":           "disk_docs",
-				},
-			},
-		})
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-		defer cursor.Close(db)
-
-		for cursor.Next(db) {
-			doc := &InstancePipe{}
-			err = cursor.Decode(doc)
-			if err != nil {
-				err = database.ParseError(err)
-				return
-			}
-
-			err = addInstance(doc)
-			if err != nil {
-				return
-			}
-		}
-
-		waiter.Wait()
-		if countErr != nil {
-			err = countErr
-			return
-		}
-	} else {
-		cursor, err = coll.Aggregate(db, []*bson.M{
-			&bson.M{
-				"$match": query,
-			},
-			&bson.M{
-				"$sort": &bson.M{
-					"name": 1,
-				},
-			},
-			&bson.M{
-				"$facet": &bson.M{
-					"meta": []*bson.M{
-						&bson.M{
-							"$count": "count",
-						},
-					},
-					"instances": []*bson.M{
-						&bson.M{
-							"$skip": skip,
-						},
-						&bson.M{
-							"$limit": pageCount,
-						},
-						&bson.M{
-							"$lookup": &bson.M{
-								"from":         "nodes",
-								"localField":   "node",
-								"foreignField": "_id",
-								"as":           "node_docs",
-							},
-						},
-						&bson.M{
-							"$lookup": &bson.M{
-								"from":         "datacenters",
-								"localField":   "datacenter",
-								"foreignField": "_id",
-								"as":           "datacenter_docs",
-							},
-						},
-						&bson.M{
-							"$lookup": &bson.M{
-								"from":         "disks",
-								"localField":   "_id",
-								"foreignField": "instance",
-								"as":           "disk_docs",
-							},
-						},
-					},
-				},
-			},
-		})
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-		defer cursor.Close(db)
-
-		if !cursor.Next(db) {
-			err = &database.NotFoundError{
-				errors.New("aggregate: Not found"),
-			}
-			return
-		}
-
-		doc := &InstancesPipe{}
-		err = cursor.Decode(doc)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		if len(doc.Metadata) > 0 {
-			count = doc.Metadata[0].Count
-		}
-
-		for _, instDoc := range doc.Instances {
-			err = addInstance(instDoc)
-			if err != nil {
-				return
-			}
-		}
 	}
 
 	err = cursor.Err()
