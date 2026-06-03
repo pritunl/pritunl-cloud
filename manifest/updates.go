@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 )
@@ -19,6 +20,23 @@ type Updates struct {
 	Resource bson.ObjectID       `bson:"resource" json:"resource"`
 	Variant  string              `bson:"variant" json:"variant"`
 	Updates  []*telemetry.Update `bson:"updates" json:"updates"`
+}
+
+func (u *Updates) Upsert(db *database.Database) (err error) {
+	coll := db.Manifests()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"type":     u.Type,
+		"resource": u.Resource,
+	}, &bson.M{
+		"$set": u,
+	}, options.UpdateOne().SetUpsert(true))
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
 }
 
 func FindUpdates(db *database.Database) (cursor *UpdatesCursor, err error) {
