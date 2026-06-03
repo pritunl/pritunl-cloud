@@ -2,28 +2,21 @@ package aggregate
 
 import (
 	"sort"
-	"sync"
 	"time"
 
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/systemd"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type AdvisoryPipe struct {
 	advisory.Advisory `bson:",inline"`
 	InstanceDocs      []*instance.Instance `bson:"instance_docs"`
 	NodeDocs          []*node.Node         `bson:"node_docs"`
-}
-
-type AdvisoriesPipe struct {
-	Metadata   []*Metadata     `bson:"meta"`
-	Advisories []*AdvisoryPipe `bson:"advisories"`
 }
 
 type AdvisoryInstanceInfo struct {
@@ -63,12 +56,76 @@ func GetAdvisoryPaged(db *database.Database, query *bson.M, page,
 	coll := db.Advisories()
 	advisories = []*AdvisoryAggregate{}
 
+	if len(*query) == 0 {
+		count, err = coll.EstimatedDocumentCount(db)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	} else {
+		count, err = coll.CountDocuments(db, query)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
 	if pageCount == 0 {
 		pageCount = 20
 	}
-	skip := page * pageCount
+	maxPage := count / pageCount
+	if count == pageCount {
+		maxPage = 0
+	}
+	page = utils.Min64(page, maxPage)
+	skip := utils.Min64(page*pageCount, count)
 
-	addAdvisory := func(doc *AdvisoryPipe) {
+	cursor, err := coll.Aggregate(db, []*bson.M{
+		&bson.M{
+			"$match": query,
+		},
+		&bson.M{
+			"$sort": &bson.M{
+				"reference": 1,
+			},
+		},
+		&bson.M{
+			"$skip": skip,
+		},
+		&bson.M{
+			"$limit": pageCount,
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "instances",
+				"localField":   "instances",
+				"foreignField": "_id",
+				"as":           "instance_docs",
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "nodes",
+				"localField":   "nodes",
+				"foreignField": "_id",
+				"as":           "node_docs",
+			},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		doc := &AdvisoryPipe{}
+		err = cursor.Decode(doc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		instancesInfo := []*AdvisoryInstanceInfo{}
 		for _, inst := range doc.InstanceDocs {
 			uptime := ""
@@ -117,149 +174,6 @@ func GetAdvisoryPaged(db *database.Database, query *bson.M, page,
 		}
 
 		advisories = append(advisories, adv)
-	}
-
-	var cursor *mongo.Cursor
-	if len(*query) == 0 {
-		waiter := &sync.WaitGroup{}
-		var countErr error
-
-		waiter.Add(1)
-		go func() {
-			defer waiter.Done()
-
-			count, countErr = coll.EstimatedDocumentCount(db)
-			if countErr != nil {
-				countErr = database.ParseError(countErr)
-				return
-			}
-		}()
-
-		cursor, err = coll.Aggregate(db, []*bson.M{
-			&bson.M{
-				"$match": query,
-			},
-			&bson.M{
-				"$sort": &bson.M{
-					"reference": 1,
-				},
-			},
-			&bson.M{
-				"$skip": skip,
-			},
-			&bson.M{
-				"$limit": pageCount,
-			},
-			&bson.M{
-				"$lookup": &bson.M{
-					"from":         "instances",
-					"localField":   "instances",
-					"foreignField": "_id",
-					"as":           "instance_docs",
-				},
-			},
-			&bson.M{
-				"$lookup": &bson.M{
-					"from":         "nodes",
-					"localField":   "nodes",
-					"foreignField": "_id",
-					"as":           "node_docs",
-				},
-			},
-		})
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-		defer cursor.Close(db)
-
-		for cursor.Next(db) {
-			doc := &AdvisoryPipe{}
-			err = cursor.Decode(doc)
-			if err != nil {
-				err = database.ParseError(err)
-				return
-			}
-
-			addAdvisory(doc)
-		}
-
-		waiter.Wait()
-		if countErr != nil {
-			err = countErr
-			return
-		}
-	} else {
-		cursor, err = coll.Aggregate(db, []*bson.M{
-			&bson.M{
-				"$match": query,
-			},
-			&bson.M{
-				"$sort": &bson.M{
-					"reference": 1,
-				},
-			},
-			&bson.M{
-				"$facet": &bson.M{
-					"meta": []*bson.M{
-						&bson.M{
-							"$count": "count",
-						},
-					},
-					"advisories": []*bson.M{
-						&bson.M{
-							"$skip": skip,
-						},
-						&bson.M{
-							"$limit": pageCount,
-						},
-						&bson.M{
-							"$lookup": &bson.M{
-								"from":         "instances",
-								"localField":   "instances",
-								"foreignField": "_id",
-								"as":           "instance_docs",
-							},
-						},
-						&bson.M{
-							"$lookup": &bson.M{
-								"from":         "nodes",
-								"localField":   "nodes",
-								"foreignField": "_id",
-								"as":           "node_docs",
-							},
-						},
-					},
-				},
-			},
-		})
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-		defer cursor.Close(db)
-
-		if !cursor.Next(db) {
-			err = &database.NotFoundError{
-				errors.New("aggregate: Not found"),
-			}
-			return
-		}
-
-		doc := &AdvisoriesPipe{}
-		err = cursor.Decode(doc)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		if len(doc.Metadata) > 0 {
-			count = doc.Metadata[0].Count
-		}
-
-		for _, advDoc := range doc.Advisories {
-			addAdvisory(advDoc)
-		}
 	}
 
 	err = cursor.Err()
