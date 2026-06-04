@@ -1,6 +1,8 @@
 package manifest
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -15,15 +17,18 @@ const (
 )
 
 type Updates struct {
-	Id       bson.ObjectID       `bson:"_id,omitempty" json:"id"`
-	Type     string              `bson:"type" json:"type"`
-	Resource bson.ObjectID       `bson:"resource" json:"resource"`
-	Variant  string              `bson:"variant" json:"variant"`
-	Updates  []*telemetry.Update `bson:"updates" json:"updates"`
+	Id        bson.ObjectID       `bson:"_id,omitempty" json:"id"`
+	Type      string              `bson:"type" json:"type"`
+	Resource  bson.ObjectID       `bson:"resource" json:"resource"`
+	Timestamp time.Time           `bson:"timestamp" json:"timestamp"`
+	Variant   string              `bson:"variant" json:"variant"`
+	Updates   []*telemetry.Update `bson:"updates" json:"updates"`
 }
 
 func (u *Updates) Upsert(db *database.Database) (err error) {
 	coll := db.Manifests()
+
+	u.Timestamp = time.Now()
 
 	_, err = coll.UpdateOne(db, &bson.M{
 		"type":     u.Type,
