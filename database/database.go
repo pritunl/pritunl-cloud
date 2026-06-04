@@ -186,6 +186,11 @@ func (d *Database) Settings() (coll *Collection) {
 	return
 }
 
+func (d *Database) Manifests() (coll *Collection) {
+	coll = d.GetCollection("manifests")
+	return
+}
+
 func (d *Database) Events() (coll *Collection) {
 	coll = d.getCollectionWeak("events")
 	return
