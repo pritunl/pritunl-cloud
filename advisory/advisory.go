@@ -23,8 +23,81 @@ type Advisory struct {
 	Nodes           []bson.ObjectID                `bson:"nodes" json:"nodes"`
 }
 
+func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
+	if vuln == nil {
+		return Low
+	}
+
+	isNetwork := vuln.Vector == vulnerability.Network
+	isAdjacent := vuln.Vector == vulnerability.Adjacent
+	isUnauth := vuln.Privileges == vulnerability.None
+	isNoInteraction := vuln.Interaction == vulnerability.None
+	isCritical := vuln.Severity == vulnerability.Critical
+	isHigh := vuln.Severity == vulnerability.High
+
+	if isNetwork && isUnauth && isNoInteraction &&
+		(isCritical || vuln.Score >= 9.0) {
+
+		if a.Severity == moderate {
+			return High
+		}
+		return Critical
+	}
+
+	if isNetwork && isUnauth {
+		if a.Severity == moderate {
+			return Medium
+		}
+		return High
+	}
+	if isNetwork && isCritical {
+		if a.Severity == moderate {
+			return Medium
+		}
+		return High
+	}
+	if (isNetwork || isAdjacent) && vuln.Score >= 9.5 {
+		if a.Severity == moderate {
+			return Medium
+		}
+		return High
+	}
+
+	if isNetwork && (isHigh || vuln.Score >= 7.0) {
+		if a.Severity == moderate {
+			return Low
+		}
+		return Medium
+	}
+	if isAdjacent && isUnauth && (isCritical || isHigh) {
+		if a.Severity == moderate {
+			return Low
+		}
+		return Medium
+	}
+	if isCritical {
+		if a.Severity == moderate {
+			return Low
+		}
+		return Medium
+	}
+
+	return Low
+}
+
+func (a *Advisory) UpdateScore() {
+	top := Low
+	for _, vuln := range a.Vulnerabilities {
+		score := a.scoreAdvisory(vuln)
+		if score > top {
+			top = score
+		}
+	}
+	a.Score = top
+}
+
 func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
-	score int, vulns []*vulnerability.Vulnerability) *Advisory {
+	vulns []*vulnerability.Vulnerability) *Advisory {
 
 	return &Advisory{
 		Organization:    orgId,
@@ -33,7 +106,6 @@ func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
 		Updated:         now,
 		Severity:        updt.Severity,
 		Description:     updt.Description,
-		Score:           score,
 		Packages:        updt.Packages,
 		Vulnerabilities: vulns,
 		Instances:       []bson.ObjectID{},
