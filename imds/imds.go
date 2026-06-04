@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/journal"
+	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/store"
 	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
@@ -164,10 +165,6 @@ func Sync(db *database.Database, namespace string,
 			data["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
 
-		if ste.Updates != nil {
-			data["guest.updates"] = ste.Updates
-		}
-
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
@@ -176,6 +173,13 @@ func Sync(db *database.Database, namespace string,
 		if err != nil {
 			err = database.ParseError(err)
 			return
+		}
+
+		if ste.Updates != nil {
+			err = manifest.UpsertInstanceUpdates(db, instId, ste.Updates)
+			if err != nil {
+				return
+			}
 		}
 
 		var kind int32
@@ -530,10 +534,6 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 			data["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
 
-		if ste.Updates != nil {
-			data["guest.updates"] = ste.Updates
-		}
-
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
@@ -542,6 +542,13 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		if err != nil {
 			err = database.ParseError(err)
 			return
+		}
+
+		if ste.Updates != nil {
+			err = manifest.UpsertInstanceUpdates(db, instId, ste.Updates)
+			if err != nil {
+				return
+			}
 		}
 
 		var kind int32
