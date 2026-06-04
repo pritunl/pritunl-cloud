@@ -1,15 +1,18 @@
 package manifest
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
 type Entry struct {
-	Id       bson.ObjectID `bson:"_id,omitempty" json:"id"`
-	Type     string        `bson:"type" json:"type"`
-	Resource bson.ObjectID `bson:"resource" json:"resource"`
+	Id        bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Type      string        `bson:"type" json:"type"`
+	Resource  bson.ObjectID `bson:"resource" json:"resource"`
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
 }
 
 type Cursor struct {
