@@ -31,6 +31,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/lvm"
+	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/render"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -1329,9 +1330,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	}
 
 	updates, ok := n.getUpdateDetails(db)
-	if ok {
-		fields["updates"] = updates
-	}
 
 	nde := &Node{}
 	err = coll.FindOneAndUpdate(
@@ -1347,6 +1345,13 @@ func (n *Node) update(db *database.Database) (err error) {
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	if ok {
+		err = manifest.UpsertNodeUpdates(db, n.Id, updates)
+		if err != nil {
+			return
+		}
 	}
 
 	n.Id = nde.Id
