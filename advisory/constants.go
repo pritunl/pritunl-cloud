@@ -6,6 +6,15 @@ import (
 
 const (
 	RedHat = "rhel"
+
+	Low      = 1
+	Medium   = 2
+	High     = 3
+	Critical = 4
+
+	moderate  = "moderate"
+	important = "important"
+	critical  = "critical"
 )
 
 var (
