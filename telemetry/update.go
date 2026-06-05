@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/vulnerability"
 	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
 )
@@ -65,79 +64,6 @@ func (u *Update) Validate(db *database.Database) (
 	}
 
 	return
-}
-
-func (u *Update) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
-	if vuln == nil {
-		return Low
-	}
-
-	isNetwork := vuln.Vector == vulnerability.Network
-	isAdjacent := vuln.Vector == vulnerability.Adjacent
-	isUnauth := vuln.Privileges == vulnerability.None
-	isNoInteraction := vuln.Interaction == vulnerability.None
-	isCritical := vuln.Severity == vulnerability.Critical
-	isHigh := vuln.Severity == vulnerability.High
-
-	if isNetwork && isUnauth && isNoInteraction &&
-		(isCritical || vuln.Score >= 9.0) {
-
-		if u.Severity == moderate {
-			return High
-		}
-		return Critical
-	}
-
-	if isNetwork && isUnauth {
-		if u.Severity == moderate {
-			return Medium
-		}
-		return High
-	}
-	if isNetwork && isCritical {
-		if u.Severity == moderate {
-			return Medium
-		}
-		return High
-	}
-	if (isNetwork || isAdjacent) && vuln.Score >= 9.5 {
-		if u.Severity == moderate {
-			return Medium
-		}
-		return High
-	}
-
-	if isNetwork && (isHigh || vuln.Score >= 7.0) {
-		if u.Severity == moderate {
-			return Low
-		}
-		return Medium
-	}
-	if isAdjacent && isUnauth && (isCritical || isHigh) {
-		if u.Severity == moderate {
-			return Low
-		}
-		return Medium
-	}
-	if isCritical {
-		if u.Severity == moderate {
-			return Low
-		}
-		return Medium
-	}
-
-	return Low
-}
-
-func (u *Update) GetScore(vulns []*vulnerability.Vulnerability) int {
-	top := Low
-	for _, vuln := range vulns {
-		score := u.scoreAdvisory(vuln)
-		if score > top {
-			top = score
-		}
-	}
-	return top
 }
 
 func parseRecord(lines []string) (update *Update) {
