@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/vulnerability"
 	"github.com/sirupsen/logrus"
 )
@@ -50,9 +49,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 		}
 
 		vulns := []*vulnerability.Vulnerability{}
-		updtsData := map[string]*telemetry.UpdateData{}
 		for _, updt := range inst.Guest.Updates {
-			updtData := &telemetry.UpdateData{}
 			updtVulns := []*vulnerability.Vulnerability{}
 
 			for _, vulnId := range updt.Vulnerabilities {
@@ -76,9 +73,6 @@ func advisoryDataHandler(db *database.Database) (err error) {
 				}
 			}
 
-			updtData.Score = updt.GetScore(updtVulns)
-			updtsData[updt.Id] = updtData
-
 			orgAdvs := advisories[inst.Organization]
 			if orgAdvs == nil {
 				orgAdvs = map[string]*advisory.Advisory{}
@@ -88,12 +82,11 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			adv := orgAdvs[updt.Id]
 			if adv == nil {
 				adv = advisory.FromUpdate(
-					updt, inst.Organization, now, updtData.Score, updtVulns)
+					updt, inst.Organization, now, updtVulns)
 				orgAdvs[updt.Id] = adv
 			}
 			adv.Instances = append(adv.Instances, inst.Id)
 		}
-		inst.Guest.UpdatesData = updtsData
 		inst.Guest.Vulnerabilities = vulns
 
 		err = inst.CommitFields(db, set.NewSet(
@@ -129,9 +122,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 		}
 
 		vulns := []*vulnerability.Vulnerability{}
-		updtsData := map[string]*telemetry.UpdateData{}
 		for _, updt := range nde.Updates {
-			updtData := &telemetry.UpdateData{}
 			updtVulns := []*vulnerability.Vulnerability{}
 
 			for _, vulnId := range updt.Vulnerabilities {
@@ -155,9 +146,6 @@ func advisoryDataHandler(db *database.Database) (err error) {
 				}
 			}
 
-			updtData.Score = updt.GetScore(updtVulns)
-			updtsData[updt.Id] = updtData
-
 			orgAdvs := advisories[advisory.Global]
 			if orgAdvs == nil {
 				orgAdvs = map[string]*advisory.Advisory{}
@@ -167,12 +155,11 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			adv := orgAdvs[updt.Id]
 			if adv == nil {
 				adv = advisory.FromUpdate(
-					updt, advisory.Global, now, updtData.Score, updtVulns)
+					updt, advisory.Global, now, updtVulns)
 				orgAdvs[updt.Id] = adv
 			}
 			adv.Nodes = append(adv.Nodes, nde.Id)
 		}
-		nde.UpdatesData = updtsData
 		nde.Vulnerabilities = vulns
 
 		err = nde.CommitFields(
