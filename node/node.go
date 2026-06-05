@@ -1384,8 +1384,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.HugepagesSize = nde.HugepagesSize
 	n.Firewall = nde.Firewall
 	n.Roles = nde.Roles
-	n.Updates = nde.Updates
-	n.Vulnerabilities = nde.Vulnerabilities
 	n.VirtPath = nde.VirtPath
 	n.CachePath = nde.CachePath
 	n.TempPath = nde.TempPath
