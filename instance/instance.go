@@ -157,17 +157,16 @@ type StatusInfo struct {
 }
 
 type GuestData struct {
-	Status          string                           `bson:"status" json:"status"`
-	Timestamp       time.Time                        `bson:"timestamp" json:"timestamp"`
-	Heartbeat       time.Time                        `bson:"heartbeat" json:"heartbeat"`
-	Memory          float64                          `bson:"memory" json:"memory"`
-	HugePages       float64                          `bson:"hugepages" json:"hugepages"`
-	Load1           float64                          `bson:"load1" json:"load1"`
-	Load5           float64                          `bson:"load5" json:"load5"`
-	Load15          float64                          `bson:"load15" json:"load15"`
-	Updates         []*telemetry.Update              `bson:"updates" json:"updates"`
-	UpdatesData     map[string]*telemetry.UpdateData `bson:"updates_data" json:"-"`
-	Vulnerabilities []*vulnerability.Vulnerability   `bson:"vulnerabilities" json:"vulnerabilities"`
+	Status          string                         `bson:"status" json:"status"`
+	Timestamp       time.Time                      `bson:"timestamp" json:"timestamp"`
+	Heartbeat       time.Time                      `bson:"heartbeat" json:"heartbeat"`
+	Memory          float64                        `bson:"memory" json:"memory"`
+	HugePages       float64                        `bson:"hugepages" json:"hugepages"`
+	Load1           float64                        `bson:"load1" json:"load1"`
+	Load5           float64                        `bson:"load5" json:"load5"`
+	Load15          float64                        `bson:"load15" json:"load15"`
+	Updates         []*telemetry.Update            `bson:"updates" json:"updates"`
+	Vulnerabilities []*vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
 }
 
 type Info struct {
@@ -848,20 +847,6 @@ func (i *Instance) Json(short bool) {
 	if i.IscsiDevices != nil {
 		for _, device := range i.IscsiDevices {
 			device.Json()
-		}
-	}
-
-	if i.Guest != nil {
-		updsData := i.Guest.UpdatesData
-		if updsData == nil {
-			updsData = map[string]*telemetry.UpdateData{}
-		}
-
-		for _, upd := range i.Guest.Updates {
-			updData := updsData[upd.Id]
-			if updsData[upd.Id] != nil {
-				upd.Score = updData.Score
-			}
 		}
 	}
 }
