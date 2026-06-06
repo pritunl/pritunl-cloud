@@ -1330,7 +1330,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	}
 
 	if ok {
-		err = manifest.UpsertNodeUpdates(db, n.Id, updates)
+		err = manifest.UpsertNodeUpdates(db, n.Id, Global, updates)
 		if err != nil {
 			return
 		}
