@@ -40,7 +40,7 @@ const (
 )
 
 func Sync(db *database.Database, namespace string,
-	instId, deplyId bson.ObjectID, conf *types.Config) (err error) {
+	instId, orgId, deplyId bson.ObjectID, conf *types.Config) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
 
@@ -176,7 +176,8 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		if ste.Updates != nil {
-			err = manifest.UpsertInstanceUpdates(db, instId, ste.Updates)
+			err = manifest.UpsertInstanceUpdates(
+				db, instId, orgId, ste.Updates)
 			if err != nil {
 				return
 			}
@@ -434,7 +435,7 @@ func Sync(db *database.Database, namespace string,
 	return
 }
 
-func Pull(db *database.Database, instId, deplyId bson.ObjectID,
+func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 	imdsHostSecret string, journals []*types.Journal) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
@@ -545,7 +546,8 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		}
 
 		if ste.Updates != nil {
-			err = manifest.UpsertInstanceUpdates(db, instId, ste.Updates)
+			err = manifest.UpsertInstanceUpdates(
+				db, instId, orgId, ste.Updates)
 			if err != nil {
 				return
 			}
