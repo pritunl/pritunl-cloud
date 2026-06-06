@@ -17,12 +17,13 @@ const (
 )
 
 type Updates struct {
-	Id        bson.ObjectID       `bson:"_id,omitempty" json:"id"`
-	Type      string              `bson:"type" json:"type"`
-	Resource  bson.ObjectID       `bson:"resource" json:"resource"`
-	Timestamp time.Time           `bson:"timestamp" json:"timestamp"`
-	Variant   string              `bson:"variant" json:"variant"`
-	Updates   []*telemetry.Update `bson:"updates" json:"updates"`
+	Id           bson.ObjectID       `bson:"_id,omitempty" json:"id"`
+	Type         string              `bson:"type" json:"type"`
+	Organization bson.ObjectID       `bson:"organization" json:"organization"`
+	Resource     bson.ObjectID       `bson:"resource" json:"resource"`
+	Timestamp    time.Time           `bson:"timestamp" json:"timestamp"`
+	Variant      string              `bson:"variant" json:"variant"`
+	Updates      []*telemetry.Update `bson:"updates" json:"updates"`
 }
 
 func (u *Updates) Upsert(db *database.Database) (err error) {
@@ -45,13 +46,14 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 }
 
 func upsertUpdates(db *database.Database, variant string,
-	resource bson.ObjectID, updates []*telemetry.Update) (err error) {
+	resource, orgId bson.ObjectID, updates []*telemetry.Update) (err error) {
 
 	entry := &Updates{
-		Type:     UpdatesType,
-		Resource: resource,
-		Variant:  variant,
-		Updates:  updates,
+		Type:         UpdatesType,
+		Resource:     resource,
+		Organization: orgId,
+		Variant:      variant,
+		Updates:      updates,
 	}
 
 	err = entry.Upsert(db)
@@ -63,9 +65,9 @@ func upsertUpdates(db *database.Database, variant string,
 }
 
 func UpsertInstanceUpdates(db *database.Database,
-	instId bson.ObjectID, updates []*telemetry.Update) (err error) {
+	instId, orgId bson.ObjectID, updates []*telemetry.Update) (err error) {
 
-	err = upsertUpdates(db, InstanceVariant, instId, updates)
+	err = upsertUpdates(db, InstanceVariant, instId, orgId, updates)
 	if err != nil {
 		return
 	}
@@ -74,9 +76,9 @@ func UpsertInstanceUpdates(db *database.Database,
 }
 
 func UpsertNodeUpdates(db *database.Database,
-	instId bson.ObjectID, updates []*telemetry.Update) (err error) {
+	instId, orgId bson.ObjectID, updates []*telemetry.Update) (err error) {
 
-	err = upsertUpdates(db, NodeVariant, instId, updates)
+	err = upsertUpdates(db, NodeVariant, instId, orgId, updates)
 	if err != nil {
 		return
 	}
