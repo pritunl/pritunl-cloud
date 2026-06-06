@@ -39,10 +39,6 @@ type Update struct {
 	Score           int      `bson:"-" json:"score"`
 }
 
-type UpdateData struct {
-	Score int `bson:"score" json:"score"`
-}
-
 func (u *Update) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
