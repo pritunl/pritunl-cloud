@@ -2,6 +2,7 @@ package node
 
 import (
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 )
 
 const (
@@ -67,6 +68,8 @@ const (
 )
 
 var (
+	Global = bson.NilObjectID
+
 	VgaModes = set.NewSet(
 		Std,
 		Vmware,
