@@ -67,7 +67,8 @@ func imdsSyncHandler(db *database.Database) (err error) {
 			defer waiter.Done()
 
 			err := imds.Sync(db, conf.Instance.NetworkNamespace,
-				conf.Instance.Id, conf.Instance.Deployment, conf)
+				conf.Instance.Id, conf.Instance.Organization,
+				conf.Instance.Deployment, conf)
 			if err != nil {
 				newFailTimeLock.Lock()
 				ttlData := failTime[conf.Instance.Id]
