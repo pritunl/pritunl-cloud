@@ -92,6 +92,82 @@ func advisoriesGet(c *gin.Context) {
 	c.JSON(200, dta)
 }
 
+type advisoryDismissData struct {
+	Dismissed bool `json:"dismissed"`
+}
+
+type advisoryDismissalsData struct {
+	Dismissals []bson.ObjectID `json:"dismissals"`
+}
+
+func advisoryDismissPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	dta := &advisoryDismissData{}
+
+	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(dta)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = advisory.SetDismissed(db, advisoryId, dta.Dismissed)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "advisory.change")
+
+	c.JSON(200, nil)
+}
+
+func advisoryDismissalsPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	dta := &advisoryDismissalsData{}
+
+	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(dta)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = advisory.AddDismissals(db, advisoryId, dta.Dismissals)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "advisory.change")
+
+	c.JSON(200, nil)
+}
+
 func advisoryDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
