@@ -11,6 +11,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -851,4 +852,29 @@ func instanceVncGet(c *gin.Context) {
 		}
 		return
 	}
+}
+
+func instanceAdvisoryGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+
+	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	inst, err := instance.GetOrg(db, userOrg, instanceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	advisories, err := advisory.GetInstance(db, inst.Id)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, advisories)
 }
