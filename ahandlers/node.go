@@ -11,6 +11,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -639,6 +640,24 @@ func nodeGet(c *gin.Context) {
 	}
 
 	c.JSON(200, nde)
+}
+
+func nodeAdvisoryGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+
+	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	advisories, err := advisory.GetNode(db, nodeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, advisories)
 }
 
 func nodesGet(c *gin.Context) {
