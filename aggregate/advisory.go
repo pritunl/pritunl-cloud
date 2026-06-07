@@ -22,8 +22,7 @@ type AdvisoryPipe struct {
 type AdvisoryInstanceInfo struct {
 	Id              bson.ObjectID `json:"id"`
 	Name            string        `json:"name"`
-	Action          string        `json:"action"`
-	State           string        `json:"state"`
+	Status          string        `json:"status"`
 	Timestamp       time.Time     `json:"timestamp"`
 	Uptime          string        `json:"uptime"`
 	PublicIps       []string      `json:"public_ips"`
@@ -171,6 +170,8 @@ func GetAdvisoryPaged(db *database.Database, query *bson.M, page,
 
 		instancesInfo := []*AdvisoryInstanceInfo{}
 		for _, inst := range doc.InstanceDocs {
+			inst.Json(true)
+
 			uptime := ""
 			if !inst.Timestamp.IsZero() && inst.IsActive() {
 				uptime = systemd.FormatUptime(inst.Timestamp)
@@ -179,8 +180,7 @@ func GetAdvisoryPaged(db *database.Database, query *bson.M, page,
 			instancesInfo = append(instancesInfo, &AdvisoryInstanceInfo{
 				Id:              inst.Id,
 				Name:            inst.Name,
-				Action:          inst.Action,
-				State:           inst.State,
+				Status:          inst.Status,
 				Timestamp:       inst.Timestamp,
 				Uptime:          uptime,
 				PublicIps:       inst.PublicIps,
