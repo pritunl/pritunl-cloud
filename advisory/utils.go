@@ -85,6 +85,76 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetInstance(db *database.Database, instId bson.ObjectID) (
+	advisories []*Advisory, err error) {
+
+	coll := db.Advisories()
+	advisories = []*Advisory{}
+
+	cursor, err := coll.Find(db, &bson.M{
+		"instances": instId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		adv := &Advisory{}
+		err = cursor.Decode(adv)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		advisories = append(advisories, adv)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetNode(db *database.Database, nodeId bson.ObjectID) (
+	advisories []*Advisory, err error) {
+
+	coll := db.Advisories()
+	advisories = []*Advisory{}
+
+	cursor, err := coll.Find(db, &bson.M{
+		"nodes": nodeId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		adv := &Advisory{}
+		err = cursor.Decode(adv)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		advisories = append(advisories, adv)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (advisories []*Advisory, count int64, err error) {
 
