@@ -108,6 +108,8 @@ func Register(engine *gin.Engine) {
 
 	csrfGroup.GET("/advisory", advisoriesGet)
 	csrfGroup.GET("/advisory/:advisory_id", advisoryGet)
+	csrfGroup.PUT("/advisory/:advisory_id/dismiss", advisoryDismissPut)
+	csrfGroup.PUT("/advisory/:advisory_id/dismissals", advisoryDismissalsPut)
 	csrfGroup.DELETE("/advisory", advisoriesDelete)
 	csrfGroup.DELETE("/advisory/:advisory_id", advisoryDelete)
 
