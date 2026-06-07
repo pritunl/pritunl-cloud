@@ -12,6 +12,7 @@ type Advisory struct {
 	Id              bson.ObjectID                  `bson:"_id" json:"id"`
 	Organization    bson.ObjectID                  `bson:"organization" json:"organization"`
 	Reference       string                         `bson:"reference" json:"reference"`
+	Dismissed       bool                           `bson:"dismissed" json:"dismissed"`
 	Type            string                         `bson:"type" json:"type"`
 	Updated         time.Time                      `bson:"updated" json:"updated"`
 	Severity        string                         `bson:"severity" json:"severity"`
@@ -21,6 +22,7 @@ type Advisory struct {
 	Vulnerabilities []*vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
 	Instances       []bson.ObjectID                `bson:"instances" json:"instances"`
 	Nodes           []bson.ObjectID                `bson:"nodes" json:"nodes"`
+	Dismissals      []bson.ObjectID                `bson:"dismissals" json:"dismissals"`
 }
 
 func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
