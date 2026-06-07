@@ -296,3 +296,89 @@ func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 
 	return
 }
+
+func SetDismissed(db *database.Database, advId bson.ObjectID,
+	dismissed bool) (err error) {
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": advId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"dismissed": dismissed,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func SetDismissedOrg(db *database.Database, orgId, advId bson.ObjectID,
+	dismissed bool) (err error) {
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id":          advId,
+		"organization": orgId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"dismissed": dismissed,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func AddDismissals(db *database.Database, advId bson.ObjectID,
+	resourceIds []bson.ObjectID) (err error) {
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": advId,
+	}, &bson.M{
+		"$addToSet": &bson.M{
+			"dismissals": &bson.M{
+				"$each": resourceIds,
+			},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func AddDismissalsOrg(db *database.Database, orgId, advId bson.ObjectID,
+	resourceIds []bson.ObjectID) (err error) {
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id":          advId,
+		"organization": orgId,
+	}, &bson.M{
+		"$addToSet": &bson.M{
+			"dismissals": &bson.M{
+				"$each": resourceIds,
+			},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
