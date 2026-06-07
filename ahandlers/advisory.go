@@ -77,6 +77,10 @@ func advisoriesGet(c *gin.Context) {
 		query["organization"] = organization
 	}
 
+	if c.Query("dismissed") != "true" {
+		query["dismissed"] = false
+	}
+
 	advisories, count, err := aggregate.GetAdvisoryPaged(
 		db, &query, page, pageCount)
 	if err != nil {
