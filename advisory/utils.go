@@ -298,81 +298,70 @@ func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 	return
 }
 
-func SetDismissed(db *database.Database, advId bson.ObjectID,
-	dismissed bool) (err error) {
+func buildDismissUpdate(adv *Advisory, dismiss, restore bool,
+	dismissals, restores []bson.ObjectID) (update bson.M) {
 
-	coll := db.Advisories()
+	setDoc := bson.M{}
 
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id": advId,
-	}, &bson.M{
-		"$set": &bson.M{
-			"dismissed": dismissed,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
+	if dismiss {
+		setDoc["dismissed"] = true
+	} else if restore {
+		setDoc["dismissed"] = false
 	}
 
-	return
-}
-
-func SetDismissedOrg(db *database.Database, orgId, advId bson.ObjectID,
-	dismissed bool) (err error) {
-
-	coll := db.Advisories()
-
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id":          advId,
-		"organization": orgId,
-	}, &bson.M{
-		"$set": &bson.M{
-			"dismissed": dismissed,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
-
-func filterDismissals(adv *Advisory,
-	resourceIds []bson.ObjectID) (valid []bson.ObjectID) {
-
-	known := set.NewSet()
-	for _, instId := range adv.Instances {
-		known.Add(instId)
-	}
-	for _, nodeId := range adv.Nodes {
-		known.Add(nodeId)
-	}
-
-	valid = []bson.ObjectID{}
-	seen := set.NewSet()
-	for _, resourceId := range resourceIds {
-		if !known.Contains(resourceId) || seen.Contains(resourceId) {
-			continue
+	if len(dismissals) > 0 || len(restores) > 0 {
+		known := set.NewSet()
+		for _, instId := range adv.Instances {
+			known.Add(instId)
 		}
-		seen.Add(resourceId)
-		valid = append(valid, resourceId)
+		for _, nodeId := range adv.Nodes {
+			known.Add(nodeId)
+		}
+
+		dismissed := set.NewSet()
+		for _, resourceId := range adv.Dismissals {
+			dismissed.Add(resourceId)
+		}
+
+		for _, resourceId := range dismissals {
+			if known.Contains(resourceId) {
+				dismissed.Add(resourceId)
+			}
+		}
+		for _, resourceId := range restores {
+			dismissed.Remove(resourceId)
+		}
+
+		newDismissals := []bson.ObjectID{}
+		for resourceIdInf := range dismissed.Iter() {
+			newDismissals = append(
+				newDismissals, resourceIdInf.(bson.ObjectID))
+		}
+
+		setDoc["dismissals"] = newDismissals
+	}
+
+	if len(setDoc) == 0 {
+		return
+	}
+
+	update = bson.M{
+		"$set": setDoc,
 	}
 
 	return
 }
 
-func AddDismissals(db *database.Database, advId bson.ObjectID,
-	resourceIds []bson.ObjectID) (err error) {
+func UpdateDismiss(db *database.Database, advId bson.ObjectID,
+	dismiss, restore bool, dismissals, restores []bson.ObjectID) (err error) {
 
 	adv, err := Get(db, advId)
 	if err != nil {
 		return
 	}
 
-	resourceIds = filterDismissals(adv, resourceIds)
-	if len(resourceIds) == 0 {
+	update := buildDismissUpdate(adv, dismiss, restore, dismissals, restores)
+	if update == nil {
 		return
 	}
 
@@ -380,13 +369,7 @@ func AddDismissals(db *database.Database, advId bson.ObjectID,
 
 	_, err = coll.UpdateOne(db, &bson.M{
 		"_id": advId,
-	}, &bson.M{
-		"$addToSet": &bson.M{
-			"dismissals": &bson.M{
-				"$each": resourceIds,
-			},
-		},
-	})
+	}, update)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -395,16 +378,16 @@ func AddDismissals(db *database.Database, advId bson.ObjectID,
 	return
 }
 
-func AddDismissalsOrg(db *database.Database, orgId, advId bson.ObjectID,
-	resourceIds []bson.ObjectID) (err error) {
+func UpdateDismissOrg(db *database.Database, orgId, advId bson.ObjectID,
+	dismiss, restore bool, dismissals, restores []bson.ObjectID) (err error) {
 
 	adv, err := GetOrg(db, orgId, advId)
 	if err != nil {
 		return
 	}
 
-	resourceIds = filterDismissals(adv, resourceIds)
-	if len(resourceIds) == 0 {
+	update := buildDismissUpdate(adv, dismiss, restore, dismissals, restores)
+	if update == nil {
 		return
 	}
 
@@ -413,13 +396,7 @@ func AddDismissalsOrg(db *database.Database, orgId, advId bson.ObjectID,
 	_, err = coll.UpdateOne(db, &bson.M{
 		"_id":          advId,
 		"organization": orgId,
-	}, &bson.M{
-		"$addToSet": &bson.M{
-			"dismissals": &bson.M{
-				"$each": resourceIds,
-			},
-		},
-	})
+	}, update)
 	if err != nil {
 		err = database.ParseError(err)
 		return
