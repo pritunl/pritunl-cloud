@@ -95,21 +95,27 @@ func advisoriesGet(c *gin.Context) {
 	c.JSON(200, dta)
 }
 
-type advisoryDismissData struct {
+type advisoryData struct {
 	Restore    bool            `json:"restore"`
 	Dismiss    bool            `json:"dismiss"`
 	Restores   []bson.ObjectID `json:"restores"`
 	Dismissals []bson.ObjectID `json:"dismissals"`
 }
 
-func advisoryDismissPut(c *gin.Context) {
+type advisoryMultiData struct {
+	Ids     []bson.ObjectID `json:"ids"`
+	Restore bool            `json:"restore"`
+	Dismiss bool            `json:"dismiss"`
+}
+
+func advisoryPut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
-	dta := &advisoryDismissData{}
+	dta := &advisoryData{}
 
 	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
 	if !ok {
@@ -128,6 +134,35 @@ func advisoryDismissPut(c *gin.Context) {
 
 	err = advisory.UpdateDismissOrg(db, userOrg, advisoryId,
 		dta.Dismiss, dta.Restore, dta.Dismissals, dta.Restores)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "advisory.change")
+
+	c.JSON(200, nil)
+}
+
+func advisoriesPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	dta := &advisoryMultiData{}
+
+	err := c.Bind(dta)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = advisory.UpdateMultiOrg(db, userOrg, dta.Ids, dta.Dismiss, dta.Restore)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
