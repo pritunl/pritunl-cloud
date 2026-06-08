@@ -404,3 +404,56 @@ func UpdateDismissOrg(db *database.Database, orgId, advId bson.ObjectID,
 
 	return
 }
+
+func UpdateMulti(db *database.Database, advIds []bson.ObjectID,
+	dismiss, restore bool) (err error) {
+
+	if !dismiss && !restore {
+		return
+	}
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": advIds,
+		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"dismissed": dismiss,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
+	advIds []bson.ObjectID, dismiss, restore bool) (err error) {
+
+	if !dismiss && !restore {
+		return
+	}
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": advIds,
+		},
+		"organization": orgId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"dismissed": dismiss,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
