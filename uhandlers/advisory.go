@@ -96,10 +96,9 @@ func advisoriesGet(c *gin.Context) {
 }
 
 type advisoryDismissData struct {
-	Dismissed bool `json:"dismissed"`
-}
-
-type advisoryDismissalsData struct {
+	Restore    bool            `json:"restore"`
+	Dismiss    bool            `json:"dismiss"`
+	Restores   []bson.ObjectID `json:"restores"`
 	Dismissals []bson.ObjectID `json:"dismissals"`
 }
 
@@ -127,42 +126,8 @@ func advisoryDismissPut(c *gin.Context) {
 		return
 	}
 
-	err = advisory.SetDismissedOrg(db, userOrg, advisoryId, dta.Dismissed)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	event.PublishDispatch(db, "advisory.change")
-
-	c.JSON(200, nil)
-}
-
-func advisoryDismissalsPut(c *gin.Context) {
-	if demo.Blocked(c) {
-		return
-	}
-
-	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectID)
-	dta := &advisoryDismissalsData{}
-
-	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
-	err := c.Bind(dta)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "handler: Bind error"),
-		}
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	err = advisory.AddDismissalsOrg(db, userOrg, advisoryId, dta.Dismissals)
+	err = advisory.UpdateDismissOrg(db, userOrg, advisoryId,
+		dta.Dismiss, dta.Restore, dta.Dismissals, dta.Restores)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
