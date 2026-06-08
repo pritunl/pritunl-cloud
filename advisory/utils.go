@@ -1,6 +1,7 @@
 package advisory
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -338,8 +339,42 @@ func SetDismissedOrg(db *database.Database, orgId, advId bson.ObjectID,
 	return
 }
 
+func filterDismissals(adv *Advisory,
+	resourceIds []bson.ObjectID) (valid []bson.ObjectID) {
+
+	known := set.NewSet()
+	for _, instId := range adv.Instances {
+		known.Add(instId)
+	}
+	for _, nodeId := range adv.Nodes {
+		known.Add(nodeId)
+	}
+
+	valid = []bson.ObjectID{}
+	seen := set.NewSet()
+	for _, resourceId := range resourceIds {
+		if !known.Contains(resourceId) || seen.Contains(resourceId) {
+			continue
+		}
+		seen.Add(resourceId)
+		valid = append(valid, resourceId)
+	}
+
+	return
+}
+
 func AddDismissals(db *database.Database, advId bson.ObjectID,
 	resourceIds []bson.ObjectID) (err error) {
+
+	adv, err := Get(db, advId)
+	if err != nil {
+		return
+	}
+
+	resourceIds = filterDismissals(adv, resourceIds)
+	if len(resourceIds) == 0 {
+		return
+	}
 
 	coll := db.Advisories()
 
@@ -362,6 +397,16 @@ func AddDismissals(db *database.Database, advId bson.ObjectID,
 
 func AddDismissalsOrg(db *database.Database, orgId, advId bson.ObjectID,
 	resourceIds []bson.ObjectID) (err error) {
+
+	adv, err := GetOrg(db, orgId, advId)
+	if err != nil {
+		return
+	}
+
+	resourceIds = filterDismissals(adv, resourceIds)
+	if len(resourceIds) == 0 {
+		return
+	}
 
 	coll := db.Advisories()
 
