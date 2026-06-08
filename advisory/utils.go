@@ -319,7 +319,7 @@ func buildDismissUpdate(adv *Advisory, dismiss, restore bool,
 		}
 
 		dismissed := set.NewSet()
-		for _, resourceId := range adv.Dismissals {
+		for _, resourceId := range adv.DismissedResources {
 			dismissed.Add(resourceId)
 		}
 
@@ -338,7 +338,7 @@ func buildDismissUpdate(adv *Advisory, dismiss, restore bool,
 				newDismissals, resourceIdInf.(bson.ObjectID))
 		}
 
-		setDoc["dismissals"] = newDismissals
+		setDoc["dismissed_resources"] = newDismissals
 	}
 
 	if len(setDoc) == 0 {
