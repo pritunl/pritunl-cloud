@@ -87,6 +87,8 @@ type Instance struct {
 	CloudPublicIps6     []string            `bson:"cloud_public_ips6" json:"cloud_public_ips6"`
 	HostIps             []string            `bson:"host_ips" json:"host_ips"`
 	NodePortIps         []string            `bson:"node_port_ips" json:"node_port_ips"`
+	AdvisoryCount       int                 `bson:"advisory_count" json:"advisory_count"`
+	AdvisoryMax         int                 `bson:"advisory_max" json:"advisory_max"`
 	NodePorts           []*nodeport.Mapping `bson:"node_ports,omitempty" json:"node_ports"`
 	DhcpIp              string              `bson:"dhcp_ip" json:"dhcp_ip"`
 	DhcpIp6             string              `bson:"dhcp_ip6" json:"dhcp_ip6"`
