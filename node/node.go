@@ -119,6 +119,8 @@ type Node struct {
 	PublicIps               []string           `bson:"public_ips" json:"public_ips"`
 	PublicIps6              []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps              map[string]string  `bson:"private_ips" json:"private_ips"`
+	AdvisoryCount           int                `bson:"advisory_count" json:"advisory_count"`
+	AdvisoryMax             int                `bson:"advisory_max" json:"advisory_max"`
 	SoftwareVersion         string             `bson:"software_version" json:"software_version"`
 	Hostname                string             `bson:"hostname" json:"hostname"`
 	Version                 int                `bson:"version" json:"-"`
@@ -265,6 +267,8 @@ func (n *Node) Copy() *Node {
 		PublicIps:               n.PublicIps,
 		PublicIps6:              n.PublicIps6,
 		PrivateIps:              n.PrivateIps,
+		AdvisoryCount:           n.AdvisoryCount,
+		AdvisoryMax:             n.AdvisoryMax,
 		SoftwareVersion:         n.SoftwareVersion,
 		Hostname:                n.Hostname,
 		Version:                 n.Version,
@@ -1368,6 +1372,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
 	n.Blocks6 = nde.Blocks6
+	n.AdvisoryCount = nde.AdvisoryCount
+	n.AdvisoryMax = nde.AdvisoryMax
 	n.Shares = nde.Shares
 	n.InstanceDrives = nde.InstanceDrives
 	n.NoHostNetwork = nde.NoHostNetwork
