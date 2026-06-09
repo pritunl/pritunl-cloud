@@ -39,6 +39,10 @@ func advisoryDataHandler(db *database.Database) (err error) {
 		}
 
 		for _, updt := range updts.Updates {
+			if updt.Id == "" {
+				continue
+			}
+
 			updtVulns := []*vulnerability.Vulnerability{}
 
 			for _, vulnId := range updt.Vulnerabilities {
