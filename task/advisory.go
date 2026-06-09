@@ -38,6 +38,8 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			return
 		}
 
+		advCount := 0
+		advMax := 0
 		for _, updt := range updts.Updates {
 			if updt.Id == "" {
 				continue
@@ -84,6 +86,58 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			case manifest.NodeVariant:
 				adv.Nodes = append(adv.Nodes, updts.Resource)
 			}
+
+			adv.UpdateScore()
+
+			if adv.Score >= 3 {
+				advCount += 1
+			}
+			advMax = max(advMax, adv.Score)
+		}
+
+		if advCount != updts.Count || advMax != updts.Max {
+			var resourceColl *database.Collection
+			switch updts.Variant {
+			case manifest.InstanceVariant:
+				resourceColl = db.Instances()
+			case manifest.NodeVariant:
+				resourceColl = db.Nodes()
+			}
+
+			if resourceColl != nil {
+				_, err = resourceColl.UpdateOne(db, &bson.M{
+					"_id": updts.Resource,
+				}, &bson.M{
+					"$set": &bson.M{
+						"advisory_count": advCount,
+						"advisory_max":   advMax,
+					},
+				})
+				if err != nil {
+					err = database.ParseError(err)
+					if _, ok := err.(*database.NotFoundError); ok {
+						err = nil
+					} else {
+						return
+					}
+				}
+			}
+
+			updts.Count = advCount
+			updts.Max = advMax
+
+			_, err = db.Manifests().UpdateOne(db, &bson.M{
+				"_id": updts.Id,
+			}, &bson.M{
+				"$set": &bson.M{
+					"count": advCount,
+					"max":   advMax,
+				},
+			})
+			if err != nil {
+				err = database.ParseError(err)
+				return
+			}
 		}
 	}
 
@@ -96,7 +150,6 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 	for orgId, orgAdvs := range advisories {
 		for advId, adv := range orgAdvs {
-			adv.UpdateScore()
 
 			_, err = coll.UpdateOne(db, &bson.M{
 				"organization": orgId,
