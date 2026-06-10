@@ -25,6 +25,11 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	advisories := map[bson.ObjectID]map[string]*advisory.Advisory{}
 	now := time.Now()
 
+	dismissals, err := advisory.GetDismissals(db)
+	if err != nil {
+		return
+	}
+
 	cursor, err := manifest.FindUpdates(db)
 	if err != nil {
 		return
@@ -38,8 +43,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			return
 		}
 
-		advCount := 0
-		advMax := 0
+		resourceAdvs := []*advisory.Advisory{}
 		for _, updt := range updts.Updates {
 			if updt.Id == "" {
 				continue
@@ -77,6 +81,16 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			if adv == nil {
 				adv = advisory.FromUpdate(
 					updt, updts.Organization, now, updtVulns)
+
+				orgDismissals := dismissals[updts.Organization]
+				if orgDismissals != nil {
+					dismissal := orgDismissals[updt.Id]
+					if dismissal != nil {
+						adv.Dismissed = dismissal.Dismissed
+						adv.DismissedResources = dismissal.DismissedResources
+					}
+				}
+
 				orgAdvs[updt.Id] = adv
 			}
 
@@ -89,11 +103,11 @@ func advisoryDataHandler(db *database.Database) (err error) {
 
 			adv.UpdateScore()
 
-			if adv.Score >= 3 {
-				advCount += 1
-			}
-			advMax = max(advMax, adv.Score)
+			resourceAdvs = append(resourceAdvs, adv)
 		}
+
+		advCount, advMax := advisory.CountResource(
+			updts.Resource, resourceAdvs)
 
 		if advCount != updts.Count || advMax != updts.Max {
 			var resourceColl *database.Collection
