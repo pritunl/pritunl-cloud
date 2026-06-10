@@ -24,6 +24,8 @@ type Updates struct {
 	Timestamp    time.Time           `bson:"timestamp" json:"timestamp"`
 	Variant      string              `bson:"variant" json:"variant"`
 	Updates      []*telemetry.Update `bson:"updates" json:"updates"`
+	Count        int                 `bson:"count" json:"count"`
+	Max          int                 `bson:"max" json:"max"`
 }
 
 func (u *Updates) Upsert(db *database.Database) (err error) {
