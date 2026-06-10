@@ -1,6 +1,8 @@
 package advisory
 
 import (
+	"slices"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
@@ -151,6 +153,89 @@ func GetNode(db *database.Database, nodeId bson.ObjectID) (
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func CountResource(resourceId bson.ObjectID, advisories []*Advisory) (
+	count, maxScore int) {
+
+	for _, adv := range advisories {
+		if adv.Dismissed {
+			continue
+		}
+
+		if slices.Contains(adv.DismissedResources, resourceId) {
+			continue
+		}
+
+		if adv.Score >= High {
+			count += 1
+		}
+		if adv.Score > maxScore {
+			maxScore = adv.Score
+		}
+	}
+
+	return
+}
+
+func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
+	advisories, err := GetInstance(db, instId)
+	if err != nil {
+		return
+	}
+
+	count, maxScore := CountResource(instId, advisories)
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"advisory_count": count,
+			"advisory_max":   maxScore,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	return
+}
+
+func UpdateNode(db *database.Database, nodeId bson.ObjectID) (err error) {
+	advisories, err := GetNode(db, nodeId)
+	if err != nil {
+		return
+	}
+
+	count, maxScore := CountResource(nodeId, advisories)
+
+	coll := db.Nodes()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": nodeId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"advisory_count": count,
+			"advisory_max":   maxScore,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
 	}
 
 	return
