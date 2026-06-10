@@ -37,7 +37,18 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 		"type":     u.Type,
 		"resource": u.Resource,
 	}, &bson.M{
-		"$set": u,
+		"$set": &bson.M{
+			"type":         u.Type,
+			"organization": u.Organization,
+			"resource":     u.Resource,
+			"timestamp":    u.Timestamp,
+			"variant":      u.Variant,
+			"updates":      u.Updates,
+		},
+		"$setOnInsert": &bson.M{
+			"count": 0,
+			"max":   0,
+		},
 	}, options.UpdateOne().SetUpsert(true))
 	if err != nil {
 		err = database.ParseError(err)
