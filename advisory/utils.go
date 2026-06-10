@@ -394,7 +394,8 @@ func buildDismissUpdate(adv *Advisory, dismiss, restore bool,
 		setDoc["dismissed"] = false
 	}
 
-	if len(dismissals) > 0 || len(restores) > 0 {
+	addDismissals := []bson.ObjectID{}
+	if len(dismissals) > 0 {
 		known := set.NewSet()
 		for _, instId := range adv.Instances {
 			known.Add(instId)
@@ -403,35 +404,38 @@ func buildDismissUpdate(adv *Advisory, dismiss, restore bool,
 			known.Add(nodeId)
 		}
 
-		dismissed := set.NewSet()
-		for _, resourceId := range adv.DismissedResources {
-			dismissed.Add(resourceId)
-		}
-
 		for _, resourceId := range dismissals {
 			if known.Contains(resourceId) {
-				dismissed.Add(resourceId)
+				addDismissals = append(addDismissals, resourceId)
 			}
 		}
-		for _, resourceId := range restores {
-			dismissed.Remove(resourceId)
-		}
-
-		newDismissals := []bson.ObjectID{}
-		for resourceIdInf := range dismissed.Iter() {
-			newDismissals = append(
-				newDismissals, resourceIdInf.(bson.ObjectID))
-		}
-
-		setDoc["dismissed_resources"] = newDismissals
 	}
 
-	if len(setDoc) == 0 {
+	update = bson.M{}
+
+	if len(setDoc) > 0 {
+		update["$set"] = setDoc
+	}
+
+	if len(addDismissals) > 0 {
+		update["$addToSet"] = bson.M{
+			"dismissed_resources": bson.M{
+				"$each": addDismissals,
+			},
+		}
+	}
+
+	if len(restores) > 0 {
+		update["$pull"] = bson.M{
+			"dismissed_resources": bson.M{
+				"$in": restores,
+			},
+		}
+	}
+
+	if len(update) == 0 {
+		update = nil
 		return
-	}
-
-	update = bson.M{
-		"$set": setDoc,
 	}
 
 	return
