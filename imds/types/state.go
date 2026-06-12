@@ -20,6 +20,7 @@ type State struct {
 	DhcpIp      *net.IPNet          `json:"dhcp_ip"`
 	DhcpIp6     *net.IPNet          `json:"dhcp_ip6"`
 	DhcpGateway net.IP              `json:"dhcp_gateway"`
+	Disks       []*telemetry.Disk   `json:"disks"`
 	Updates     []*telemetry.Update `json:"updates"`
 	Timestamp   time.Time           `json:"timestamp"`
 	Output      []*Entry            `json:"output,omitempty"`
@@ -47,6 +48,7 @@ func (s *State) Copy() *State {
 		DhcpIp:      s.DhcpIp,
 		DhcpIp6:     s.DhcpIp6,
 		DhcpGateway: s.DhcpGateway,
+		Disks:       s.Disks,
 		Updates:     s.Updates,
 		Timestamp:   s.Timestamp,
 	}
