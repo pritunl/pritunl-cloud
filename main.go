@@ -140,6 +140,14 @@ func main() {
 			panic(err)
 		}
 		return
+	case "get":
+		flag.Parse()
+		InitLimited()
+		err := cmd.SettingsGet()
+		if err != nil {
+			panic(err)
+		}
+		return
 	case "set":
 		flag.Parse()
 		InitLimited()
