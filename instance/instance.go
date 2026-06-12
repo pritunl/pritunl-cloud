@@ -28,6 +28,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/systemd"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -157,14 +158,15 @@ type StatusInfo struct {
 }
 
 type GuestData struct {
-	Status    string    `bson:"status" json:"status"`
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Heartbeat time.Time `bson:"heartbeat" json:"heartbeat"`
-	Memory    float64   `bson:"memory" json:"memory"`
-	HugePages float64   `bson:"hugepages" json:"hugepages"`
-	Load1     float64   `bson:"load1" json:"load1"`
-	Load5     float64   `bson:"load5" json:"load5"`
-	Load15    float64   `bson:"load15" json:"load15"`
+	Status    string            `bson:"status" json:"status"`
+	Timestamp time.Time         `bson:"timestamp" json:"timestamp"`
+	Heartbeat time.Time         `bson:"heartbeat" json:"heartbeat"`
+	Memory    float64           `bson:"memory" json:"memory"`
+	HugePages float64           `bson:"hugepages" json:"hugepages"`
+	Load1     float64           `bson:"load1" json:"load1"`
+	Load5     float64           `bson:"load5" json:"load5"`
+	Load15    float64           `bson:"load15" json:"load15"`
+	Disks     []*telemetry.Disk `bson:"disks" json:"disks"`
 }
 
 type Info struct {
