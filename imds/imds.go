@@ -164,6 +164,9 @@ func Sync(db *database.Database, namespace string,
 		if ste.DhcpIp6 != nil {
 			data["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
+		if ste.Disks != nil {
+			data["guest.disks"] = ste.Disks
+		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
@@ -533,6 +536,9 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 		}
 		if ste.DhcpIp6 != nil {
 			data["dhcp_ip6"] = ste.DhcpIp6.String()
+		}
+		if ste.Disks != nil {
+			data["guest.disks"] = ste.Disks
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
