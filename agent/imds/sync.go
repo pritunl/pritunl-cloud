@@ -50,6 +50,13 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 		data.Load15 = load.Load15
 	}
 
+	disks, ok := telemetry.Disks.Get()
+	if ok {
+		data.Disks = disks
+	} else {
+		data.Disks = nil
+	}
+
 	updates, ok := telemetry.Updates.Get()
 	if ok {
 		data.Updates = updates
