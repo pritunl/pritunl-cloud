@@ -124,16 +124,16 @@ func parseRecord(lines []string) (update *Update) {
 	fullText := strings.Join(lines, "\n")
 	cveSet := map[string]bool{}
 	deduped := []string{}
-	for _, c := range updt.Vulnerabilities {
-		if !cveSet[c] {
-			cveSet[c] = true
-			deduped = append(deduped, c)
+	for _, cve := range updt.Vulnerabilities {
+		if !cveSet[cve] {
+			cveSet[cve] = true
+			deduped = append(deduped, cve)
 		}
 	}
-	for _, c := range cveReg.FindAllString(fullText, -1) {
-		if !cveSet[c] {
-			cveSet[c] = true
-			deduped = append(deduped, c)
+	for _, cve := range cveReg.FindAllString(fullText, -1) {
+		if !cveSet[cve] {
+			cveSet[cve] = true
+			deduped = append(deduped, cve)
 		}
 	}
 	sort.Strings(deduped)
