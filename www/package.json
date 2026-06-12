@@ -8,7 +8,7 @@
     "@blueprintjs/select": "5.3.10",
     "@github/webauthn-json": "2.1.1",
     "@monaco-editor/react": "4.6.0",
-    "@novnc/novnc": "1.4.0",
+    "@novnc/novnc": "1.7.0",
     "@popperjs/core": "2.11.8",
     "@types/chart.js": "2.9.41",
     "@types/jquery": "3.5.30",
