@@ -208,6 +208,28 @@ func DisableFirewall() (err error) {
 	return
 }
 
+func SettingsGet() (err error) {
+	group := flag.Arg(1)
+	key := flag.Arg(2)
+
+	val, err := settings.Value(group, key)
+	if err != nil {
+		return
+	}
+
+	output, err := json.Marshal(val)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "cmd.settings: Failed to marshal value"),
+		}
+		return
+	}
+
+	fmt.Println(string(output))
+
+	return
+}
+
 func SettingsSet() (err error) {
 	group := flag.Arg(1)
 	key := flag.Arg(2)
@@ -215,12 +237,8 @@ func SettingsSet() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	var valParsed interface{}
-	err = json.Unmarshal([]byte(val), &valParsed)
+	valParsed, err := settings.ParseValue(group, key, val)
 	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "cmd.settings: Failed to parse value"),
-		}
 		return
 	}
 
