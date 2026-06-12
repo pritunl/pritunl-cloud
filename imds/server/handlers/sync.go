@@ -48,6 +48,9 @@ func syncPut(c *gin.Context) {
 	state.Global.State.Load5 = data.Load5
 	state.Global.State.Load15 = data.Load15
 
+	if data.Disks != nil {
+		telemetry.Disks.Set(data.Disks)
+	}
 	if data.Updates != nil {
 		telemetry.Updates.Set(data.Updates)
 	}
@@ -102,6 +105,13 @@ func hostSyncPut(c *gin.Context) {
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
 
+	disks, ok := telemetry.Disks.Get()
+	if ok {
+		ste.Disks = disks
+	} else {
+		ste.Disks = nil
+	}
+
 	updates, ok := telemetry.Updates.Get()
 	if ok {
 		ste.Updates = updates
@@ -116,6 +126,13 @@ func hostSyncGet(c *gin.Context) {
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
+
+	disks, ok := telemetry.Disks.Get()
+	if ok {
+		ste.Disks = disks
+	} else {
+		ste.Disks = nil
+	}
 
 	updates, ok := telemetry.Updates.Get()
 	if ok {
