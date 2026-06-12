@@ -209,6 +209,15 @@ func diskPost(c *gin.Context) {
 		}
 	}
 
+	if dta.Node.IsZero() {
+		errData := &errortypes.ErrorData{
+			Error:   "node_required",
+			Message: "Missing required node",
+		}
+		c.JSON(400, errData)
+		return
+	}
+
 	nde, err := node.Get(db, dta.Node)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
