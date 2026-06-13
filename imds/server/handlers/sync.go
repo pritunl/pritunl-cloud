@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -13,11 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
-)
-
-var (
-	lastSecurity     = time.Now().Add(-7 * time.Minute)
-	lastSecurityLock sync.Mutex
 )
 
 type syncRespData struct {
