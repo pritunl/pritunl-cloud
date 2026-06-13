@@ -26,9 +26,11 @@ type Telemetry[Data any] struct {
 	TransmitRate time.Duration
 	lastRefresh  time.Time
 	RefreshRate  time.Duration
+	Queue        int
 	Refresher    func() (Data, error)
 	Validate     func(Data) Data
 	data         Data
+	dataList     []Data
 }
 
 func (r *Telemetry[Data]) getName() string {
@@ -53,7 +55,20 @@ func (r *Telemetry[Data]) Refresh() (err error) {
 		}
 	}()
 
-	r.Set(data)
+	if r.Queue > 0 {
+		if err == nil {
+			if r.Validate != nil {
+				data = r.Validate(data)
+			}
+			r.Append(data)
+		}
+
+		r.lock.Lock()
+		r.lastRefresh = time.Now()
+		r.lock.Unlock()
+	} else {
+		r.Set(data)
+	}
 
 	return
 }
@@ -83,6 +98,27 @@ func (r *Telemetry[Data]) Get() (Data, bool) {
 	} else {
 		return r.data, true
 	}
+}
+
+func (r *Telemetry[Data]) Append(items ...Data) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	r.dataList = append(r.dataList, items...)
+
+	if r.Queue > 0 && len(r.dataList) > r.Queue {
+		r.dataList = append([]Data{},
+			r.dataList[len(r.dataList)-r.Queue:]...)
+	}
+}
+
+func (r *Telemetry[Data]) GetAll() (items []Data) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	items = r.dataList
+	r.dataList = nil
+	return
 }
 
 func Register[Data any](telm *Telemetry[Data]) {
