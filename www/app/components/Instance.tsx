@@ -172,8 +172,9 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		if (updateClass) {
+			let updateCount = instance.guest?.updates?.length || 0
 			updateElm = <Blueprint.Tooltip
-				content="Updates available"
+				content={`Updates available (${updateCount})`}
 				openOnTargetFocus={false}
 				compact={true}
 				renderTarget={({isOpen, ...tooltipProps}) => (
