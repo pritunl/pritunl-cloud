@@ -61,7 +61,7 @@ func advisoriesGet(c *gin.Context) {
 	reference := strings.TrimSpace(c.Query("reference"))
 	if reference != "" {
 		query["reference"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(reference)),
+			"$regex":   fmt.Sprintf("^([^:]+:)?%s", regexp.QuoteMeta(reference)),
 			"$options": "i",
 		}
 	}
