@@ -186,6 +186,16 @@ func (m *Imds) Sync() (ready bool, err error) {
 		return
 	}
 
+	acknowledged := false
+	defer func() {
+		if acknowledged {
+			return
+		}
+		if len(data.Metrics) > 0 {
+			telemetry.Metrics.Append(data.Metrics...)
+		}
+	}()
+
 	if m.logger != nil {
 		data.Output = m.logger.GetOutput()
 	}
@@ -215,6 +225,8 @@ func (m *Imds) Sync() (ready bool, err error) {
 		return
 	}
 	defer resp.Body.Close()
+
+	acknowledged = true
 
 	if resp.StatusCode != 200 {
 		body := ""
