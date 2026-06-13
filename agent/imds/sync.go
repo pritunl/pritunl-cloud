@@ -2,12 +2,9 @@ package imds
 
 import (
 	"sync"
-	"time"
 
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/telemetry"
-	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/tools/logger"
 )
 
 var (
@@ -29,33 +26,7 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 	data.Status = curStatus
 	curStatusLock.Unlock()
 
-	mem, err := utils.GetMemInfo()
-	if err != nil {
-		logger.WithFields(logger.Fields{
-			"error": err,
-		}).Limit(30 * time.Minute).Error("imds: Failed to get memory")
-	} else {
-		data.Memory = utils.ToFixed(mem.UsedPercent, 2)
-		data.HugePages = utils.ToFixed(mem.HugePagesUsedPercent, 2)
-	}
-
-	load, err := utils.LoadAverage()
-	if err != nil {
-		logger.WithFields(logger.Fields{
-			"error": err,
-		}).Limit(30 * time.Minute).Error("imds: Failed to get load")
-	} else {
-		data.Load1 = load.Load1
-		data.Load5 = load.Load5
-		data.Load15 = load.Load15
-	}
-
-	disks, ok := telemetry.Disks.Get()
-	if ok {
-		data.Disks = disks
-	} else {
-		data.Disks = nil
-	}
+	data.Metrics = telemetry.Metrics.GetAll()
 
 	updates, ok := telemetry.Updates.Get()
 	if ok {
