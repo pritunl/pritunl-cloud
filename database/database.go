@@ -356,6 +356,31 @@ func (d *Database) Geo() (coll *Collection) {
 	return
 }
 
+func (d *Database) MetricsSystem() (coll *Collection) {
+	coll = d.GetCollection("metrics_system")
+	return
+}
+
+func (d *Database) MetricsLoad() (coll *Collection) {
+	coll = d.GetCollection("metrics_load")
+	return
+}
+
+func (d *Database) MetricsDisk() (coll *Collection) {
+	coll = d.GetCollection("metrics_disk")
+	return
+}
+
+func (d *Database) MetricsDiskIo() (coll *Collection) {
+	coll = d.GetCollection("metrics_diskio")
+	return
+}
+
+func (d *Database) MetricsNetwork() (coll *Collection) {
+	coll = d.GetCollection("metrics_network")
+	return
+}
+
 func Connect() (err error) {
 	mongoUrl, err := connstring.ParseAndValidate(config.Config.MongoUri)
 	if err != nil {
