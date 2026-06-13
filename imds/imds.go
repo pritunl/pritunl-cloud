@@ -22,6 +22,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/manifest"
+	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/store"
 	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
@@ -151,11 +152,6 @@ func Sync(db *database.Database, namespace string,
 			"guest.status":    ste.Status,
 			"guest.timestamp": time.Now(),
 			"guest.heartbeat": ste.Timestamp,
-			"guest.memory":    ste.Memory,
-			"guest.hugepages": ste.HugePages,
-			"guest.load1":     ste.Load1,
-			"guest.load5":     ste.Load5,
-			"guest.load15":    ste.Load15,
 		}
 
 		if ste.DhcpIp != nil {
@@ -164,8 +160,21 @@ func Sync(db *database.Database, namespace string,
 		if ste.DhcpIp6 != nil {
 			data["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
-		if ste.Disks != nil {
-			data["guest.disks"] = ste.Disks
+		if len(ste.Metrics) > 0 {
+			latest := ste.Metrics[len(ste.Metrics)-1]
+
+			staticData := latest.StaticData()
+			for key, val := range staticData {
+				data["guest."+key] = val
+			}
+
+			e := metric.InsertSamples(db, instId, ste.Metrics)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": instId.Hex(),
+					"error":    e,
+				}).Error("imds: Failed to insert metrics")
+			}
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
@@ -524,11 +533,6 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 			"guest.status":    ste.Status,
 			"guest.timestamp": time.Now(),
 			"guest.heartbeat": ste.Timestamp,
-			"guest.memory":    ste.Memory,
-			"guest.hugepages": ste.HugePages,
-			"guest.load1":     ste.Load1,
-			"guest.load5":     ste.Load5,
-			"guest.load15":    ste.Load15,
 		}
 
 		if ste.DhcpIp != nil {
@@ -537,8 +541,21 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 		if ste.DhcpIp6 != nil {
 			data["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
-		if ste.Disks != nil {
-			data["guest.disks"] = ste.Disks
+		if len(ste.Metrics) > 0 {
+			latest := ste.Metrics[len(ste.Metrics)-1]
+
+			staticData := latest.StaticData()
+			for key, val := range staticData {
+				data["guest."+key] = val
+			}
+
+			e := metric.InsertSamples(db, instId, ste.Metrics)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": instId.Hex(),
+					"error":    e,
+				}).Error("imds: Failed to insert metrics")
+			}
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
