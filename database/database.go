@@ -1433,6 +1433,121 @@ func addIndexes() (err error) {
 		return
 	}
 
+	index = &Index{
+		Collection: db.MetricsSystem(),
+		Keys: &bson.D{
+			{"t", 1},
+			{"r", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+	index = &Index{
+		Collection: db.MetricsSystem(),
+		Keys: &bson.D{
+			{"t", 1},
+		},
+		Expire: 2160 * time.Hour,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.MetricsLoad(),
+		Keys: &bson.D{
+			{"t", 1},
+			{"r", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+	index = &Index{
+		Collection: db.MetricsLoad(),
+		Keys: &bson.D{
+			{"t", 1},
+		},
+		Expire: 2160 * time.Hour,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.MetricsDisk(),
+		Keys: &bson.D{
+			{"t", 1},
+			{"r", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+	index = &Index{
+		Collection: db.MetricsDisk(),
+		Keys: &bson.D{
+			{"t", 1},
+		},
+		Expire: 2160 * time.Hour,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.MetricsDiskIo(),
+		Keys: &bson.D{
+			{"t", 1},
+			{"r", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+	index = &Index{
+		Collection: db.MetricsDiskIo(),
+		Keys: &bson.D{
+			{"t", 1},
+		},
+		Expire: 2160 * time.Hour,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.MetricsNetwork(),
+		Keys: &bson.D{
+			{"t", 1},
+			{"r", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+	index = &Index{
+		Collection: db.MetricsNetwork(),
+		Keys: &bson.D{
+			{"t", 1},
+		},
+		Expire: 2160 * time.Hour,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
 	return
 }
 
