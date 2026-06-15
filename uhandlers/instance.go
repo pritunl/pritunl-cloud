@@ -89,6 +89,11 @@ type instancesData struct {
 	Count     int64                `json:"count"`
 }
 
+type instanceChartData struct {
+	HasData bool        `json:"has_data"`
+	Data    interface{} `json:"data"`
+}
+
 func instancePut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
@@ -877,4 +882,50 @@ func instanceAdvisoryGet(c *gin.Context) {
 	}
 
 	c.JSON(200, advisories)
+}
+
+func instanceChartGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+
+	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	resource := c.Query("resource")
+
+	period, _ := strconv.ParseInt(c.Query("period"), 10, 0)
+	if period == 0 {
+		period = 1440
+	}
+
+	interval, _ := strconv.ParseInt(c.Query("interval"), 10, 0)
+	if interval == 0 {
+		interval = 24
+	}
+
+	inst, err := instance.GetOrg(db, userOrg, instanceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	startTime := time.Now().UTC().Add(time.Duration(-period) * time.Minute)
+	endTime := time.Now().UTC()
+
+	data, err := inst.GetChart(c, db, resource, startTime,
+		endTime, time.Duration(interval)*time.Minute)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	chartData := &instanceChartData{
+		HasData: len(data) > 0,
+		Data:    data,
+	}
+
+	c.JSON(200, chartData)
 }
