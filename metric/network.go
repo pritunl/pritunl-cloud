@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Network struct {
@@ -66,6 +67,9 @@ func (d *Network) Format(id bson.ObjectID) time.Time {
 	d.Resource = id
 	d.Timestamp = d.Timestamp.UTC().Truncate(1 * time.Minute)
 	d.Id = GenerateId(id, d.Timestamp)
+	for _, iface := range d.Interfaces {
+		iface.Name = utils.FilterStr(iface.Name, 32)
+	}
 	return d.Timestamp
 }
 
