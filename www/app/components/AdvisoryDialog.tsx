@@ -5,8 +5,8 @@ import * as InstanceTypes from "../types/InstanceTypes";
 import * as MiscUtils from "../utils/MiscUtils";
 
 interface CveDetail {
-	cve: string;
-	detail: InstanceTypes.Advisory;
+	id: string;
+	detail: InstanceTypes.Vulnerability;
 }
 
 interface UpdateEntry {
