@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type DiskIo struct {
@@ -60,6 +61,9 @@ func (d *DiskIo) Format(id bson.ObjectID) time.Time {
 	d.Resource = id
 	d.Timestamp = d.Timestamp.UTC().Truncate(1 * time.Minute)
 	d.Id = GenerateId(id, d.Timestamp)
+	for _, dsk := range d.Disks {
+		dsk.Node = utils.FilterStr(dsk.Node, 32)
+	}
 	return d.Timestamp
 }
 
