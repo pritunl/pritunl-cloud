@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -1603,6 +1604,19 @@ func (i *Instance) UsbChanged(curVirt *vm.VirtualMachine) (
 	for deviceInf := range remUsbsSet.Iter() {
 		device := curUsbsMap[deviceInf.(string)]
 		remUsbs = append(remUsbs, device)
+	}
+
+	return
+}
+
+func (i *Instance) GetChart(c context.Context, db *database.Database,
+	group string, start, end time.Time, interval time.Duration) (
+	data metric.ChartData, err error) {
+
+	data, err = metric.GetChart(c, db, i.Id, group,
+		start, end, interval)
+	if err != nil {
+		return
 	}
 
 	return
