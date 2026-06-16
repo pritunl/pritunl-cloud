@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Disk struct {
@@ -56,6 +57,10 @@ func (d *Disk) Format(id bson.ObjectID) time.Time {
 	d.Resource = id
 	d.Timestamp = d.Timestamp.UTC().Truncate(1 * time.Minute)
 	d.Id = GenerateId(id, d.Timestamp)
+	for _, mount := range d.Mounts {
+		mount.Mount = utils.FilterPath(mount.Mount)
+		mount.Format = utils.FilterStr(mount.Format, 18)
+	}
 	return d.Timestamp
 }
 
