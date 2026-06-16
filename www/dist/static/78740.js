@@ -1,4 +1,4 @@
-"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[78740],{78740:(e,o,t)=>{t.r(o),t.d(o,{conf:()=>n,language:()=>i});
+"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[78740],{78740(e,o,t){t.r(o),t.d(o,{conf:()=>n,language:()=>i});
 /*!-----------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Version: 0.50.0(c321d0fbecb50ab8a5365fa1965476b0ae63fc87)
