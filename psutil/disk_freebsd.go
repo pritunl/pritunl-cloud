@@ -62,17 +62,29 @@ func disksList() (disks []*metric.Mount, err error) {
 
 		bsize := uint64(stat.Bsize)
 		size := stat.Blocks * bsize
-		used := (stat.Blocks - stat.Bfree) * bsize
 
 		if size < diskMinSize {
 			continue
+		}
+
+		usedBlocks := stat.Blocks - stat.Bfree
+		availBlocks := uint64(0)
+		if stat.Bavail > 0 {
+			availBlocks = uint64(stat.Bavail)
+		}
+		totalBlocks := usedBlocks + availBlocks
+
+		usedPercent := 0.0
+		if totalBlocks > 0 {
+			usedPercent = utils.ToFixed(
+				float64(usedBlocks)/float64(totalBlocks)*100, 2)
 		}
 
 		seenMount[mount] = true
 
 		disks = append(disks, &metric.Mount{
 			Mount: mount,
-			Used:  utils.ToFixed(float64(used)/float64(size)*100, 2),
+			Used:  usedPercent,
 			Size:  size,
 		})
 	}
