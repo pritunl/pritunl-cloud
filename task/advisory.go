@@ -1,14 +1,17 @@
 package task
 
 import (
+	"strings"
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/vulnerability"
+	"github.com/pritunl/pritunl-cloud/vuxml"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,6 +26,7 @@ var advisoryData = &Task{
 func advisoryDataHandler(db *database.Database) (err error) {
 	vulnerabilities := map[string]*vulnerability.Vulnerability{}
 	advisories := map[bson.ObjectID]map[string]*advisory.Advisory{}
+	var vuxmlDb map[string]*vuxml.VuxmlEntry
 	now := time.Now()
 
 	dismissals, err := advisory.GetDismissals(db)
@@ -43,9 +47,108 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			return
 		}
 
+		orgAdvs := advisories[updts.Organization]
+		if orgAdvs == nil {
+			orgAdvs = map[string]*advisory.Advisory{}
+			advisories[updts.Organization] = orgAdvs
+		}
+		orgDismissals := dismissals[updts.Organization]
+
 		resourceAdvs := []*advisory.Advisory{}
+		resourceAdvsSet := set.NewSet()
 		for _, updt := range updts.Updates {
 			if updt.Id == "" {
+				continue
+			}
+
+			if updt.Type == advisory.FreeBsd {
+				if vuxmlDb == nil {
+					vuxmlDb, err = vuxml.Load()
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": err,
+						}).Error("task: Failed to load FreeBSD vuxml")
+						return
+					}
+				}
+
+				entry := vuxmlDb[updt.Id]
+				if entry == nil {
+					continue
+				}
+
+				updtVulns := []*vulnerability.Vulnerability{}
+
+				for _, vulnId := range updt.Vulnerabilities {
+					vuln, ok := vulnerabilities[vulnId]
+					if !ok {
+						vuln, err = vulnerability.GetOneLimit(db, vulnId)
+						if err != nil {
+							logrus.WithFields(logrus.Fields{
+								"vulnerability": vulnId,
+								"error":         err,
+							}).Error("task: Failed to query vulnerability")
+							err = nil
+							vuln = nil
+						}
+						vulnerabilities[vulnId] = vuln
+					}
+
+					if vuln != nil {
+						updtVulns = append(updtVulns, vuln)
+					}
+				}
+
+				for _, pkg := range updt.Packages {
+					pkgName, _, _ := strings.Cut(pkg, "@")
+					if pkgName == "" {
+						continue
+					}
+
+					ref, ok := entry.Reference(pkgName)
+					if !ok {
+						continue
+					}
+
+					adv := orgAdvs[ref]
+					if adv == nil {
+						adv = advisory.NewUpdate(
+							ref,
+							advisory.FreeBsd,
+							updts.Organization,
+							now,
+						)
+
+						if orgDismissals != nil {
+							dismissal := orgDismissals[adv.Reference]
+							if dismissal != nil {
+								adv.Dismissed = dismissal.Dismissed
+								adv.DismissedResources = dismissal.DismissedResources
+							}
+						}
+
+						orgAdvs[ref] = adv
+					}
+
+					adv.MergeVuxml(pkg, entry, updtVulns)
+
+					adv.UpdateScore()
+
+					if !resourceAdvsSet.Contains(adv.Reference) {
+						resourceAdvsSet.Add(adv.Reference)
+
+						switch updts.Variant {
+						case manifest.InstanceVariant:
+							adv.Instances = append(
+								adv.Instances, updts.Resource)
+						case manifest.NodeVariant:
+							adv.Nodes = append(adv.Nodes, updts.Resource)
+						}
+
+						resourceAdvs = append(resourceAdvs, adv)
+					}
+				}
+
 				continue
 			}
 
@@ -71,20 +174,13 @@ func advisoryDataHandler(db *database.Database) (err error) {
 				}
 			}
 
-			orgAdvs := advisories[updts.Organization]
-			if orgAdvs == nil {
-				orgAdvs = map[string]*advisory.Advisory{}
-				advisories[updts.Organization] = orgAdvs
-			}
-
 			adv := orgAdvs[updt.Id]
 			if adv == nil {
 				adv = advisory.FromUpdate(
 					updt, updts.Organization, now, updtVulns)
 
-				orgDismissals := dismissals[updts.Organization]
 				if orgDismissals != nil {
-					dismissal := orgDismissals[updt.Id]
+					dismissal := orgDismissals[adv.Reference]
 					if dismissal != nil {
 						adv.Dismissed = dismissal.Dismissed
 						adv.DismissedResources = dismissal.DismissedResources
