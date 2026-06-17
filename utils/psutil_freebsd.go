@@ -41,14 +41,6 @@ func getSysctlUint64(name string) (uint64, error) {
 func GetMemInfo() (info *MemInfo, err error) {
 	info = &MemInfo{}
 
-	totalMem, err := getSysctlUint64("hw.physmem")
-	if err != nil {
-		return nil, &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read physmem"),
-		}
-	}
-	info.Total = totalMem / 1024
-
 	pageSize, err := getSysctlUint64("hw.pagesize")
 	if err != nil {
 		return nil, &errortypes.ReadError{
@@ -56,19 +48,57 @@ func GetMemInfo() (info *MemInfo, err error) {
 		}
 	}
 
-	freePages, err := getSysctlUint64("vm.stats.vm.v_free_count")
+	physmem, err := getSysctlUint64("hw.physmem")
 	if err != nil {
 		return nil, &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read freecount"),
+			errors.Wrap(err, "utils: Failed to read physmem"),
 		}
 	}
 
-	info.Free = (uint64(freePages) * uint64(pageSize)) / 1024
-	info.Available = info.Free
-	info.Used = info.Total - info.Free
+	freePages, err := getSysctlUint64("vm.stats.vm.v_free_count")
+	if err != nil {
+		return nil, &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read free count"),
+		}
+	}
 
-	if info.Total > 0 {
-		info.UsedPercent = float64(info.Used) / float64(info.Total) * 100.0
+	activePages, err := getSysctlUint64("vm.stats.vm.v_active_count")
+	if err != nil {
+		return nil, &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read active count"),
+		}
+	}
+
+	inactivePages, err := getSysctlUint64("vm.stats.vm.v_inactive_count")
+	if err != nil {
+		return nil, &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read inactive count"),
+		}
+	}
+
+	wiredPages, err := getSysctlUint64("vm.stats.vm.v_wire_count")
+	if err != nil {
+		return nil, &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read wired count"),
+		}
+	}
+
+	laundryPages, _ := getSysctlUint64("vm.stats.vm.v_laundry_count")
+	cachePages, _ := getSysctlUint64("vm.stats.vm.v_cache_count")
+
+	availablePages := freePages + inactivePages + laundryPages + cachePages
+	usedPages := activePages + wiredPages
+
+	info.Total = physmem / 1024
+	info.Free = freePages * pageSize / 1024
+	info.Available = availablePages * pageSize / 1024
+	info.Cached = (inactivePages + laundryPages + cachePages) *
+		pageSize / 1024
+	info.Used = usedPages * pageSize / 1024
+
+	if physmem > 0 {
+		info.UsedPercent = float64(usedPages*pageSize) /
+			float64(physmem) * 100.0
 	}
 
 	return info, nil
