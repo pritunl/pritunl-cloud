@@ -34,6 +34,8 @@ type MemInfo struct {
 func GetMemInfo() (info *MemInfo, err error) {
 	info = &MemInfo{}
 
+	var sReclaimable uint64
+
 	lines, err := ReadLines("/proc/meminfo")
 	if err != nil {
 		return
@@ -94,6 +96,15 @@ func GetMemInfo() (info *MemInfo, err error) {
 				return
 			}
 			info.Cached = valueInt
+		case "SReclaimable":
+			valueInt, e := strconv.ParseUint(value, 10, 64)
+			if e != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(e, "utils: Failed to parse sreclaimable"),
+				}
+				return
+			}
+			sReclaimable = valueInt
 		case "Dirty":
 			valueInt, e := strconv.ParseUint(value, 10, 64)
 			if e != nil {
@@ -161,7 +172,12 @@ func GetMemInfo() (info *MemInfo, err error) {
 		}
 	}
 
-	info.Used = info.Total - info.Free - info.Buffers - info.Cached
+	if info.Available > 0 {
+		info.Used = info.Total - info.Available
+	} else {
+		info.Used = info.Total - info.Free - info.Buffers - info.Cached -
+			sReclaimable
+	}
 	info.UsedPercent = float64(info.Used) / float64(info.Total) * 100.0
 
 	info.SwapUsed = info.SwapTotal - info.SwapFree
