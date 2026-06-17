@@ -190,14 +190,14 @@ func advisoryDataHandler(db *database.Database) (err error) {
 				orgAdvs[updt.Id] = adv
 			}
 
+			adv.UpdateScore()
+
 			switch updts.Variant {
 			case manifest.InstanceVariant:
 				adv.Instances = append(adv.Instances, updts.Resource)
 			case manifest.NodeVariant:
 				adv.Nodes = append(adv.Nodes, updts.Resource)
 			}
-
-			adv.UpdateScore()
 
 			resourceAdvs = append(resourceAdvs, adv)
 		}
