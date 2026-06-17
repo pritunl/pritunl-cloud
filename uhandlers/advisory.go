@@ -61,7 +61,8 @@ func advisoriesGet(c *gin.Context) {
 	reference := strings.TrimSpace(c.Query("reference"))
 	if reference != "" {
 		query["reference"] = &bson.M{
-			"$regex":   fmt.Sprintf("^([^:]+:)?%s", regexp.QuoteMeta(reference)),
+			"$regex": fmt.Sprintf(
+				"^([^:]+:)?%s", regexp.QuoteMeta(reference)),
 			"$options": "i",
 		}
 	}
@@ -162,7 +163,8 @@ func advisoriesPut(c *gin.Context) {
 		return
 	}
 
-	err = advisory.UpdateMultiOrg(db, userOrg, dta.Ids, dta.Dismiss, dta.Restore)
+	err = advisory.UpdateMultiOrg(
+		db, userOrg, dta.Ids, dta.Dismiss, dta.Restore)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
