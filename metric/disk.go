@@ -180,7 +180,7 @@ func GetDiskChart(c context.Context, db *database.Database,
 							},
 						},
 					}},
-					{"p", "$m.p"},
+					{"p", "$m.m"},
 				},
 				"u": &bson.D{
 					{"$avg", "$m.u"},
