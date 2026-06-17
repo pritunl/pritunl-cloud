@@ -24,6 +24,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/twilio/twilio-go v1.23.0
 	github.com/ua-parser/uap-go v0.0.0-20250213224047-9c035f085b90
+	github.com/ulikunitz/xz v0.5.15
 	golang.org/x/crypto v0.53.0
 	golang.org/x/net v0.56.0
 	golang.org/x/oauth2 v0.36.0
