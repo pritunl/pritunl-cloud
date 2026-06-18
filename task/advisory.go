@@ -279,6 +279,10 @@ func advisoryDataHandler(db *database.Database) (err error) {
 					"instances":       adv.Instances,
 					"nodes":           adv.Nodes,
 				},
+				"$setOnInsert": &bson.M{
+					"dismissed":           false,
+					"dismissed_resources": []bson.ObjectID{},
+				},
 			}, options.UpdateOne().SetUpsert(true))
 			if err != nil {
 				err = database.ParseError(err)
