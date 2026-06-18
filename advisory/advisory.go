@@ -1,11 +1,16 @@
 package advisory
 
 import (
+	"strings"
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/telemetry"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vulnerability"
+	"github.com/pritunl/pritunl-cloud/vuxml"
 )
 
 type Advisory struct {
@@ -97,6 +102,57 @@ func (a *Advisory) UpdateScore() {
 		}
 	}
 	a.Score = top
+}
+
+func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
+	vulns []*vulnerability.Vulnerability) {
+
+	hasPkg := false
+	for _, name := range a.Packages {
+		if name == pkg {
+			hasPkg = true
+			break
+		}
+	}
+
+	if !hasPkg {
+		a.Packages = append(a.Packages, pkg)
+	}
+
+	vuxmlsSet := set.NewSet()
+	for _, vid := range a.Vuxmls {
+		vuxmlsSet.Add(vid)
+	}
+
+	if vuxmlsSet.Contains(entry.Vid) {
+		return
+	}
+	a.Vuxmls = append(a.Vuxmls, entry.Vid)
+
+	if len(entry.Paragraphs) > 0 {
+		desc := strings.Join(entry.Paragraphs, "\n")
+		if a.Description == "" {
+			a.Description = desc
+		} else {
+			a.Description = a.Description + "\n\n" + desc
+		}
+		a.Description = utils.FilterStrExt(
+			a.Description, settings.Telemetry.DescriptionLimit)
+	}
+
+	vulnsSet := set.NewSet()
+	for _, vuln := range a.Vulnerabilities {
+		vulnsSet.Add(vuln.Id)
+	}
+
+	for _, vuln := range vulns {
+		if vuln == nil || vulnsSet.Contains(vuln.Id) {
+			continue
+		}
+		vulnsSet.Add(vuln.Id)
+
+		a.Vulnerabilities = append(a.Vulnerabilities, vuln)
+	}
 }
 
 func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
