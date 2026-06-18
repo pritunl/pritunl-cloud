@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	RedHat = "rhel"
+	RedHat  = "rhel"
+	FreeBsd = "freebsd"
 
 	Low      = 1
 	Medium   = 2
