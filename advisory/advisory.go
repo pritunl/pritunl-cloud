@@ -171,3 +171,20 @@ func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
 		Nodes:           []bson.ObjectID{},
 	}
 }
+
+func NewUpdate(ref string, typ string, orgId bson.ObjectID,
+	now time.Time) *Advisory {
+
+	return &Advisory{
+		Organization:    orgId,
+		Reference:       ref,
+		Type:            typ,
+		Updated:         now,
+		Severity:        "",
+		Description:     "",
+		Packages:        []string{},
+		Vulnerabilities: []*vulnerability.Vulnerability{},
+		Instances:       []bson.ObjectID{},
+		Nodes:           []bson.ObjectID{},
+	}
+}
