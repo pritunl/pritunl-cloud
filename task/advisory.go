@@ -274,6 +274,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 					"description":     adv.Description,
 					"score":           adv.Score,
 					"packages":        adv.Packages,
+					"vuxmls":          adv.Vuxmls,
 					"vulnerabilities": adv.Vulnerabilities,
 					"instances":       adv.Instances,
 					"nodes":           adv.Nodes,
