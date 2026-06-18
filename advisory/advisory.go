@@ -19,6 +19,7 @@ type Advisory struct {
 	Description        string                         `bson:"description" json:"description"`
 	Score              int                            `bson:"score" json:"score"`
 	Packages           []string                       `bson:"packages" json:"packages"`
+	Vuxmls             []string                       `bson:"vuxmls" json:"vuxmls"`
 	Vulnerabilities    []*vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
 	Instances          []bson.ObjectID                `bson:"instances" json:"instances"`
 	Nodes              []bson.ObjectID                `bson:"nodes" json:"nodes"`
