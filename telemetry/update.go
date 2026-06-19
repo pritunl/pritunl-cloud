@@ -32,6 +32,7 @@ var Updates = &Telemetry[[]*Update]{
 
 type Update struct {
 	Id              string   `bson:"id" json:"id"`
+	Type            string   `bson:"type" json:"type"`
 	Vulnerabilities []string `bson:"vulnerabilities" json:"vulnerabilities"`
 	Severity        string   `bson:"severity" json:"severity"`
 	Description     string   `bson:"description" json:"description"`
@@ -63,7 +64,9 @@ func (u *Update) Validate(db *database.Database) (
 }
 
 func parseRecord(lines []string) (update *Update) {
-	updt := &Update{}
+	updt := &Update{
+		Type: RedHat,
+	}
 	descLines := []string{}
 	currentField := ""
 
