@@ -14,6 +14,7 @@ type telemetry struct {
 	RedhatFinalTtl   int    `bson:"redhat_final_ttl" default:"604800"`
 	RedhatApiLimit   int    `bson:"redhat_api_limit" default:"1"`
 	DescriptionLimit int    `bson:"description_limit" default:"10000"`
+	VuxmlSizeLimit   int    `bson:"vuxml_size_limit" default:"67108864"`
 }
 
 func newTelemetry() interface{} {
