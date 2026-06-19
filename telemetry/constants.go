@@ -1,6 +1,9 @@
 package telemetry
 
 const (
+	RedHat  = "rhel"
+	FreeBsd = "freebsd"
+
 	moderate  = "moderate"
 	important = "important"
 	critical  = "critical"
