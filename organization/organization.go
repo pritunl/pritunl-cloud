@@ -1,6 +1,8 @@
 package organization
 
 import (
+	"slices"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -24,6 +26,7 @@ func (d *Organization) Validate(db *database.Database) (
 	if d.Roles == nil {
 		d.Roles = []string{}
 	}
+	slices.Sort(d.Roles)
 
 	return
 }
