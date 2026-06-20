@@ -64,6 +64,14 @@ func (u *Update) Validate(db *database.Database) (
 
 	u.Id = utils.FilterId(u.Id)
 
+	if u.Type != RedHat && u.Type != FreeBsd {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_type",
+			Message: "Invalid update type",
+		}
+		return
+	}
+
 	for i, cve := range u.Vulnerabilities {
 		u.Vulnerabilities[i] = utils.FilterId(cve)
 	}
