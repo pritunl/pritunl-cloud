@@ -1,6 +1,8 @@
 package telemetry
 
 import (
+	"bytes"
+	"encoding/json"
 	"regexp"
 	"sort"
 	"strings"
@@ -16,7 +18,24 @@ import (
 
 var (
 	cveReg = regexp.MustCompile(`CVE-\d{4}-\d+`)
+	vidReg = regexp.MustCompile(
+		`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-` +
+			`[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`)
 )
+
+type pkgAuditIssue struct {
+	Cve []string `json:"cve"`
+	Url string   `json:"url"`
+}
+
+type pkgAuditPackage struct {
+	Version string          `json:"version"`
+	Issues  []pkgAuditIssue `json:"issues"`
+}
+
+type pkgAuditReport struct {
+	Packages map[string]pkgAuditPackage `json:"packages"`
+}
 
 var Updates = &Telemetry[[]*Update]{
 	TransmitRate: 6 * time.Minute,
@@ -232,7 +251,110 @@ func updatesList() (advisories map[string][]string, err error) {
 	return
 }
 
+func parsePkgAudit(output []byte) (updates []*Update, err error) {
+	idx := bytes.IndexByte(output, '{')
+	if idx < 0 {
+		return
+	}
+
+	report := &pkgAuditReport{}
+	err = json.Unmarshal(output[idx:], report)
+	if err != nil {
+		return
+	}
+
+	updates = []*Update{}
+	seen := map[string]bool{}
+
+	names := make([]string, 0, len(report.Packages))
+	for name := range report.Packages {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	for _, name := range names {
+		pkg := report.Packages[name]
+		pkgRef := name + "@" + pkg.Version
+
+		for _, issue := range pkg.Issues {
+			vid := vidReg.FindString(issue.Url)
+			if vid == "" {
+				continue
+			}
+
+			key := name + "|" + vid
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+
+			cves := []string{}
+			cveSeen := map[string]bool{}
+			for _, cve := range issue.Cve {
+				for _, match := range cveReg.FindAllString(cve, -1) {
+					if !cveSeen[match] {
+						cveSeen[match] = true
+						cves = append(cves, match)
+					}
+				}
+			}
+			sort.Strings(cves)
+
+			updates = append(updates, &Update{
+				Id:              vid,
+				Type:            FreeBsd,
+				Vulnerabilities: cves,
+				Packages:        []string{pkgRef},
+			})
+		}
+	}
+
+	return
+}
+
+func pkgUpdates() (updates []*Update, err error) {
+	resp, _ := commander.Exec(&commander.Opt{
+		Name: "pkg",
+		Args: []string{
+			"audit",
+			"--fetch",
+			"--raw=json",
+		},
+		Timeout: 120 * time.Second,
+		PipeOut: true,
+		PipeErr: true,
+	})
+	if resp == nil {
+		return
+	}
+
+	updates, err = parsePkgAudit(resp.Output)
+	if err != nil {
+		logrus.WithFields(
+			resp.Map(),
+		).Error("telemetry: Failed to parse pkg audit output")
+		updates = nil
+		err = nil
+		return
+	}
+
+	return
+}
+
 func UpdatesRefresh() (updates []*Update, err error) {
+	if IsDnf() {
+		updates, err = dnfUpdates()
+		return
+	}
+	if IsPkg() {
+		updates, err = pkgUpdates()
+		return
+	}
+
+	return
+}
+
+func dnfUpdates() (updates []*Update, err error) {
 	if !IsDnf() {
 		return
 	}
