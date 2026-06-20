@@ -190,6 +190,8 @@ func advisoryDataHandler(db *database.Database) (err error) {
 				orgAdvs[updt.Id] = adv
 			}
 
+			adv.MergePackages(updt.Packages)
+
 			adv.UpdateScore()
 
 			switch updts.Variant {
