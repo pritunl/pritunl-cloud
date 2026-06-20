@@ -1,6 +1,8 @@
 package alert
 
 import (
+	"slices"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -37,6 +39,7 @@ func (a *Alert) Validate(db *database.Database) (
 	if a.Roles == nil {
 		a.Roles = []string{}
 	}
+	slices.Sort(a.Roles)
 
 	if a.Frequency == 0 {
 		a.Frequency = 300
