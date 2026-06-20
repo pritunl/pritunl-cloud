@@ -25,6 +25,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/store"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/errors"
 	"github.com/sirupsen/logrus"
@@ -188,8 +189,34 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		if ste.Updates != nil {
+			updts := []*telemetry.Update{}
+
+			var errData *errortypes.ErrorData
+			for _, updt := range ste.Updates {
+				errData, err = updt.Validate(db)
+				if err != nil || errData != nil {
+					continue
+				}
+
+				updts = append(updts, updt)
+			}
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": instId.Hex(),
+					"error":    err,
+				}).Error("imds: Invalid update")
+				err = nil
+			}
+			if errData != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": instId.Hex(),
+					"error":    errData.GetError(),
+				}).Error("imds: Invalid update")
+				errData = nil
+			}
+
 			err = manifest.UpsertInstanceUpdates(
-				db, instId, orgId, ste.Updates)
+				db, instId, orgId, updts)
 			if err != nil {
 				return
 			}
