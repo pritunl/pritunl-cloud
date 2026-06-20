@@ -125,6 +125,7 @@ func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
 		return
 	}
 	a.Vuxmls = append(a.Vuxmls, entry.Vid)
+	slices.Sort(a.Vuxmls)
 
 	if len(entry.Paragraphs) > 0 {
 		desc := strings.Join(entry.Paragraphs, "\n")
