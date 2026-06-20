@@ -1,6 +1,8 @@
 package authority
 
 import (
+	"slices"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -29,6 +31,7 @@ func (f *Authority) Validate(db *database.Database) (
 	if f.Roles == nil {
 		f.Roles = []string{}
 	}
+	slices.Sort(f.Roles)
 
 	if f.Principals == nil {
 		f.Principals = []string{}
