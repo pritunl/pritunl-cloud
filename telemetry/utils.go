@@ -3,6 +3,7 @@ package telemetry
 import (
 	"bytes"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -16,6 +17,21 @@ var (
 func IsDnf() bool {
 	_, err := os.Stat("/usr/bin/dnf")
 	return err == nil
+}
+
+func IsPkg() bool {
+	if runtime.GOOS != "freebsd" {
+		return false
+	}
+
+	if _, err := os.Stat("/usr/sbin/pkg"); err == nil {
+		return true
+	}
+	if _, err := os.Stat("/usr/local/sbin/pkg"); err == nil {
+		return true
+	}
+
+	return false
 }
 
 func HasSevs() bool {
