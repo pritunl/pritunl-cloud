@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime/debug"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -662,6 +663,7 @@ func (n *Node) Validate(db *database.Database) (
 	if n.Roles == nil {
 		n.Roles = []string{}
 	}
+	slices.Sort(n.Roles)
 
 	if n.Firewall && len(n.Roles) == 0 {
 		errData = &errortypes.ErrorData{
