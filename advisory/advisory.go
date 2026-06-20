@@ -114,17 +114,7 @@ func (a *Advisory) MergePackages(pkgs []string) {
 func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
 	vulns []*vulnerability.Vulnerability) {
 
-	hasPkg := false
-	for _, name := range a.Packages {
-		if name == pkg {
-			hasPkg = true
-			break
-		}
-	}
-
-	if !hasPkg {
-		a.Packages = append(a.Packages, pkg)
-	}
+	a.MergePackages([]string{pkg})
 
 	vuxmlsSet := set.NewSet()
 	for _, vid := range a.Vuxmls {
