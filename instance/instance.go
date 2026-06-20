@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"regexp"
+	"slices"
 	"strconv"
 	"time"
 
@@ -348,6 +349,7 @@ func (i *Instance) Validate(db *database.Database) (
 	if i.Roles == nil {
 		i.Roles = []string{}
 	}
+	slices.Sort(i.Roles)
 
 	if i.PublicIps == nil {
 		i.PublicIps = []string{}
