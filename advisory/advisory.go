@@ -1,6 +1,7 @@
 package advisory
 
 import (
+	"slices"
 	"strings"
 	"time"
 
@@ -102,6 +103,12 @@ func (a *Advisory) UpdateScore() {
 		}
 	}
 	a.Score = top
+}
+
+func (a *Advisory) MergePackages(pkgs []string) {
+	merged := slices.Concat(a.Packages, pkgs)
+	slices.Sort(merged)
+	a.Packages = slices.Compact(merged)
 }
 
 func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
