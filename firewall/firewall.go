@@ -3,6 +3,7 @@ package firewall
 import (
 	"fmt"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -97,6 +98,7 @@ func (f *Firewall) Validate(db *database.Database) (
 	if f.Roles == nil {
 		f.Roles = []string{}
 	}
+	slices.Sort(f.Roles)
 
 	if f.Ingress == nil {
 		f.Ingress = []*Rule{}
