@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/psutil"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -88,7 +89,7 @@ func MetricsRefresh() (sample *metric.Sample, err error) {
 		}
 	}
 
-	ifaces, err := psutil.GetNetwork()
+	ifaces, err := psutil.GetNetwork(constants.IsHost)
 	if err == nil && len(ifaces) > 0 {
 		sample.Network = &metric.Network{
 			Timestamp:  timestamp,
