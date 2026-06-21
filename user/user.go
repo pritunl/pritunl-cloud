@@ -1,6 +1,7 @@
 package user
 
 import (
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -48,6 +49,7 @@ func (u *User) Validate(db *database.Database) (
 	if u.Roles == nil {
 		u.Roles = []string{}
 	}
+	slices.Sort(u.Roles)
 
 	if u.Permissions == nil {
 		u.Permissions = []string{}
