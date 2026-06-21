@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"slices"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -46,6 +47,8 @@ func (p *Policy) Validate(db *database.Database) (
 	if p.Roles == nil {
 		p.Roles = []string{}
 	}
+	slices.Sort(p.Roles)
+
 	if p.Rules == nil {
 		p.Rules = map[string]*Rule{}
 	}
