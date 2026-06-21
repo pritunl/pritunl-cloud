@@ -9,7 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
-func networkList() (stats []*networkStat, err error) {
+func networkList(skipVirt bool) (stats []*networkStat, err error) {
 	file, err := os.Open("/proc/net/dev")
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -32,7 +32,8 @@ func networkList() (stats []*networkStat, err error) {
 		if name == "" || name == "lo" ||
 			strings.HasPrefix(name, "veth") ||
 			strings.HasPrefix(name, "docker") ||
-			strings.HasPrefix(name, "br-") {
+			strings.HasPrefix(name, "br-") ||
+			(skipVirt && len(name) == 14) {
 
 			continue
 		}

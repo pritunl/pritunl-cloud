@@ -76,7 +76,7 @@ func networkIgnore(name string, flags int) bool {
 	return false
 }
 
-func networkList() (stats []*networkStat, err error) {
+func networkList(skipVirt bool) (stats []*networkStat, err error) {
 	rib, err := route.FetchRIB(unix.AF_UNSPEC, route.RIBTypeInterface, 0)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -115,7 +115,9 @@ func networkList() (stats []*networkStat, err error) {
 				rib[off+ifIndexOff : off+ifIndexOff+2]))
 			name := names[idx]
 
-			if name != "" && !networkIgnore(name, flags[idx]) {
+			if name != "" && !networkIgnore(name, flags[idx]) &&
+				!(skipVirt && len(name) == 14) {
+
 				u64 := func(rel int) uint64 {
 					o := off + rel
 					return binary.NativeEndian.Uint64(rib[o : o+8])

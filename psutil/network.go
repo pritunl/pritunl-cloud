@@ -20,8 +20,8 @@ type networkStat struct {
 
 var networkPrev = map[string]*networkStat{}
 
-func GetNetwork() (ifaces []*metric.Interface, err error) {
-	stats, err := networkList()
+func GetNetwork(skipVirt bool) (ifaces []*metric.Interface, err error) {
+	stats, err := networkList(skipVirt)
 	if err != nil {
 		return
 	}
