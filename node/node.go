@@ -2,6 +2,7 @@ package node
 
 import (
 	"container/list"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -33,6 +34,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/manifest"
+	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/render"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -133,11 +135,24 @@ type Node struct {
 	OraclePrivateKey        string             `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey         string             `bson:"oracle_public_key" json:"oracle_public_key"`
 	Operation               string             `bson:"operation" json:"operation"`
+	Metric                  *MetricData        `bson:"metric,omitempty" json:"metric"`
 	cloudSubnetsNamed       []*CloudSubnet     `bson:"-" json:"-"`
 	reqCount                *list.List         `bson:"-" json:"-"`
 	dcId                    bson.ObjectID      `bson:"-" json:"-"`
 	dcZoneId                bson.ObjectID      `bson:"-" json:"-"`
 	lock                    sync.Mutex         `bson:"-" json:"-"`
+}
+
+type MetricData struct {
+	Memory     float64                   `bson:"memory" json:"memory"`
+	Swap       float64                   `bson:"swap" json:"swap"`
+	HugePages  float64                   `bson:"hugepages" json:"hugepages"`
+	Load1      float64                   `bson:"load1" json:"load1"`
+	Load5      float64                   `bson:"load5" json:"load5"`
+	Load15     float64                   `bson:"load15" json:"load15"`
+	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
+	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
+	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
 }
 
 type Completion struct {
@@ -281,6 +296,7 @@ func (n *Node) Copy() *Node {
 		OraclePrivateKey:        n.OraclePrivateKey,
 		OraclePublicKey:         n.OraclePublicKey,
 		Operation:               n.Operation,
+		Metric:                  n.Metric,
 		cloudSubnetsNamed:       n.cloudSubnetsNamed,
 		dcId:                    n.dcId,
 		dcZoneId:                n.dcZoneId,
