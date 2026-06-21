@@ -1333,6 +1333,17 @@ func (n *Node) update(db *database.Database) (err error) {
 		"available_drives":     n.AvailableDrives,
 	}
 
+	metrics := telemetry.Metrics.GetAll()
+	if len(metrics) > 0 {
+		latest := metrics[len(metrics)-1]
+		staticData := latest.StaticData()
+		for key, val := range staticData {
+			fields["metric."+key] = val
+		}
+
+		n.insertMetrics(metrics)
+	}
+
 	updates, ok := n.getUpdateDetails(db)
 
 	nde := &Node{}
@@ -1418,6 +1429,21 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Operation = nde.Operation
 
 	return
+}
+
+func (n *Node) insertMetrics(metrics []*metric.Sample) {
+	go func() {
+		db := database.GetDatabase()
+		defer db.Close()
+
+		err := metric.InsertSamples(db, n.Id, metrics)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"node":  n.Id.Hex(),
+				"error": err,
+			}).Error("imds: Failed to insert metrics")
+		}
+	}()
 }
 
 func (n *Node) sync() (nde *Node) {
