@@ -1,6 +1,8 @@
 package shape
 
 import (
+	"slices"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -59,6 +61,7 @@ func (s *Shape) Validate(db *database.Database) (
 	if s.Roles == nil {
 		s.Roles = []string{}
 	}
+	slices.Sort(s.Roles)
 
 	switch s.DiskType {
 	case "", Qcow2:
