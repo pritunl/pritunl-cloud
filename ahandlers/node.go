@@ -94,6 +94,11 @@ type nodeInitData struct {
 	BlockSubnets      []string      `json:"block_subnets"`
 }
 
+type nodeChartData struct {
+	HasData bool        `json:"has_data"`
+	Data    interface{} `json:"data"`
+}
+
 func nodePut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
@@ -323,6 +328,51 @@ func nodeOperationPut(c *gin.Context) {
 	event.PublishDispatch(db, "node.change")
 
 	c.JSON(200, nde)
+}
+
+func nodeChartGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+
+	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	resource := c.Query("resource")
+
+	period, _ := strconv.ParseInt(c.Query("period"), 10, 0)
+	if period == 0 {
+		period = 1440
+	}
+
+	interval, _ := strconv.ParseInt(c.Query("interval"), 10, 0)
+	if interval == 0 {
+		interval = 24
+	}
+
+	nde, err := node.Get(db, nodeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	startTime := time.Now().UTC().Add(time.Duration(-period) * time.Minute)
+	endTime := time.Now().UTC()
+
+	data, err := nde.GetChart(c, db, resource, startTime,
+		endTime, time.Duration(interval)*time.Minute)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	chartData := &nodeChartData{
+		HasData: len(data) > 0,
+		Data:    data,
+	}
+
+	c.JSON(200, chartData)
 }
 
 func nodeInitPost(c *gin.Context) {
