@@ -1180,6 +1180,19 @@ func (n *Node) GetRemoteAddr(r *http.Request) (addr string) {
 	return
 }
 
+func (n *Node) GetChart(c context.Context, db *database.Database,
+	group string, start, end time.Time, interval time.Duration) (
+	data metric.ChartData, err error) {
+
+	data, err = metric.GetChart(c, db, n.Id, group,
+		start, end, interval)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (n *Node) SyncNetwork(clearCache bool) {
 	netLock.Lock()
 	defer netLock.Unlock()
