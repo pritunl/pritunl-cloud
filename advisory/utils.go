@@ -180,6 +180,42 @@ func CountResource(resourceId bson.ObjectID, advisories []*Advisory) (
 	return
 }
 
+func UpdateResource(db *database.Database, resId bson.ObjectID) (err error) {
+	coll := db.Instances()
+
+	count, err := coll.CountDocuments(db, &bson.M{
+		"_id": resId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	if count > 0 {
+		err = UpdateInstance(db, resId)
+		if err != nil {
+			return
+		}
+	}
+
+	coll = db.Nodes()
+
+	count, err = coll.CountDocuments(db, &bson.M{
+		"_id": resId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	if count > 0 {
+		err = UpdateNode(db, resId)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
 	coll := db.Advisories()
 
