@@ -490,64 +490,6 @@ func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 	return
 }
 
-func buildDismissUpdate(adv *Advisory, dismiss, restore bool,
-	dismissals, restores []bson.ObjectID) (update bson.M) {
-
-	setDoc := bson.M{}
-
-	if dismiss {
-		setDoc["dismissed"] = true
-	} else if restore {
-		setDoc["dismissed"] = false
-	}
-
-	addDismissals := []bson.ObjectID{}
-	if len(dismissals) > 0 {
-		known := set.NewSet()
-		for _, instId := range adv.Instances {
-			known.Add(instId)
-		}
-		for _, nodeId := range adv.Nodes {
-			known.Add(nodeId)
-		}
-
-		for _, resourceId := range dismissals {
-			if known.Contains(resourceId) {
-				addDismissals = append(addDismissals, resourceId)
-			}
-		}
-	}
-
-	update = bson.M{}
-
-	if len(setDoc) > 0 {
-		update["$set"] = setDoc
-	}
-
-	if len(addDismissals) > 0 {
-		update["$addToSet"] = bson.M{
-			"dismissed_resources": bson.M{
-				"$each": addDismissals,
-			},
-		}
-	}
-
-	if len(restores) > 0 {
-		update["$pull"] = bson.M{
-			"dismissed_resources": bson.M{
-				"$in": restores,
-			},
-		}
-	}
-
-	if len(update) == 0 {
-		update = nil
-		return
-	}
-
-	return
-}
-
 func UpdateDismiss(db *database.Database, advId bson.ObjectID,
 	dismiss, restore bool, dismissals, restores []bson.ObjectID) (err error) {
 
