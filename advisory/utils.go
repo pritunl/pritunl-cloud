@@ -216,6 +216,29 @@ func UpdateResource(db *database.Database, resId bson.ObjectID) (err error) {
 	return
 }
 
+func UpdateResourceOrg(db *database.Database,
+	resId, orgId bson.ObjectID) (err error) {
+
+	coll := db.Instances()
+
+	count, err := coll.CountDocuments(db, &bson.M{
+		"_id":          resId,
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	if count > 0 {
+		err = UpdateInstance(db, resId)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
 	coll := db.Advisories()
 
