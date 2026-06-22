@@ -7,6 +7,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -30,6 +32,88 @@ type Advisory struct {
 	Instances          []bson.ObjectID                `bson:"instances" json:"instances"`
 	Nodes              []bson.ObjectID                `bson:"nodes" json:"nodes"`
 	DismissedResources []bson.ObjectID                `bson:"dismissed_resources" json:"dismissed_resources"`
+}
+
+func (a *Advisory) Validate(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	if a.Reference == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "reference_required",
+			Message: "Missing required advisory reference",
+		}
+		return
+	}
+
+	if a.Updated.IsZero() {
+		a.Updated = time.Now()
+	}
+
+	a.Reference = utils.FilterId(a.Reference)
+
+	if a.Type != "" && !ValidTypes.Contains(a.Type) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_type",
+			Message: "Invalid advisory type",
+		}
+		return
+	}
+
+	if a.Severity != "" && !ValidSeverities.Contains(a.Severity) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_severity",
+			Message: "Invalid advisory severity",
+		}
+		return
+	}
+
+	if a.Score < 0 || a.Score > Critical {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_score",
+			Message: "Invalid advisory score",
+		}
+		return
+	}
+
+	a.Description = utils.FilterStrExt(
+		a.Description,
+		settings.Telemetry.DescriptionLimit,
+	)
+
+	if a.Packages == nil {
+		a.Packages = []string{}
+	}
+	if a.Vuxmls == nil {
+		a.Vuxmls = []string{}
+	}
+	if a.Vulnerabilities == nil {
+		a.Vulnerabilities = []*vulnerability.Vulnerability{}
+	}
+	if a.Instances == nil {
+		a.Instances = []bson.ObjectID{}
+	}
+	if a.Nodes == nil {
+		a.Nodes = []bson.ObjectID{}
+	}
+	if a.DismissedResources == nil {
+		a.DismissedResources = []bson.ObjectID{}
+	}
+
+	for _, vuln := range a.Vulnerabilities {
+		if vuln == nil {
+			continue
+		}
+
+		errData, err = vuln.Validate(db)
+		if err != nil {
+			return
+		}
+		if errData != nil {
+			return
+		}
+	}
+
+	return
 }
 
 func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
