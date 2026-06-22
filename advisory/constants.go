@@ -1,6 +1,7 @@
 package advisory
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 )
 
@@ -20,4 +21,15 @@ const (
 
 var (
 	Global = bson.NilObjectID
+
+	ValidTypes = set.NewSet(
+		RedHat,
+		FreeBsd,
+	)
+
+	ValidSeverities = set.NewSet(
+		moderate,
+		important,
+		critical,
+	)
 )
