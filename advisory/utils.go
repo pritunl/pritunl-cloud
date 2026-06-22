@@ -3,7 +3,6 @@ package advisory
 import (
 	"slices"
 
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -182,14 +181,50 @@ func CountResource(resourceId bson.ObjectID, advisories []*Advisory) (
 }
 
 func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
-	advisories, err := GetInstance(db, instId)
+	coll := db.Advisories()
+
+	cursor, err := coll.Find(db, &bson.M{
+		"instances": instId,
+	})
 	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	count := 0
+	maxScore := 0
+	for cursor.Next(db) {
+		adv := &Advisory{}
+		err = cursor.Decode(adv)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		if adv.Dismissed {
+			continue
+		}
+
+		if slices.Contains(adv.DismissedResources, instId) {
+			continue
+		}
+
+		if adv.Score >= High {
+			count += 1
+		}
+		if adv.Score > maxScore {
+			maxScore = adv.Score
+		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
-	count, maxScore := CountResource(instId, advisories)
-
-	coll := db.Instances()
+	coll = db.Instances()
 
 	_, err = coll.UpdateOne(db, &bson.M{
 		"_id": instId,
@@ -212,14 +247,50 @@ func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
 }
 
 func UpdateNode(db *database.Database, nodeId bson.ObjectID) (err error) {
-	advisories, err := GetNode(db, nodeId)
+	coll := db.Advisories()
+
+	cursor, err := coll.Find(db, &bson.M{
+		"nodes": nodeId,
+	})
 	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	count := 0
+	maxScore := 0
+	for cursor.Next(db) {
+		adv := &Advisory{}
+		err = cursor.Decode(adv)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		if adv.Dismissed {
+			continue
+		}
+
+		if slices.Contains(adv.DismissedResources, nodeId) {
+			continue
+		}
+
+		if adv.Score >= High {
+			count += 1
+		}
+		if adv.Score > maxScore {
+			maxScore = adv.Score
+		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
-	count, maxScore := CountResource(nodeId, advisories)
-
-	coll := db.Nodes()
+	coll = db.Nodes()
 
 	_, err = coll.UpdateOne(db, &bson.M{
 		"_id": nodeId,
