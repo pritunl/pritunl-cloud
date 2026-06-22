@@ -157,16 +157,17 @@ func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
 	vulns []*vulnerability.Vulnerability) *Advisory {
 
 	return &Advisory{
-		Organization:    orgId,
-		Reference:       updt.Id,
-		Type:            RedHat,
-		Updated:         now,
-		Severity:        updt.Severity,
-		Description:     updt.Description,
-		Packages:        updt.Packages,
-		Vulnerabilities: vulns,
-		Instances:       []bson.ObjectID{},
-		Nodes:           []bson.ObjectID{},
+		Organization:       orgId,
+		Reference:          updt.Id,
+		Type:               RedHat,
+		Updated:            now,
+		Severity:           updt.Severity,
+		Description:        updt.Description,
+		Packages:           updt.Packages,
+		Vulnerabilities:    vulns,
+		Instances:          []bson.ObjectID{},
+		Nodes:              []bson.ObjectID{},
+		DismissedResources: []bson.ObjectID{},
 	}
 }
 
@@ -174,15 +175,16 @@ func NewUpdate(ref string, typ string, orgId bson.ObjectID,
 	now time.Time) *Advisory {
 
 	return &Advisory{
-		Organization:    orgId,
-		Reference:       ref,
-		Type:            typ,
-		Updated:         now,
-		Severity:        "",
-		Description:     "",
-		Packages:        []string{},
-		Vulnerabilities: []*vulnerability.Vulnerability{},
-		Instances:       []bson.ObjectID{},
-		Nodes:           []bson.ObjectID{},
+		Organization:       orgId,
+		Reference:          ref,
+		Type:               typ,
+		Updated:            now,
+		Severity:           "",
+		Description:        "",
+		Packages:           []string{},
+		Vulnerabilities:    []*vulnerability.Vulnerability{},
+		Instances:          []bson.ObjectID{},
+		Nodes:              []bson.ObjectID{},
+		DismissedResources: []bson.ObjectID{},
 	}
 }
