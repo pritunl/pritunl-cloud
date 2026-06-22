@@ -237,6 +237,90 @@ func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
 	}
 }
 
+func (a *Advisory) buildDismissUpdate(dismiss, restore bool,
+	dismissals, restores []bson.ObjectID) (update bson.M) {
+
+	setDoc := bson.M{}
+
+	if dismiss {
+		a.Dismissed = true
+		setDoc["dismissed"] = true
+	} else if restore {
+		a.Dismissed = false
+		setDoc["dismissed"] = false
+	}
+
+	addDismissals := []bson.ObjectID{}
+	if len(dismissals) > 0 {
+		known := set.NewSet()
+		for _, instId := range a.Instances {
+			known.Add(instId)
+		}
+		for _, nodeId := range a.Nodes {
+			known.Add(nodeId)
+		}
+
+		for _, resourceId := range dismissals {
+			if known.Contains(resourceId) {
+				addDismissals = append(addDismissals, resourceId)
+			}
+		}
+	}
+
+	update = bson.M{}
+
+	if len(setDoc) > 0 {
+		update["$set"] = setDoc
+	}
+
+	if len(addDismissals) > 0 {
+		update["$addToSet"] = bson.M{
+			"dismissed_resources": bson.M{
+				"$each": addDismissals,
+			},
+		}
+
+		existing := set.NewSet()
+		for _, resourceId := range a.DismissedResources {
+			existing.Add(resourceId)
+		}
+		for _, resourceId := range addDismissals {
+			if !existing.Contains(resourceId) {
+				existing.Add(resourceId)
+				a.DismissedResources = append(
+					a.DismissedResources, resourceId)
+			}
+		}
+	}
+
+	if len(restores) > 0 {
+		update["$pull"] = bson.M{
+			"dismissed_resources": bson.M{
+				"$in": restores,
+			},
+		}
+
+		restoreSet := set.NewSet()
+		for _, resourceId := range restores {
+			restoreSet.Add(resourceId)
+		}
+		filtered := []bson.ObjectID{}
+		for _, resourceId := range a.DismissedResources {
+			if !restoreSet.Contains(resourceId) {
+				filtered = append(filtered, resourceId)
+			}
+		}
+		a.DismissedResources = filtered
+	}
+
+	if len(update) == 0 {
+		update = nil
+		return
+	}
+
+	return
+}
+
 func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
 	vulns []*vulnerability.Vulnerability) *Advisory {
 
