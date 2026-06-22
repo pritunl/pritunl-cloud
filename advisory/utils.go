@@ -521,7 +521,7 @@ func UpdateDismiss(db *database.Database, advId bson.ObjectID,
 		return
 	}
 
-	update := buildDismissUpdate(adv, dismiss, restore, dismissals, restores)
+	update := adv.buildDismissUpdate(dismiss, restore, dismissals, restores)
 	if update == nil {
 		return
 	}
@@ -536,6 +536,39 @@ func UpdateDismiss(db *database.Database, advId bson.ObjectID,
 		return
 	}
 
+	if dismiss || restore {
+		for _, ndeId := range adv.Nodes {
+			err = UpdateNode(db, ndeId)
+			if err != nil {
+				return
+			}
+		}
+		for _, instId := range adv.Instances {
+			err = UpdateInstance(db, instId)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	if len(dismissals) > 0 {
+		for _, resourceId := range dismissals {
+			err = UpdateResource(db, resourceId)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	if len(restores) > 0 {
+		for _, resourceId := range restores {
+			err = UpdateResource(db, resourceId)
+			if err != nil {
+				return
+			}
+		}
+	}
+
 	return
 }
 
@@ -547,7 +580,7 @@ func UpdateDismissOrg(db *database.Database, orgId, advId bson.ObjectID,
 		return
 	}
 
-	update := buildDismissUpdate(adv, dismiss, restore, dismissals, restores)
+	update := adv.buildDismissUpdate(dismiss, restore, dismissals, restores)
 	if update == nil {
 		return
 	}
@@ -561,6 +594,39 @@ func UpdateDismissOrg(db *database.Database, orgId, advId bson.ObjectID,
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	if dismiss || restore {
+		for _, ndeId := range adv.Nodes {
+			err = UpdateNode(db, ndeId)
+			if err != nil {
+				return
+			}
+		}
+		for _, instId := range adv.Instances {
+			err = UpdateInstance(db, instId)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	if len(dismissals) > 0 {
+		for _, resourceId := range dismissals {
+			err = UpdateResourceOrg(db, resourceId, orgId)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	if len(restores) > 0 {
+		for _, resourceId := range restores {
+			err = UpdateResourceOrg(db, resourceId, orgId)
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	return
