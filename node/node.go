@@ -111,10 +111,6 @@ type Node struct {
 	Firewall                bool               `bson:"firewall" json:"firewall"`
 	Roles                   []string           `bson:"roles" json:"roles"`
 	Memory                  float64            `bson:"memory" json:"memory"`
-	HugePagesUsed           float64            `bson:"hugepages_used" json:"hugepages_used"`
-	Load1                   float64            `bson:"load1" json:"load1"`
-	Load5                   float64            `bson:"load5" json:"load5"`
-	Load15                  float64            `bson:"load15" json:"load15"`
 	CpuUnits                int                `bson:"cpu_units" json:"cpu_units"`
 	MemoryUnits             float64            `bson:"memory_units" json:"memory_units"`
 	CpuUnitsRes             int                `bson:"cpu_units_res" json:"cpu_units_res"`
@@ -272,10 +268,6 @@ func (n *Node) Copy() *Node {
 		Firewall:                n.Firewall,
 		Roles:                   n.Roles,
 		Memory:                  n.Memory,
-		HugePagesUsed:           n.HugePagesUsed,
-		Load1:                   n.Load1,
-		Load5:                   n.Load5,
-		Load15:                  n.Load15,
 		CpuUnits:                n.CpuUnits,
 		MemoryUnits:             n.MemoryUnits,
 		CpuUnitsRes:             n.CpuUnitsRes,
@@ -906,9 +898,6 @@ func (n *Node) SetActive() {
 	if time.Since(n.Timestamp) > 30*time.Second {
 		n.RequestsMin = 0
 		n.Memory = 0
-		n.Load1 = 0
-		n.Load5 = 0
-		n.Load15 = 0
 		n.CpuUnits = 0
 		n.CpuUnitsRes = 0
 		n.MemoryUnits = 0
@@ -1322,10 +1311,6 @@ func (n *Node) update(db *database.Database) (err error) {
 		"timestamp":            n.Timestamp,
 		"requests_min":         n.RequestsMin,
 		"memory":               n.Memory,
-		"hugepages_used":       n.HugePagesUsed,
-		"load1":                n.Load1,
-		"load5":                n.Load5,
-		"load15":               n.Load15,
 		"cpu_units":            n.CpuUnits,
 		"memory_units":         n.MemoryUnits,
 		"cpu_units_res":        n.CpuUnitsRes,
@@ -1470,16 +1455,12 @@ func (n *Node) sync() (nde *Node) {
 
 	mem, err := utils.GetMemInfo()
 	if err != nil {
-		n.Memory = 0
-		n.HugePagesUsed = 0
 		n.MemoryUnits = 0
 
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("node: Failed to get memory")
 	} else {
-		n.Memory = utils.ToFixed(mem.UsedPercent, 2)
-		n.HugePagesUsed = utils.ToFixed(mem.HugePagesUsedPercent, 2)
 		n.MemoryUnits = utils.ToFixed(
 			float64(mem.Total)/float64(1048576), 2)
 	}
@@ -1487,18 +1468,12 @@ func (n *Node) sync() (nde *Node) {
 	load, err := utils.LoadAverage()
 	if err != nil {
 		n.CpuUnits = 0
-		n.Load1 = 0
-		n.Load5 = 0
-		n.Load15 = 0
 
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("node: Failed to get load")
 	} else {
 		n.CpuUnits = load.CpuUnits
-		n.Load1 = load.Load1
-		n.Load5 = load.Load5
-		n.Load15 = load.Load15
 	}
 
 	n.SyncNetwork(false)
