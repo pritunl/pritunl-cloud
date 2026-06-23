@@ -5,11 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
-func networkList(skipVirt bool) (stats []*networkStat, err error) {
+func networkList(filter set.Set, skipVirt bool) (
+	stats []*networkStat, err error) {
+
 	file, err := os.Open("/proc/net/dev")
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -33,7 +36,8 @@ func networkList(skipVirt bool) (stats []*networkStat, err error) {
 			strings.HasPrefix(name, "veth") ||
 			strings.HasPrefix(name, "docker") ||
 			strings.HasPrefix(name, "br-") ||
-			(skipVirt && len(name) == 14) {
+			(skipVirt && len(name) == 14) ||
+			(filter != nil && !filter.Contains(name)) {
 
 			continue
 		}
