@@ -1,6 +1,7 @@
 package psutil
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/metric"
 )
 
@@ -20,8 +21,10 @@ type networkStat struct {
 
 var networkPrev = map[string]*networkStat{}
 
-func GetNetwork(skipVirt bool) (ifaces []*metric.Interface, err error) {
-	stats, err := networkList(skipVirt)
+func GetNetwork(filter set.Set, skipVirt bool) (
+	ifaces []*metric.Interface, err error) {
+
+	stats, err := networkList(filter, skipVirt)
 	if err != nil {
 		return
 	}
