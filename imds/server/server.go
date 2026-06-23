@@ -13,9 +13,11 @@ import (
 )
 
 func Main() (err error) {
+	constants.InstanceId, _ = utils.ParseObjectId(os.Getenv("INSTANCE_ID"))
 	constants.ClientSecret = os.Getenv("CLIENT_SECRET")
 	constants.DhcpSecret = os.Getenv("DHCP_SECRET")
 	constants.HostSecret = os.Getenv("HOST_SECRET")
+	os.Unsetenv("INSTANCE_ID")
 	os.Unsetenv("CLIENT_SECRET")
 	os.Unsetenv("DHCP_SECRET")
 	os.Unsetenv("HOST_SECRET")
