@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	pritunl_utils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
 )
@@ -58,6 +59,8 @@ func main() {
 	logger.AddHandler(func(record *logger.Record) {
 		fmt.Print(record.String())
 	})
+
+	telemetry.Mode = telemetry.Instance
 
 	command := flag.Arg(0)
 	if command == "engine" || command == "agent" {
