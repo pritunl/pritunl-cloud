@@ -24,6 +24,7 @@ After=network.target
 [Service]
 Type=simple
 User=%s
+Environment="INSTANCE_ID=%s"
 Environment="CLIENT_SECRET=%s"
 Environment="DHCP_SECRET=%s"
 Environment="HOST_SECRET=%s"
@@ -47,6 +48,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
+Environment="INSTANCE_ID=%s"
 Environment="CLIENT_SECRET=%s"
 Environment="DHCP_SECRET=%s"
 Environment="HOST_SECRET=%s"
@@ -81,6 +83,7 @@ func WriteService(vmId bson.ObjectID,
 		output = fmt.Sprintf(
 			systemdNamespaceTemplate,
 			permission.GetUserName(vmId),
+			vmId.Hex(),
 			clientSecret,
 			dhcpSecret,
 			hostSecret,
@@ -92,6 +95,7 @@ func WriteService(vmId bson.ObjectID,
 	} else {
 		output = fmt.Sprintf(
 			systemdTemplate,
+			vmId.Hex(),
 			clientSecret,
 			dhcpSecret,
 			hostSecret,
