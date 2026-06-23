@@ -21,6 +21,7 @@ type Relation struct {
 	From         string
 	LocalField   string
 	ForeignField string
+	Match        bson.M
 	Sort         map[string]int
 	Project      []Project
 	Relations    []Relation
@@ -43,9 +44,15 @@ func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
 	}
 
 	if len(relation.Project) > 0 || len(relation.Sort) > 0 ||
-		len(relation.Relations) > 0 {
+		len(relation.Relations) > 0 || len(relation.Match) > 0 {
 
 		nestedPipeline := []bson.M{}
+		if len(relation.Match) > 0 {
+			nestedPipeline = append(nestedPipeline, bson.M{
+				"$match": relation.Match,
+			})
+		}
+
 		if len(relation.Project) > 0 {
 			projection := bson.M{
 				"_id": 1,
