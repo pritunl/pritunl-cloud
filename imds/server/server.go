@@ -4,11 +4,16 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/router"
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
+	"github.com/pritunl/pritunl-cloud/telemetry"
+	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/tools/logger"
 )
 
@@ -56,6 +61,29 @@ func Main() (err error) {
 	if err != nil {
 		return
 	}
+
+	telemetry.Mode = telemetry.Namespace
+	telemetry.NetworkInternalIface = vm.GetIfaceInternal(
+		constants.InstanceId, 0)
+	telemetry.NetworkExternalIface = vm.GetIfaceExternal(
+		constants.InstanceId, 0)
+
+	go func() {
+		defer func() {
+			panc := recover()
+			if panc != nil {
+				logger.WithFields(logger.Fields{
+					"trace": string(debug.Stack()),
+					"panic": panc,
+				}).Error("server: Panic in telemetry")
+			}
+		}()
+
+		for {
+			telemetry.Refresh()
+			time.Sleep(1 * time.Minute)
+		}
+	}()
 
 	err = routr.Run()
 	if err != nil {
