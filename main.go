@@ -73,7 +73,6 @@ func main() {
 				break
 			}
 		}
-		constants.IsHost = true
 
 		Init()
 		err := cmd.Node()
