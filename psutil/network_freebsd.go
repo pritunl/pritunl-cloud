@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"golang.org/x/net/route"
@@ -76,7 +77,9 @@ func networkIgnore(name string, flags int) bool {
 	return false
 }
 
-func networkList(skipVirt bool) (stats []*networkStat, err error) {
+func networkList(filter set.Set, skipVirt bool) (
+	stats []*networkStat, err error) {
+
 	rib, err := route.FetchRIB(unix.AF_UNSPEC, route.RIBTypeInterface, 0)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -116,7 +119,8 @@ func networkList(skipVirt bool) (stats []*networkStat, err error) {
 			name := names[idx]
 
 			if name != "" && !networkIgnore(name, flags[idx]) &&
-				!(skipVirt && len(name) == 14) {
+				!(skipVirt && len(name) == 14) &&
+				!(filter != nil && !filter.Contains(name)) {
 
 				u64 := func(rel int) uint64 {
 					o := off + rel
