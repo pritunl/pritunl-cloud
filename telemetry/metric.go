@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/psutil"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -40,60 +40,82 @@ func MetricsRefresh() (sample *metric.Sample, err error) {
 		Timestamp: timestamp,
 	}
 
-	sys := &metric.System{
-		Timestamp: timestamp,
-		CpuCores:  runtime.NumCPU(),
-	}
-
-	if cpu, e := psutil.GetCpu(); e == nil {
-		sys.CpuUsage = cpu
-	}
-	if procs, e := psutil.GetProcesses(); e == nil {
-		sys.Processes = procs
-	}
-
-	mem, err := utils.GetMemInfo()
-	if err == nil {
-		sys.MemUsage = utils.ToFixed(mem.UsedPercent, 2)
-		sys.MemTotal = int(mem.Total / 1024)
-		sys.SwapUsage = utils.ToFixed(mem.SwapUsedPercent, 2)
-		sys.SwapTotal = int(mem.SwapTotal / 1024)
-		sys.HugeUsage = utils.ToFixed(mem.HugePagesUsedPercent, 2)
-		sys.HugeTotal = int(mem.HugePagesTotal * mem.HugePageSize / 1024)
-	}
-	sample.System = sys
-
-	load, err := utils.LoadAverage()
-	if err == nil {
-		sample.Load = &metric.Load{
+	if Mode != Namespace {
+		sys := &metric.System{
 			Timestamp: timestamp,
-			Load1:     load.Load1,
-			Load5:     load.Load5,
-			Load15:    load.Load15,
+			CpuCores:  runtime.NumCPU(),
+		}
+
+		if cpu, e := psutil.GetCpu(); e == nil {
+			sys.CpuUsage = cpu
+		}
+		if procs, e := psutil.GetProcesses(); e == nil {
+			sys.Processes = procs
+		}
+
+		mem, e := utils.GetMemInfo()
+		if e == nil {
+			sys.MemUsage = utils.ToFixed(mem.UsedPercent, 2)
+			sys.MemTotal = int(mem.Total / 1024)
+			sys.SwapUsage = utils.ToFixed(mem.SwapUsedPercent, 2)
+			sys.SwapTotal = int(mem.SwapTotal / 1024)
+			sys.HugeUsage = utils.ToFixed(mem.HugePagesUsedPercent, 2)
+			sys.HugeTotal = int(mem.HugePagesTotal * mem.HugePageSize / 1024)
+		}
+		sample.System = sys
+
+		load, e := utils.LoadAverage()
+		if e == nil {
+			sample.Load = &metric.Load{
+				Timestamp: timestamp,
+				Load1:     load.Load1,
+				Load5:     load.Load5,
+				Load15:    load.Load15,
+			}
+		}
+
+		mounts, e := psutil.GetDisks()
+		if e == nil && len(mounts) > 0 {
+			sample.Disk = &metric.Disk{
+				Timestamp: timestamp,
+				Mounts:    mounts,
+			}
+		}
+
+		disks, e := psutil.GetDiskIo()
+		if e == nil && len(disks) > 0 {
+			sample.DiskIo = &metric.DiskIo{
+				Timestamp: timestamp,
+				Disks:     disks,
+			}
 		}
 	}
 
-	mounts, err := psutil.GetDisks()
-	if err == nil && len(mounts) > 0 {
-		sample.Disk = &metric.Disk{
-			Timestamp: timestamp,
-			Mounts:    mounts,
+	if Mode != Instance {
+		var filter set.Set
+		if Mode == Namespace {
+			filter = set.NewSet(NetworkInternalIface, NetworkExternalIface)
 		}
-	}
 
-	disks, err := psutil.GetDiskIo()
-	if err == nil && len(disks) > 0 {
-		sample.DiskIo = &metric.DiskIo{
-			Timestamp: timestamp,
-			Disks:     disks,
-		}
-	}
+		ifaces, e := psutil.GetNetwork(filter, Mode == Host)
+		if e == nil && len(ifaces) > 0 {
+			if len(ifaces) > 0 {
+				if Mode == Namespace {
+					for _, iface := range ifaces {
+						switch iface.Name {
+						case NetworkInternalIface:
+							iface.Name = "int0"
+						case NetworkExternalIface:
+							iface.Name = "ext0"
+						}
+					}
+				}
 
-	ifaces, err := psutil.GetNetwork(constants.IsHost)
-	if err == nil && len(ifaces) > 0 {
-		sample.Network = &metric.Network{
-			Timestamp:  timestamp,
-			Interfaces: ifaces,
+				sample.Network = &metric.Network{
+					Timestamp:  timestamp,
+					Interfaces: ifaces,
+				}
+			}
 		}
 	}
 
