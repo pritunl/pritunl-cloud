@@ -350,6 +350,9 @@ func pkgUpdates() (updates []*Update, err error) {
 }
 
 func UpdatesRefresh() (updates []*Update, err error) {
+	if Mode == Namespace {
+		return
+	}
 	if IsDnf() {
 		updates, err = dnfUpdates()
 		return
