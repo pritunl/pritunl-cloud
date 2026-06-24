@@ -1,6 +1,10 @@
 package telemetry
 
 const (
+	Host      = "host"
+	Instance  = "instance"
+	Namespace = "namespace"
+
 	RedHat  = "rhel"
 	FreeBsd = "freebsd"
 
@@ -12,4 +16,10 @@ const (
 	Medium   = 2
 	High     = 3
 	Critical = 4
+)
+
+var (
+	Mode                 = Host
+	NetworkInternalIface = ""
+	NetworkExternalIface = ""
 )
