@@ -259,8 +259,6 @@ func ApplyUpdate(newState *State, namespaces []string, recover bool) {
 	if recover {
 		update.Recover()
 	}
-
-	return
 }
 
 func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
@@ -272,8 +270,6 @@ func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		firewalls, firewallMaps)
 
 	ApplyUpdate(newState, namespaces, false)
-
-	return
 }
 
 func UpdateStateRecover(nodeSelf *node.Node, vpcs []*vpc.Vpc,
@@ -285,6 +281,4 @@ func UpdateStateRecover(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		firewalls, firewallMaps)
 
 	ApplyUpdate(newState, namespaces, true)
-
-	return
 }
