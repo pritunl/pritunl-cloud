@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/info"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/permission"
@@ -691,6 +692,41 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 				"net_namespace": namespace,
 				"error":         err,
 			}).Error("deploy: Failed to deploy instance routes")
+			return
+		}
+
+		bridgeIface := settings.Hypervisor.BridgeIfaceName
+		exists, e := iproute.IfaceExists(namespace, bridgeIface)
+		if e != nil {
+			err = e
+			logrus.WithFields(logrus.Fields{
+				"instance_id":   inst.Id.Hex(),
+				"net_namespace": namespace,
+				"error":         err,
+			}).Error("deploy: Failed to check instance bridge interface")
+			return
+		}
+		if !exists {
+			db := database.GetDatabase()
+			defer db.Close()
+
+			logrus.WithFields(logrus.Fields{
+				"instance_id":   inst.Id.Hex(),
+				"net_namespace": namespace,
+				"bridge_iface":  bridgeIface,
+			}).Error("deploy: Instance missing bridge interface, " +
+				"restarting instance")
+
+			err = instance.SetAction(db, inst.Id, instance.Restart)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to set instance state")
+			}
+
+			event.PublishDispatch(db, "instance.change")
+
 			return
 		}
 
