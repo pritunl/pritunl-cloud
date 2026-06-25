@@ -692,7 +692,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 						open: true,
 					})
 				}}
-			>Security Advisories</button>
+			>Security Advisories{entries.length > 0 ?
+				` (${entries.length})` : ""}</button>
 			{dialog}
 		</div>
 	}
