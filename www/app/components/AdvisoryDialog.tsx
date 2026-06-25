@@ -28,6 +28,7 @@ interface State {
 
 interface Props {
 	updates: InstanceTypes.Update[];
+	vulnerabilities: InstanceTypes.Vulnerability[];
 }
 
 const css = {
