@@ -46,6 +46,22 @@ func IfaceGetAll(namespace string) (ifaces []*Iface, err error) {
 	return
 }
 
+func IfaceExists(namespace, name string) (exists bool, err error) {
+	ifaces, err := IfaceGetAll(namespace)
+	if err != nil {
+		return
+	}
+
+	for _, iface := range ifaces {
+		if iface.Name == name {
+			exists = true
+			return
+		}
+	}
+
+	return
+}
+
 func IfaceGetBridges(namespace string) (ifaces []*Iface, err error) {
 	ifaces = []*Iface{}
 
