@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/log"
+	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -69,6 +70,10 @@ func databaseSend(entry *logrus.Entry) (err error) {
 		} else {
 			ent.Fields[key] = val
 		}
+	}
+
+	if node.Self != nil {
+		ent.Fields["node"] = node.Self.Id.Hex()
 	}
 
 	err = ent.Insert(db)
