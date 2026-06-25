@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add security advisories
 Add Google Cloud DNS support
 Add support to manual renew certificates
 Fix host network bridge management issues
