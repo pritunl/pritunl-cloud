@@ -13,10 +13,13 @@ interface UpdateEntry {
 	update: InstanceTypes.Update;
 	cves: CveDetail[];
 	importantCves: CveDetail[];
-	worstScore: number;
-	worstSeverity: string;
 	link?: string;
 }
+
+const SCORE_LOW = 1;
+const SCORE_MEDIUM = 2;
+const SCORE_HIGH = 3;
+const SCORE_CRITICAL = 4;
 
 interface State {
 	open: boolean;
@@ -251,27 +254,19 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		}
 	}
 
-	isImportantCve(detail: InstanceTypes.Advisory): boolean {
-		if (!detail) {
-			return false;
+	scoreSeverity(score: number): string {
+		switch (score) {
+			case SCORE_CRITICAL:
+				return "critical";
+			case SCORE_HIGH:
+				return "high";
+			case SCORE_MEDIUM:
+				return "medium";
+			case SCORE_LOW:
+				return "low";
+			default:
+				return "";
 		}
-		if (detail.severity === "critical") {
-			return true;
-		}
-		if (detail.vector === "network" &&
-				(detail.severity === "high" || (detail.score || 0) >= 7)) {
-			return true;
-		}
-		return false;
-	}
-
-	cveSortScore(detail: InstanceTypes.Advisory): number {
-		let s = detail?.score || 0;
-		if (detail?.vector === "network") s += 100;
-		if (detail?.severity === "critical") s += 50;
-		if (detail?.privileges === "none") s += 10;
-		if (detail?.interaction === "none") s += 5;
-		return s;
 	}
 
 	buildEntries(): UpdateEntry[] {
@@ -280,69 +275,39 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			return [];
 		}
 
+		let vulns: Record<string, InstanceTypes.Vulnerability> = {};
+		for (let vuln of (this.props.vulnerabilities || [])) {
+			vulns[vuln.id.split(":").pop()] = vuln
+		}
+
 		let entries: UpdateEntry[] = [];
 		for (let update of updates) {
-			let cves = update.cves || [];
-			let details = update.details || [];
-			let detailMap: Record<string, InstanceTypes.Advisory> = {};
-			for (let detail of details) {
-				if (!detail || !detail.id) {
-					continue;
-				}
-				let parts = detail.id.split(":");
-				if (parts.length < 2) {
-					continue;
-				}
-				detailMap[parts[1]] = detail;
-			}
+			let vulnIds = update.vulnerabilities || [];
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
-			for (let cve of cves) {
-				if (!cve || seen.has(cve)) {
+			for (let vulnId of vulnIds) {
+				if (!vulnId || seen.has(vulnId)) {
 					continue;
 				}
-				let detail = detailMap[cve];
+				let detail = vulns[vulnId];
 				if (!detail) {
 					continue;
 				}
-				seen.add(cve);
-				pairs.push({cve: cve, detail: detail});
+				seen.add(vulnId);
+				pairs.push({id: vulnId, detail: detail});
 			}
 
 			pairs.sort((a, b) =>
-				this.cveSortScore(b.detail) - this.cveSortScore(a.detail));
+				(b.detail.score || 0) - (a.detail.score || 0));
 
 			let importantCves = pairs.filter(
-				(p): boolean => this.isImportantCve(p.detail));
-
-			let worstScore = 0;
-			let worstSeverity = "";
-			let severityRank: {[key: string]: number} = {
-				"critical": 4,
-				"high": 3,
-				"medium": 2,
-				"low": 1,
-			};
-			let worstRank = 0;
-			for (let p of pairs) {
-				let score = this.cveSortScore(p.detail);
-				if (score > worstScore) {
-					worstScore = score;
-				}
-				let sev = (p.detail.severity || "").toLowerCase();
-				let rank = severityRank[sev] || 0;
-				if (rank > worstRank) {
-					worstRank = rank;
-					worstSeverity = sev;
-				}
-			}
+				(p): boolean => (p.detail.severity === "critical" ||
+					p.detail.severity === "high"));
 
 			entries.push({
 				update: update,
 				cves: pairs,
 				importantCves: importantCves,
-				worstScore: worstScore,
-				worstSeverity: worstSeverity,
 				link: this.advisoryLink(update.advisory || ""),
 			});
 		}
@@ -351,27 +316,30 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 	}
 
 	buttonIntent(entries: UpdateEntry[]): string {
-		if (entries.length === 0) {
-			return "";
-		}
-
-		let hasHigh = false;
+		let top = 0;
 		for (let entry of entries) {
-			if (entry.worstSeverity === "critical") {
-				return "bp5-intent-danger";
-			}
-			if (entry.worstSeverity === "high") {
-				hasHigh = true;
+			let score = entry.update.score || 0;
+			if (score > top) {
+				top = score;
 			}
 		}
 
-		return hasHigh ? "bp5-intent-warning" : "bp5-intent-primary";
+		switch (top) {
+			case SCORE_CRITICAL:
+				return "bp5-intent-danger";
+			case SCORE_HIGH:
+				return "bp5-intent-warning";
+			case SCORE_MEDIUM:
+				return "bp5-intent-primary";
+			default:
+				return "";
+		}
 	}
 
 	renderCveCard(entry: UpdateEntry, pair: CveDetail): JSX.Element {
-		let d = pair.detail;
-		let key = (entry.update.advisory || "") + "|" + pair.cve;
-		let nvdUrl = `https://access.redhat.com/security/cve/${pair.cve}`;
+		let d = pair.detail
+		let key = (entry.update.advisory || "") + "|" + pair.id
+		let nvdUrl = `https://access.redhat.com/security/cve/${pair.id}`
 
 		let tags: JSX.Element[] = [];
 		if (d.vector === "network") {
@@ -433,7 +401,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		let sevLabel = MiscUtils.capitalize(d.severity || "Unknown");
 		let scoreLabel = d.score ? ` ${d.score.toFixed(1)}` : "";
 
-		return <div key={pair.cve} style={css.cveCard}>
+		return <div key={pair.id} style={css.cveCard}>
 			<div className="layout horizontal" style={css.headerRow}>
 				<Blueprint.Tag
 					intent={sevIntent}
@@ -444,7 +412,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					target="_blank"
 					rel="noopener noreferrer"
 					style={css.cveTitle}
-				>{pair.cve}</a>
+				>{pair.id}</a>
 			</div>
 			{tags.length > 0 && <div className="layout horizontal wrap"
 				style={css.tagRow}>
@@ -513,9 +481,10 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 	renderUpdateCard(entry: UpdateEntry): JSX.Element {
 		let update = entry.update;
-		let sevIntent = this.severityIntent(entry.worstSeverity);
-		let sevLabel = entry.worstSeverity ?
-			MiscUtils.capitalize(entry.worstSeverity) : "Unknown";
+		let severity = this.scoreSeverity(update.score || 0);
+		let sevIntent = this.severityIntent(severity);
+		let sevLabel = severity ?
+			MiscUtils.capitalize(severity) : "Unknown";
 
 		let advisoryKey = update.advisory || "";
 		let cvesExpanded = !!this.state.expandedCves[advisoryKey];
@@ -540,7 +509,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			className="bp5-card bp5-elevation-0"
 			style={{
 				...css.updateCard,
-				borderLeftColor: this.severityBarColor(entry.worstSeverity),
+				borderLeftColor: this.severityBarColor(severity),
 			}}>
 			<div className="layout horizontal" style={css.updateHeader}>
 				<Blueprint.Tag
@@ -618,12 +587,13 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			</div>;
 		}
 
-		entries.sort((a, b) => b.worstScore - a.worstScore);
+		entries.sort((a, b) =>
+			(b.update.score || 0) - (a.update.score || 0));
 
 		let important: UpdateEntry[] = [];
 		let other: UpdateEntry[] = [];
 		for (let entry of entries) {
-			if (entry.importantCves.length > 0) {
+			if ((entry.update.score || 0) >= SCORE_HIGH) {
 				important.push(entry);
 			} else {
 				other.push(entry);
