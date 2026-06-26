@@ -77,7 +77,8 @@ export interface Node {
 	load1?: number;
 	load5?: number;
 	load15?: number;
-	updates?: Update[];
+	updates?: InstanceTypes.Update[];
+	vulnerabilities?: InstanceTypes.Vulnerability[];
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: Record<string, string>;
@@ -88,15 +89,6 @@ export interface Node {
 	oracle_user?: string;
 	oracle_tenancy?: string;
 	oracle_public_key?: string;
-}
-
-export interface Update {
-	advisory?: string;
-	cves?: string[];
-	severity?: string;
-	description?: string;
-	packages?: string[];
-	details?: InstanceTypes.Advisory[];
 }
 
 export function GetAllIfaces(node: Node): Interface[] {
