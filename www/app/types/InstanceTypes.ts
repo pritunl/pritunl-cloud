@@ -161,19 +161,19 @@ export interface Guest {
 	load5?: number;
 	load15?: number;
 	updates?: Update[];
+	vulnerabilities?: Vulnerability[];
 }
 
 export interface Update {
 	advisory?: string;
-	cves?: string[];
+	vulnerabilities?: string[];
 	severity?: string;
 	description?: string;
 	score?: number;
 	packages?: string[];
-	details?: Advisory[];
 }
 
-export interface Advisory {
+export interface Vulnerability {
 	id?: string;
 	timestamp?: string;
 	status?: string;
