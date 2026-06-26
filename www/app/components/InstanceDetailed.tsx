@@ -2050,7 +2050,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{instance.status}
 						</div>
 						<div className="flex tab-close"/>
-						<AdvisoryDialog updates={this.props.instance.guest?.updates}/>
+						<AdvisoryDialog
+							updates={this.props.instance.guest?.updates}
+							vulnerabilities={this.props.instance.guest?.vulnerabilities}
+						/>
 						<Relations kind="instance" id={this.props.instance.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
