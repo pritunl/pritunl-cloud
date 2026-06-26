@@ -308,7 +308,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				update: update,
 				cves: pairs,
 				importantCves: importantCves,
-				link: this.advisoryLink(update.advisory || ""),
+				link: this.advisoryLink(update.id || ""),
 			});
 		}
 
@@ -338,7 +338,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 	renderCveCard(entry: UpdateEntry, pair: CveDetail): JSX.Element {
 		let d = pair.detail
-		let key = (entry.update.advisory || "") + "|" + pair.id
+		let key = (entry.update.id || "") + "|" + pair.id
 		let nvdUrl = `https://access.redhat.com/security/cve/${pair.id}`
 
 		let tags: JSX.Element[] = [];
@@ -486,7 +486,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		let sevLabel = severity ?
 			MiscUtils.capitalize(severity) : "Unknown";
 
-		let advisoryKey = update.advisory || "";
+		let advisoryKey = update.id || "";
 		let cvesExpanded = !!this.state.expandedCves[advisoryKey];
 		let cvesToShow = cvesExpanded ? entry.cves : entry.importantCves;
 		let hiddenCount = entry.cves.length - entry.importantCves.length;
@@ -505,7 +505,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			...css.descriptionLimited,
 		};
 
-		return <div key={update.advisory}
+		return <div key={update.id}
 			className="bp5-card bp5-elevation-0"
 			style={{
 				...css.updateCard,
@@ -525,8 +525,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					target="_blank"
 					rel="noopener noreferrer"
 					style={css.title}
-				>{update.advisory}</a> : <span style={css.title}>
-					{update.advisory}
+				>{update.id}</a> : <span style={css.title}>
+					{update.id}
 				</span>}
 			</div>
 			{hasDescription && <div style={descriptionStyle}>
