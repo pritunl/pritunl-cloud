@@ -39,6 +39,7 @@ const css = {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '6px',
+		wordBreak: 'break-all',
 	} as React.CSSProperties,
 	buttons: {
 		verticalAlign: 'top',
