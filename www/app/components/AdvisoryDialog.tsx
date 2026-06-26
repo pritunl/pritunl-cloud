@@ -37,7 +37,7 @@ interface Props {
 const css = {
 	dialog: {
 		width: "90%",
-		maxWidth: "720px",
+		maxWidth: "900px",
 	} as React.CSSProperties,
 	body: {
 		padding: "12px 16px 0 16px",
