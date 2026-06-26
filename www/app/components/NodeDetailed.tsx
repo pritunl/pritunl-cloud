@@ -1670,7 +1670,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					>
 						<div className="flex tab-close"/>
-						<AdvisoryDialog updates={this.props.node.updates}/>
+						<AdvisoryDialog
+							updates={this.props.node.updates}
+							vulnerabilities={this.props.node.vulnerabilities}
+						/>
 						<Relations kind="node" id={this.props.node.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
