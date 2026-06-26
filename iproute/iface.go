@@ -2,6 +2,7 @@ package iproute
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -47,8 +48,32 @@ func IfaceGetAll(namespace string) (ifaces []*Iface, err error) {
 }
 
 func IfaceExists(namespace, name string) (exists bool, err error) {
-	ifaces, err := IfaceGetAll(namespace)
+	ifaces := []*Iface{}
+
+	args := []string{}
+	if namespace != "" {
+		args = append(args, "netns", "exec", namespace, "ip")
+	}
+	args = append(args, "--json", "--brief", "link", "show", "dev", name)
+
+	output, err := utils.ExecOutputLogged(
+		[]string{"does not exist"},
+		"ip", args...,
+	)
 	if err != nil {
+		return
+	}
+
+	output = strings.TrimSpace(output)
+	if output == "" {
+		return
+	}
+
+	err = json.Unmarshal([]byte(output), &ifaces)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "iproute: Failed to parse ifaces"),
+		}
 		return
 	}
 
