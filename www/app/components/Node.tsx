@@ -130,7 +130,7 @@ export default class Node extends React.Component<Props, {}> {
 
 		if (updateClass) {
 			updateElm = <Blueprint.Tooltip
-				content="Updates available"
+				content={`Security advisories (${node.updates?.length || 0})`}
 				openOnTargetFocus={false}
 				compact={true}
 				renderTarget={({isOpen, ...tooltipProps}) => (
