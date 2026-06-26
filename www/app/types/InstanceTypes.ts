@@ -165,7 +165,7 @@ export interface Guest {
 }
 
 export interface Update {
-	advisory?: string;
+	id?: string;
 	vulnerabilities?: string[];
 	severity?: string;
 	description?: string;
