@@ -6,6 +6,7 @@ import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as InstanceTypes from '../types/InstanceTypes';
+import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import InstancesStore from '../stores/InstancesStore';
 import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
@@ -271,6 +272,37 @@ export function updateMulti(instanceIds: string[],
 				}
 
 				resolve();
+			});
+	});
+}
+
+export function loadAdvisories(
+		instanceId: string): Promise<AdvisoryTypes.Advisory[]> {
+
+	let loader = new Loader().loading();
+
+	return new Promise<AdvisoryTypes.Advisory[]>((resolve, reject): void => {
+		SuperAgent
+			.get('/instance/' + instanceId + '/advisory')
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve([]);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load instance advisories');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body || []);
 			});
 	});
 }
