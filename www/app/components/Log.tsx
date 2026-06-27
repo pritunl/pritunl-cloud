@@ -24,11 +24,13 @@ const css = {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '6px',
+		width: '220px',
 	} as React.CSSProperties,
 	level: {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '6px',
+		width: '70px',
 	} as React.CSSProperties,
 	message: {
 		verticalAlign: 'top',
