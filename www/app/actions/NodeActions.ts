@@ -6,6 +6,7 @@ import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as NodeTypes from '../types/NodeTypes';
+import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import NodesStore from '../stores/NodesStore';
 import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
@@ -293,6 +294,37 @@ export function remove(nodeId: string): Promise<void> {
 				}
 
 				resolve();
+			});
+	});
+}
+
+export function loadAdvisories(
+		nodeId: string): Promise<AdvisoryTypes.Advisory[]> {
+
+	let loader = new Loader().loading();
+
+	return new Promise<AdvisoryTypes.Advisory[]>((resolve, reject): void => {
+		SuperAgent
+			.get('/node/' + nodeId + '/advisory')
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve([]);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load node advisories');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body || []);
 			});
 	});
 }
