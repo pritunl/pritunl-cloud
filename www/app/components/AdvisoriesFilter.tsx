@@ -101,11 +101,11 @@ export default class AdvisoriesFilter extends React.Component<Props, {}> {
 					}}
 				>
 					<option key="any" value="any">Any Severity</option>
-					<option key="Critical" value="Critical">Critical</option>
-					<option key="Important" value="Important">Important</option>
-					<option key="Moderate" value="Moderate">Moderate</option>
-					<option key="Low" value="Low">Low</option>
-					<option key="None" value="None">None</option>
+					<option key="critical" value="critical">Critical</option>
+					<option key="important" value="important">Important</option>
+					<option key="moderate" value="moderate">Moderate</option>
+					<option key="low" value="low">Low</option>
+					<option key="none" value="none">None</option>
 				</select>
 			</div>
 			<div className="bp5-select" style={css.type}>
