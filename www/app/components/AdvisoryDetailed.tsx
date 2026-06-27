@@ -1,0 +1,499 @@
+/// <reference path="../References.d.ts"/>
+import * as React from 'react';
+import * as Blueprint from "@blueprintjs/core";
+import * as AdvisoryTypes from '../types/AdvisoryTypes';
+import * as AdvisoryActions from '../actions/AdvisoryActions';
+import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as MiscUtils from '../utils/MiscUtils';
+import PageInfo from './PageInfo';
+import * as PageInfos from './PageInfo';
+import ConfirmButton from './ConfirmButton';
+import CompletionStore from '../stores/CompletionStore';
+import {severityClass, scoreLabel} from './Advisory';
+
+interface Props {
+	organizations: OrganizationTypes.OrganizationsRo;
+	advisory: AdvisoryTypes.AdvisoryRo;
+	selected: boolean;
+	onSelect: (shift: boolean) => void;
+	onClose: () => void;
+}
+
+interface State {
+	disabled: boolean;
+	expanded: {[key: string]: boolean};
+}
+
+const css = {
+	card: {
+		position: 'relative',
+		padding: '48px 10px 0 10px',
+		width: '100%',
+	} as React.CSSProperties,
+	button: {
+		height: '30px',
+	} as React.CSSProperties,
+	buttons: {
+		cursor: 'pointer',
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		padding: '4px',
+		height: '39px',
+	} as React.CSSProperties,
+	group: {
+		flex: 1,
+		minWidth: '280px',
+		margin: '0 10px',
+	} as React.CSSProperties,
+	select: {
+		margin: '7px 0px 0px 6px',
+		paddingTop: '3px',
+	} as React.CSSProperties,
+	status: {
+		margin: '6px 0 0 1px',
+	} as React.CSSProperties,
+	icon: {
+		marginRight: '3px',
+	} as React.CSSProperties,
+	cards: {
+		width: '100%',
+		padding: '0 10px',
+		marginTop: '4px',
+	} as React.CSSProperties,
+	section: {
+		display: 'flex',
+		alignItems: 'center',
+		margin: '14px 0 8px 0',
+		fontWeight: 600,
+	} as React.CSSProperties,
+	sectionIcon: {
+		marginRight: '6px',
+	} as React.CSSProperties,
+	count: {
+		marginLeft: '6px',
+		opacity: 0.7,
+	} as React.CSSProperties,
+	itemCard: {
+		padding: '12px',
+		marginBottom: '12px',
+		borderLeftWidth: '4px',
+		borderLeftStyle: 'solid',
+	} as React.CSSProperties,
+	itemHeader: {
+		alignItems: 'center',
+		gap: '8px',
+		margin: '-12px -12px 10px -12px',
+		padding: '10px 12px',
+		background: 'rgba(138, 155, 168, 0.12)',
+		borderBottom: '1px solid rgba(138, 155, 168, 0.25)',
+		borderTopRightRadius: '3px',
+	} as React.CSSProperties,
+	headerTag: {
+		paddingTop: '3px',
+		paddingBottom: '3px',
+	} as React.CSSProperties,
+	title: {
+		fontFamily: 'monospace',
+		fontSize: '14px',
+		fontWeight: 600,
+	} as React.CSSProperties,
+	tagRow: {
+		marginBottom: '8px',
+		gap: '6px',
+	} as React.CSSProperties,
+	tag: {
+		paddingTop: '3px',
+		paddingBottom: '3px',
+		marginBottom: '4px',
+	} as React.CSSProperties,
+	description: {
+		fontSize: '13px',
+		whiteSpace: 'pre-wrap',
+		wordBreak: 'break-word',
+		padding: '6px 8px',
+		background: 'rgba(138, 155, 168, 0.1)',
+		borderRadius: '3px',
+	} as React.CSSProperties,
+	descriptionLimited: {
+		display: '-webkit-box',
+		WebkitLineClamp: 6,
+		WebkitBoxOrient: 'vertical',
+		overflow: 'hidden',
+	} as React.CSSProperties,
+	descriptionToggle: {
+		marginTop: '4px',
+		padding: '0',
+		minHeight: '0',
+		fontSize: '12px',
+	} as React.CSSProperties,
+	ipRow: {
+		display: 'flex',
+		alignItems: 'baseline',
+		marginTop: '4px',
+		gap: '8px',
+	} as React.CSSProperties,
+	ipLabel: {
+		flex: '0 0 130px',
+		fontSize: '12px',
+		color: 'var(--bp5-text-color-muted, #5f6b7c)',
+	} as React.CSSProperties,
+	ipValue: {
+		flex: '1',
+		fontFamily: 'monospace',
+		fontSize: '13px',
+		wordBreak: 'break-all',
+	} as React.CSSProperties,
+};
+
+export default class AdvisoryDetailed extends React.Component<Props, State> {
+	constructor(props: any, context: any) {
+		super(props, context);
+		this.state = {
+			disabled: false,
+			expanded: {},
+		};
+	}
+
+	onDelete = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.remove(this.props.advisory.id).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	advisoryLink(advisoryRaw: string): string {
+		let advisory = (advisoryRaw || "").replace(/[^a-zA-Z0-9:-]/g, '')
+		if (advisory.startsWith('ALSA') || advisory.startsWith('RLSA') ||
+				advisory.startsWith('RHSA')) {
+			return `https://access.redhat.com/errata/RH${advisory.slice(2)}`
+		} else if (advisory.startsWith('ELSA')) {
+			return `https://linux.oracle.com/errata/${advisory}.html`
+		} else if (advisory.startsWith('FEDORA')) {
+			return `https://bodhi.fedoraproject.org/updates/${advisory}`
+		}
+		return ""
+	}
+
+	severityIntent(severity: string): Blueprint.Intent {
+		switch ((severity || '').toLowerCase()) {
+			case 'critical':
+				return Blueprint.Intent.DANGER;
+			case 'important':
+			case 'high':
+				return Blueprint.Intent.WARNING;
+			case 'moderate':
+			case 'medium':
+				return Blueprint.Intent.PRIMARY;
+			case 'low':
+				return Blueprint.Intent.SUCCESS;
+			default:
+				return Blueprint.Intent.NONE;
+		}
+	}
+
+	severityBarColor(severity: string): string {
+		switch ((severity || '').toLowerCase()) {
+			case 'critical':
+				return 'var(--bp5-intent-danger, #cd4246)';
+			case 'important':
+			case 'high':
+				return 'var(--bp5-intent-warning, #c87619)';
+			case 'moderate':
+			case 'medium':
+				return 'var(--bp5-intent-primary, #215db0)';
+			case 'low':
+				return 'var(--bp5-intent-success, #1c6e42)';
+			default:
+				return 'rgba(138, 155, 168, 0.4)';
+		}
+	}
+
+	stateIntent(state: string): Blueprint.Intent {
+		switch ((state || '').toLowerCase()) {
+			case 'running':
+			case 'start':
+				return Blueprint.Intent.SUCCESS;
+			case 'starting':
+			case 'provisioning':
+				return Blueprint.Intent.PRIMARY;
+			case 'destroy':
+			case 'destroying':
+				return Blueprint.Intent.DANGER;
+			default:
+				return Blueprint.Intent.NONE;
+		}
+	}
+
+	renderDescription(key: string, text: string): JSX.Element {
+		if (!text) {
+			return null;
+		}
+
+		let expanded = !!this.state.expanded[key];
+		let style = expanded ? css.description : {
+			...css.description,
+			...css.descriptionLimited,
+		};
+
+		return <React.Fragment>
+			<div style={style}>
+				{text}
+			</div>
+			<button
+				className="bp5-button bp5-minimal bp5-small"
+				type="button"
+				style={css.descriptionToggle}
+				onClick={(): void => {
+					this.setState({
+						...this.state,
+						expanded: {
+							...this.state.expanded,
+							[key]: !expanded,
+						},
+					});
+				}}
+			>{expanded ? "Show less" : "Show more"}</button>
+		</React.Fragment>;
+	}
+
+	renderIps(label: string, ips: string[]): JSX.Element {
+		if (!ips || !ips.length) {
+			return null;
+		}
+
+		return <div style={css.ipRow}>
+			<span style={css.ipLabel}>{label}</span>
+			<span style={css.ipValue}>{ips.join(', ')}</span>
+		</div>;
+	}
+
+	renderVulnCard(vuln: AdvisoryTypes.Vulnerability): JSX.Element {
+		let vulnId = vuln.id.split(":").pop();
+		let nvdUrl = `https://access.redhat.com/security/cve/${vulnId}`;
+
+		let tags: JSX.Element[] = [];
+		if (vuln.vector === "network") {
+			tags.push(<Blueprint.Tag key="vec" intent="danger"
+				icon="globe-network" style={css.tag}>Network</Blueprint.Tag>);
+		} else if (vuln.vector === "adjacent") {
+			tags.push(<Blueprint.Tag key="vec" intent="warning"
+				icon="globe-network" style={css.tag}>Adjacent</Blueprint.Tag>);
+		} else if (vuln.vector === "local") {
+			tags.push(<Blueprint.Tag key="vec" intent="success"
+				icon="globe-network" style={css.tag}>Local</Blueprint.Tag>);
+		} else if (vuln.vector === "physical") {
+			tags.push(<Blueprint.Tag key="vec" intent="success"
+				icon="globe-network" style={css.tag}>Physical</Blueprint.Tag>);
+		}
+		if (vuln.privileges === "none") {
+			tags.push(<Blueprint.Tag key="priv" intent="danger"
+				icon="shield" style={css.tag}>Unauthenticated</Blueprint.Tag>);
+		} else if (vuln.privileges === "low") {
+			tags.push(<Blueprint.Tag key="priv" intent="warning"
+				icon="shield" style={css.tag}>Low Privileged</Blueprint.Tag>);
+		} else if (vuln.privileges === "high") {
+			tags.push(<Blueprint.Tag key="priv" intent="success"
+				icon="shield" style={css.tag}>High Privileged</Blueprint.Tag>);
+		}
+		if (vuln.interaction === "none") {
+			tags.push(<Blueprint.Tag key="int" intent="danger"
+				icon="console" style={css.tag}>No Interaction</Blueprint.Tag>);
+		} else if (vuln.interaction === "required") {
+			tags.push(<Blueprint.Tag key="int" intent="success"
+				icon="console" style={css.tag}>User Interaction</Blueprint.Tag>);
+		}
+		if (vuln.scope === "changed") {
+			tags.push(<Blueprint.Tag key="scope" intent="warning"
+				icon="route" style={css.tag}>Scope Changed</Blueprint.Tag>);
+		}
+
+		let sevIntent = this.severityIntent(vuln.severity || "");
+		let sevLabel = MiscUtils.capitalize(vuln.severity || "Unknown");
+		let scoreStr = vuln.score ? ` ${vuln.score.toFixed(1)}` : "";
+
+		return <div key={vuln.id}
+			className="bp5-card bp5-elevation-0"
+			style={{
+				...css.itemCard,
+				borderLeftColor: this.severityBarColor(vuln.severity || ""),
+			}}>
+			<div className="layout horizontal" style={css.itemHeader}>
+				<Blueprint.Tag intent={sevIntent} icon="shield"
+					style={css.headerTag}>{sevLabel}{scoreStr}</Blueprint.Tag>
+				<a
+					href={nvdUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					style={css.title}
+				>{vulnId}</a>
+			</div>
+			{tags.length > 0 && <div className="layout horizontal wrap"
+				style={css.tagRow}>
+				{tags}
+			</div>}
+			{this.renderDescription(vuln.id, vuln.description)}
+		</div>;
+	}
+
+	render(): JSX.Element {
+		let advisory = this.props.advisory;
+
+		let org = CompletionStore.organization(advisory.organization);
+
+		let typeLabel = advisory.type;
+		if (advisory.type === 'rhel') {
+			typeLabel = 'Red Hat';
+		}
+
+		let statusClass = 'tab-close ' + severityClass(advisory.severity);
+
+		let fields: PageInfos.Field[] = [
+			{
+				label: 'ID',
+				value: advisory.id || 'Unknown',
+				copy: true,
+			},
+			{
+				label: 'Organization',
+				value: org ? org.name : (advisory.organization || 'Global'),
+			},
+			{
+				label: 'Reference',
+				value: advisory.reference || '-',
+				copy: true,
+				link: this.advisoryLink(advisory.reference || ""),
+			},
+			{
+				label: 'Type',
+				value: typeLabel || '-',
+			},
+			{
+				label: 'Severity',
+				value: MiscUtils.capitalize(advisory.severity) || 'Unknown',
+				valueClass: severityClass(advisory.severity),
+			},
+			{
+				label: 'Score',
+				value: scoreLabel(advisory.score),
+			},
+			{
+				label: 'Updated',
+				value: MiscUtils.formatDate(advisory.updated) || '-',
+			},
+		];
+
+		if (advisory.description) {
+			fields.push({
+				label: 'Description',
+				value: advisory.description,
+			});
+		}
+
+		let detailFields: PageInfos.Field[] = [];
+
+		if (advisory.packages && advisory.packages.length) {
+			detailFields.push({
+				label: 'Packages',
+				value: [...advisory.packages],
+			});
+		}
+
+		let vulnerabilities = advisory.vulnerabilities || [];
+
+		return <td
+			className="bp5-cell"
+			colSpan={5}
+			style={css.card}
+		>
+			<div className="layout horizontal wrap">
+				<div
+					className="layout horizontal tab-close bp5-card-header"
+					style={css.buttons}
+					onClick={(evt): void => {
+						if (evt.target instanceof HTMLElement &&
+								evt.target.className.indexOf('tab-close') !== -1) {
+							this.props.onClose();
+						}
+					}}
+				>
+					<div>
+						<label
+							className="bp5-control bp5-checkbox tab-close"
+							style={css.select}
+						>
+							<input
+								type="checkbox"
+								checked={this.props.selected}
+								onChange={(evt): void => {
+								}}
+								onClick={(evt): void => {
+									this.props.onSelect(evt.shiftKey);
+								}}
+							/>
+							<span className="bp5-control-indicator"/>
+						</label>
+					</div>
+					<div className={statusClass} style={css.status}>
+						<span
+							style={css.icon}
+							className="bp5-icon-standard bp5-icon-warning-sign"
+						/>
+						{MiscUtils.capitalize(advisory.severity) || 'Unknown'}
+					</div>
+					<div className="flex tab-close"/>
+					<ConfirmButton
+						className="bp5-minimal bp5-intent-danger bp5-icon-trash"
+						style={css.button}
+						safe={true}
+						progressClassName="bp5-intent-danger"
+						dialogClassName="bp5-intent-danger bp5-icon-delete"
+						dialogLabel="Delete Advisory"
+						confirmMsg="Permanently delete this advisory"
+						confirmInput={true}
+						items={[advisory.reference]}
+						disabled={this.state.disabled}
+						onConfirm={this.onDelete}
+					/>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={fields}
+					/>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						hidden={!detailFields.length}
+						fields={detailFields}
+					/>
+				</div>
+			</div>
+			<div style={css.cards}>
+				{vulnerabilities.length > 0 ? <React.Fragment>
+					<div style={css.section}>
+						<span
+							className="bp5-icon-standard bp5-icon-shield"
+							style={css.sectionIcon}
+						/>
+						Vulnerabilities
+						<span style={css.count}>({vulnerabilities.length})</span>
+					</div>
+					{vulnerabilities.map((vuln): JSX.Element =>
+						this.renderVulnCard(vuln))}
+				</React.Fragment> : null}
+			</div>
+		</td>;
+	}
+}
