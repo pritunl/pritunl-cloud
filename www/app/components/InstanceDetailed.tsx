@@ -3,6 +3,7 @@ import * as React from 'react';
 import RFB from '@novnc/novnc';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DomainTypes from '../types/DomainTypes';
 import * as PageInfos from './PageInfo';
@@ -57,6 +58,7 @@ interface State {
 	vncSuper: boolean;
 	vncScale: boolean;
 	vncHeight: number;
+	advisories: AdvisoryTypes.Advisory[];
 }
 
 const css = {
@@ -163,6 +165,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			vncSuper: false,
 			vncScale: true,
 			vncHeight: null,
+			advisories: [],
 		};
 
 		this.vncRef = React.createRef();
@@ -1201,6 +1204,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	loadAdvisories = (): Promise<void> => {
+		return InstanceActions.loadAdvisories(this.props.instance.id).then(
+			(advisories): void => {
+				this.setState({
+					...this.state,
+					advisories: advisories,
+				});
+			},
+		);
+	}
+
 	onDelete = (): void => {
 		this.setState({
 			...this.state,
@@ -2051,8 +2065,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 						<div className="flex tab-close"/>
 						<AdvisoryDialog
-							updates={this.props.instance.guest?.updates}
-							vulnerabilities={this.props.instance.guest?.vulnerabilities}
+							advisories={this.state.advisories}
+							onOpen={this.loadAdvisories}
 						/>
 						<Relations kind="instance" id={this.props.instance.id}/>
 						<ConfirmButton
