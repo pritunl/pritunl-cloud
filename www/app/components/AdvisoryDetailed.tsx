@@ -28,7 +28,7 @@ interface State {
 const css = {
 	card: {
 		position: 'relative',
-		padding: '48px 10px 0 10px',
+		padding: '48px 10px 10px 10px',
 		width: '100%',
 	} as React.CSSProperties,
 	button: {
