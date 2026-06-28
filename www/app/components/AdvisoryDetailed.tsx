@@ -334,6 +334,69 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 	}
 
+	renderNodeCard(node: AdvisoryTypes.NodeInfo): JSX.Element {
+		let publicIps = node.public_ips && node.public_ips.length ?
+			node.public_ips : ['-'];
+		let publicIps6 = node.public_ips6 && node.public_ips6.length ?
+			node.public_ips6 : ['-'];
+		let privateIps = node.private_ips && node.private_ips.length ?
+			node.private_ips : ['-'];
+
+		return <Blueprint.Card
+			key={node.id}
+			compact={true}
+			style={css.instCard}
+		>
+			<div className="layout horizontal flex" style={css.instBox}>
+				<div style={css.instItemFirst}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Node',
+								value: node.name || '-',
+							},
+							{
+								label: 'Node ID',
+								value: node.id || '-',
+							},
+						]}
+					/>
+				</div>
+				<div style={css.instItem}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Private IPv4',
+								value: privateIps,
+							},
+							{
+								label: 'Public IPv4',
+								value: publicIps,
+							},
+						]}
+					/>
+				</div>
+				<div style={css.instItemFull}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Public IPv6',
+								value: publicIps6,
+								maxLines: 2,
+							},
+						]}
+					/>
+				</div>
+			</div>
+		</Blueprint.Card>;
+	}
+
 	renderInstanceCard(inst: AdvisoryTypes.InstanceInfo): JSX.Element {
 		let statusValue = inst.status || '-';
 		let statusClass = this.instanceStatusClass(inst.status || '');
@@ -556,6 +619,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 
 		let vulnerabilities = advisory.vulnerabilities || [];
+		let nodes = advisory.nodes_info || [];
 		let instances = advisory.instances_info || [];
 
 		return <td
@@ -637,6 +701,18 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					</div>
 					{vulnerabilities.map((vuln): JSX.Element =>
 						this.renderVulnCard(vuln))}
+				</React.Fragment> : null}
+				{nodes.length > 0 ? <React.Fragment>
+					<div style={css.section}>
+						<span
+							className="bp5-icon-standard bp5-icon-cloud"
+							style={css.sectionIcon}
+						/>
+						Nodes
+						<span style={css.count}>({nodes.length})</span>
+					</div>
+					{nodes.map((node): JSX.Element =>
+						this.renderNodeCard(node))}
 				</React.Fragment> : null}
 				{instances.length > 0 ? <React.Fragment>
 					<div style={css.section}>
