@@ -6,6 +6,7 @@ import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as NodeActions from '../actions/NodeActions';
+import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import * as BlockTypes from '../types/BlockTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as PageInfos from './PageInfo';
@@ -54,6 +55,7 @@ interface State {
 	addDrive: string;
 	forwardedChecked: boolean;
 	forwardedProtoChecked: boolean;
+	advisories: AdvisoryTypes.Advisory[];
 }
 
 const css = {
@@ -154,7 +156,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			addDrive: null,
 			forwardedChecked: false,
 			forwardedProtoChecked: false,
+			advisories: [],
 		};
+	}
+
+	loadAdvisories = (): Promise<void> => {
+		return NodeActions.loadAdvisories(this.props.node.id).then(
+			(advisories): void => {
+				this.setState({
+					...this.state,
+					advisories: advisories,
+				});
+			},
+		);
 	}
 
 	set(name: string, val: any): void {
@@ -1671,8 +1685,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<div className="flex tab-close"/>
 						<AdvisoryDialog
-							updates={this.props.node.updates}
-							vulnerabilities={this.props.node.vulnerabilities}
+							advisories={this.state.advisories}
+							onOpen={this.loadAdvisories}
 						/>
 						<Relations kind="node" id={this.props.node.id}/>
 						<ConfirmButton
