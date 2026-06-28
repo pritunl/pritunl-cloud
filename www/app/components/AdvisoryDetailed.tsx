@@ -1,6 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Blueprint from "@blueprintjs/core";
+import * as Theme from '../Theme';
 import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import * as AdvisoryActions from '../actions/AdvisoryActions';
 import * as OrganizationTypes from '../types/OrganizationTypes';
@@ -145,6 +146,37 @@ const css = {
 		fontSize: '13px',
 		wordBreak: 'break-all',
 	} as React.CSSProperties,
+	instCard: {
+		padding: '5px 0 0 0',
+		marginBottom: '8px',
+	} as React.CSSProperties,
+	instBox: {
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	instInfo: {
+		marginBottom: '0px',
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	instItemFirst: {
+		flex: '1 1 auto',
+		minWidth: '100px',
+		maxWidth: '170px',
+		margin: '0 5px',
+	} as React.CSSProperties,
+	instItem: {
+		flex: '1 1 auto',
+		width: 0,
+		margin: '0 5px',
+	} as React.CSSProperties,
+	instItemFull: {
+		flex: '2 1 auto',
+		width: 0,
+		margin: '0 5px',
+	} as React.CSSProperties,
 };
 
 export default class AdvisoryDetailed extends React.Component<Props, State> {
@@ -280,6 +312,118 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		</div>;
 	}
 
+	instanceStatusClass(status: string): string {
+		switch (status) {
+			case 'Running':
+				return 'bp5-text-intent-success';
+			case 'Starting':
+			case 'Restarting':
+			case 'Updating':
+			case 'Provisioning':
+				return 'bp5-text-intent-primary';
+			case 'Failed':
+			case 'Stopping':
+			case 'Stopped':
+			case 'Destroying':
+				return 'bp5-text-intent-danger';
+			default:
+				if (status && status.startsWith('Restart Required')) {
+					return 'bp5-text-intent-warning';
+				}
+				return '';
+		}
+	}
+
+	renderInstanceCard(inst: AdvisoryTypes.InstanceInfo): JSX.Element {
+		let statusValue = inst.status || '-';
+		let statusClass = this.instanceStatusClass(inst.status || '');
+
+		let publicIps = inst.public_ips && inst.public_ips.length ?
+			inst.public_ips : ['-'];
+		let publicIps6 = inst.public_ips6 && inst.public_ips6.length ?
+			inst.public_ips6 : ['-'];
+		let privateIps = inst.private_ips && inst.private_ips.length ?
+			inst.private_ips : ['-'];
+		let privateIps6 = inst.private_ips6 && inst.private_ips6.length ?
+			inst.private_ips6 : ['-'];
+
+		return <Blueprint.Card
+			key={inst.id}
+			compact={true}
+			style={css.instCard}
+		>
+			<div className="layout horizontal flex" style={css.instBox}>
+				<div style={css.instItemFirst}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Instance',
+								value: inst.name || '-',
+							},
+							{
+								label: 'Instance ID',
+								value: inst.id || '-',
+							},
+						]}
+					/>
+				</div>
+				<div style={css.instItem}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Status',
+								value: statusValue,
+								valueClass: statusClass,
+							},
+							{
+								label: 'Uptime',
+								value: inst.uptime || '-',
+							},
+						]}
+					/>
+				</div>
+				<div style={css.instItem}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Private IPv4',
+								value: privateIps,
+							},
+							{
+								label: 'Public IPv4',
+								value: publicIps,
+							},
+						]}
+					/>
+				</div>
+				<div style={css.instItemFull}>
+					<PageInfo
+						compact={true}
+						style={css.instInfo}
+						fields={[
+							{
+								label: 'Private IPv6',
+								value: privateIps6,
+								maxLines: 2,
+							},
+							{
+								label: 'Public IPv6',
+								value: publicIps6,
+								maxLines: 2,
+							},
+						]}
+					/>
+				</div>
+			</div>
+		</Blueprint.Card>;
+	}
+
 	renderVulnCard(vuln: AdvisoryTypes.Vulnerability): JSX.Element {
 		let vulnId = vuln.id.split(":").pop();
 		let nvdUrl = `https://access.redhat.com/security/cve/${vulnId}`;
@@ -412,6 +556,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 
 		let vulnerabilities = advisory.vulnerabilities || [];
+		let instances = advisory.instances_info || [];
 
 		return <td
 			className="bp5-cell"
@@ -492,6 +637,18 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					</div>
 					{vulnerabilities.map((vuln): JSX.Element =>
 						this.renderVulnCard(vuln))}
+				</React.Fragment> : null}
+				{instances.length > 0 ? <React.Fragment>
+					<div style={css.section}>
+						<span
+							className="bp5-icon-standard bp5-icon-desktop"
+							style={css.sectionIcon}
+						/>
+						Instances
+						<span style={css.count}>({instances.length})</span>
+					</div>
+					{instances.map((inst): JSX.Element =>
+						this.renderInstanceCard(inst))}
 				</React.Fragment> : null}
 			</div>
 		</td>;
