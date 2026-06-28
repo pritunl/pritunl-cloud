@@ -23,6 +23,7 @@ interface Props {
 interface State {
 	disabled: boolean;
 	expanded: {[key: string]: boolean};
+	expandedCves: boolean;
 }
 
 const css = {
@@ -185,6 +186,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		this.state = {
 			disabled: false,
 			expanded: {},
+			expandedCves: false,
 		};
 	}
 
@@ -555,6 +557,73 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		</div>;
 	}
 
+	renderVulnerabilities(
+			vulns: AdvisoryTypes.Vulnerability[]): JSX.Element {
+		if (!vulns || !vulns.length) {
+			return null;
+		}
+
+		let sorted = [...vulns].sort((a, b) =>
+			(b.score || 0) - (a.score || 0));
+
+		let important: AdvisoryTypes.Vulnerability[] = [];
+		let other: AdvisoryTypes.Vulnerability[] = [];
+		for (let vuln of sorted) {
+			if (vuln.severity === "critical" || vuln.severity === "high") {
+				important.push(vuln);
+			} else {
+				other.push(vuln);
+			}
+		}
+
+		return <React.Fragment>
+			<div style={css.section}>
+				<span
+					className="bp5-icon-standard bp5-icon-shield"
+					style={css.sectionIcon}
+				/>
+				Vulnerabilities
+				<span style={css.count}>({vulns.length})</span>
+			</div>
+			{important.length > 0 ? <React.Fragment>
+				<div style={css.section}>
+					<span
+						className="bp5-icon-standard bp5-icon-warning-sign bp5-text-intent-danger"
+						style={css.sectionIcon}
+					/>
+					High Risk ({important.length})
+				</div>
+				{important.map((vuln): JSX.Element =>
+					this.renderVulnCard(vuln))}
+			</React.Fragment> : <div className="bp5-callout bp5-intent-success"
+				style={{padding: '10px', marginBottom: '10px'}}>
+				No high risk vulnerabilities.
+			</div>}
+			{other.length > 0 ? <React.Fragment>
+				<button
+					className={"bp5-button bp5-minimal " +
+						(this.state.expandedCves ?
+							"bp5-icon-chevron-down" :
+							"bp5-icon-chevron-right")}
+					type="button"
+					style={{margin: '0 0 8px 0'}}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							expandedCves: !this.state.expandedCves,
+						});
+					}}
+				>
+					Lower Risk ({other.length})
+				</button>
+				{this.state.expandedCves ? <div>
+					{other.map((vuln): JSX.Element =>
+						this.renderVulnCard(vuln))}
+				</div> : null}
+			</React.Fragment> : null}
+		</React.Fragment>;
+	}
+
 	render(): JSX.Element {
 		let advisory = this.props.advisory;
 
@@ -690,18 +759,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				</div>
 			</div>
 			<div style={css.cards}>
-				{vulnerabilities.length > 0 ? <React.Fragment>
-					<div style={css.section}>
-						<span
-							className="bp5-icon-standard bp5-icon-shield"
-							style={css.sectionIcon}
-						/>
-						Vulnerabilities
-						<span style={css.count}>({vulnerabilities.length})</span>
-					</div>
-					{vulnerabilities.map((vuln): JSX.Element =>
-						this.renderVulnCard(vuln))}
-				</React.Fragment> : null}
+				{this.renderVulnerabilities(vulnerabilities)}
 				{nodes.length > 0 ? <React.Fragment>
 					<div style={css.section}>
 						<span
