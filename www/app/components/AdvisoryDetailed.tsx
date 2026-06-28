@@ -13,6 +13,8 @@ import ConfirmButton from './ConfirmButton';
 import CompletionStore from '../stores/CompletionStore';
 import {severityClass, scoreLabel} from './Advisory';
 
+const DESC_MAX_HEIGHT = 400;
+
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	advisory: AdvisoryTypes.AdvisoryRo;
@@ -25,6 +27,7 @@ interface State {
 	disabled: boolean;
 	expanded: {[key: string]: boolean};
 	expandedCves: boolean;
+	descHeight: number;
 }
 
 const css = {
@@ -193,6 +196,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			disabled: false,
 			expanded: {},
 			expandedCves: false,
+			descHeight: DESC_MAX_HEIGHT,
 		};
 	}
 
@@ -212,6 +216,20 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				disabled: false,
 			});
 		});
+	}
+
+	onDescMount = (editor: any): void => {
+		let updateHeight = (): void => {
+			let height = Math.min(DESC_MAX_HEIGHT, editor.getContentHeight());
+			if (height !== this.state.descHeight) {
+				this.setState({
+					...this.state,
+					descHeight: height,
+				});
+			}
+		};
+		editor.onDidContentSizeChange(updateHeight);
+		updateHeight();
 	}
 
 	advisoryLink(advisoryRaw: string): string {
@@ -766,11 +784,12 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					Description
 				</div>
 				<MonacoEditor.Editor
-					height="400px"
+					height={this.state.descHeight + "px"}
 					width="100%"
 					defaultLanguage="markdown"
 					theme={Theme.getEditorTheme()}
 					value={advisory.description}
+					onMount={this.onDescMount}
 					options={{
 						readOnly: true,
 						folding: false,
@@ -780,6 +799,9 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						tabSize: 4,
 						detectIndentation: false,
 						scrollBeyondLastLine: false,
+						scrollbar: {
+							alwaysConsumeMouseWheel: false,
+						},
 						minimap: {
 							enabled: false,
 						},
