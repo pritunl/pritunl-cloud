@@ -29,6 +29,7 @@ import Storages from './Storages';
 import Images from './Images';
 import Pools from './Pools';
 import Disks from './Disks';
+import Advisories from './Advisories';
 import Instances from './Instances';
 import Pods from './Pods';
 import Firewalls from './Firewalls';
@@ -190,6 +191,13 @@ export default class Main extends React.Component<{}, State> {
 						to="/disks"
 					>
 						Disks
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-warning-sign"
+						style={css.link}
+						to="/advisories"
+					>
+						Advisories
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-compressed"
@@ -424,6 +432,9 @@ export default class Main extends React.Component<{}, State> {
 					)}/>
 					<RouterRoute path="/disks" render={() => (
 						<Disks/>
+					)}/>
+					<RouterRoute path="/advisories" render={() => (
+						<Advisories/>
 					)}/>
 					<RouterRoute path="/images" render={() => (
 						<Images/>
