@@ -2,6 +2,7 @@
 import * as React from 'react';
 import * as Blueprint from "@blueprintjs/core";
 import * as Theme from '../Theme';
+import * as MonacoEditor from "@monaco-editor/react";
 import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import * as AdvisoryActions from '../actions/AdvisoryActions';
 import * as OrganizationTypes from '../types/OrganizationTypes';
@@ -60,6 +61,11 @@ const css = {
 		marginRight: '3px',
 	} as React.CSSProperties,
 	cards: {
+		width: '100%',
+		padding: '0 10px',
+		marginTop: '4px',
+	} as React.CSSProperties,
+	descEditor: {
 		width: '100%',
 		padding: '0 10px',
 		marginTop: '4px',
@@ -671,13 +677,6 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			},
 		];
 
-		if (advisory.description) {
-			fields.push({
-				label: 'Description',
-				value: advisory.description,
-			});
-		}
-
 		let detailFields: PageInfos.Field[] = [];
 
 		if (advisory.packages && advisory.packages.length) {
@@ -758,6 +757,37 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					/>
 				</div>
 			</div>
+			{advisory.description ? <div style={css.descEditor}>
+				<div style={css.section}>
+					<span
+						className="bp5-icon-standard bp5-icon-align-left"
+						style={css.sectionIcon}
+					/>
+					Description
+				</div>
+				<MonacoEditor.Editor
+					height="400px"
+					width="100%"
+					defaultLanguage="markdown"
+					theme={Theme.getEditorTheme()}
+					value={advisory.description}
+					options={{
+						readOnly: true,
+						folding: false,
+						fontSize: 12,
+						fontFamily: Theme.monospaceFont,
+						fontWeight: Theme.monospaceWeight,
+						tabSize: 4,
+						detectIndentation: false,
+						scrollBeyondLastLine: false,
+						minimap: {
+							enabled: false,
+						},
+						wordWrap: "on",
+						automaticLayout: true,
+					}}
+				/>
+			</div> : null}
 			<div style={css.cards}>
 				{this.renderVulnerabilities(vulnerabilities)}
 				{nodes.length > 0 ? <React.Fragment>
