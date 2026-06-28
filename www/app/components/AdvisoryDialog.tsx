@@ -1,16 +1,20 @@
 /// <reference path="../References.d.ts"/>
 import * as React from "react";
 import * as Blueprint from "@blueprintjs/core";
-import * as InstanceTypes from "../types/InstanceTypes";
+import * as AdvisoryTypes from "../types/AdvisoryTypes";
 import * as MiscUtils from "../utils/MiscUtils";
 
 interface CveDetail {
 	id: string;
-	detail: InstanceTypes.Vulnerability;
+	detail: AdvisoryTypes.Vulnerability;
 }
 
 interface UpdateEntry {
-	update: InstanceTypes.Update;
+	id: string;
+	severity: string;
+	description: string;
+	score: number;
+	packages: string[];
 	cves: CveDetail[];
 	importantCves: CveDetail[];
 	link?: string;
@@ -23,6 +27,7 @@ const SCORE_CRITICAL = 4;
 
 interface State {
 	open: boolean;
+	loading: boolean;
 	showLowSeverity: boolean;
 	expanded: {[key: string]: boolean};
 	expandedStatements: {[key: string]: boolean};
@@ -30,8 +35,8 @@ interface State {
 }
 
 interface Props {
-	updates: InstanceTypes.Update[];
-	vulnerabilities: InstanceTypes.Vulnerability[];
+	advisories: AdvisoryTypes.Advisory[];
+	onOpen?: () => Promise<void>;
 }
 
 const css = {
@@ -188,6 +193,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		super(props, context);
 		this.state = {
 			open: false,
+			loading: false,
 			showLowSeverity: false,
 			expanded: {},
 			expandedStatements: {},
@@ -270,31 +276,22 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 	}
 
 	buildEntries(): UpdateEntry[] {
-		let updates = this.props.updates;
-		if (!updates) {
+		let advisories = this.props.advisories;
+		if (!advisories) {
 			return [];
 		}
 
-		let vulns: Record<string, InstanceTypes.Vulnerability> = {};
-		for (let vuln of (this.props.vulnerabilities || [])) {
-			vulns[vuln.id.split(":").pop()] = vuln
-		}
-
 		let entries: UpdateEntry[] = [];
-		for (let update of updates) {
-			let vulnIds = update.vulnerabilities || [];
+		for (let advisory of advisories) {
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
-			for (let vulnId of vulnIds) {
+			for (let vuln of (advisory.vulnerabilities || [])) {
+				let vulnId = (vuln.id || "").split(":").pop();
 				if (!vulnId || seen.has(vulnId)) {
 					continue;
 				}
-				let detail = vulns[vulnId];
-				if (!detail) {
-					continue;
-				}
 				seen.add(vulnId);
-				pairs.push({id: vulnId, detail: detail});
+				pairs.push({id: vulnId, detail: vuln});
 			}
 
 			pairs.sort((a, b) =>
@@ -305,10 +302,14 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					p.detail.severity === "high"));
 
 			entries.push({
-				update: update,
+				id: advisory.reference || "",
+				severity: advisory.severity || "",
+				description: advisory.description || "",
+				score: advisory.score || 0,
+				packages: advisory.packages || [],
 				cves: pairs,
 				importantCves: importantCves,
-				link: this.advisoryLink(update.id || ""),
+				link: this.advisoryLink(advisory.reference || ""),
 			});
 		}
 
@@ -318,7 +319,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 	buttonIntent(entries: UpdateEntry[]): string {
 		let top = 0;
 		for (let entry of entries) {
-			let score = entry.update.score || 0;
+			let score = entry.score || 0;
 			if (score > top) {
 				top = score;
 			}
@@ -338,7 +339,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 	renderCveCard(entry: UpdateEntry, pair: CveDetail): JSX.Element {
 		let d = pair.detail
-		let key = (entry.update.id || "") + "|" + pair.id
+		let key = (entry.id || "") + "|" + pair.id
 		let nvdUrl = `https://access.redhat.com/security/cve/${pair.id}`
 
 		let tags: JSX.Element[] = [];
@@ -480,7 +481,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 	}
 
 	renderUpdateCard(entry: UpdateEntry): JSX.Element {
-		let update = entry.update;
+		let update = entry;
 		let severity = this.scoreSeverity(update.score || 0);
 		let sevIntent = this.severityIntent(severity);
 		let sevLabel = severity ?
@@ -588,12 +589,12 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		}
 
 		entries.sort((a, b) =>
-			(b.update.score || 0) - (a.update.score || 0));
+			(b.score || 0) - (a.score || 0));
 
 		let important: UpdateEntry[] = [];
 		let other: UpdateEntry[] = [];
 		for (let entry of entries) {
-			if ((entry.update.score || 0) >= SCORE_HIGH) {
+			if ((entry.score || 0) >= SCORE_HIGH) {
 				important.push(entry);
 			} else {
 				other.push(entry);
@@ -686,14 +687,33 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				className={"bp5-button bp5-minimal bp5-icon-shield " +
 					this.buttonIntent(entries)}
 				type="button"
+				disabled={this.state.loading}
 				onClick={(): void => {
-					this.setState({
-						...this.state,
-						open: true,
-					})
+					if (this.props.onOpen) {
+						this.setState({
+							...this.state,
+							loading: true,
+						})
+						this.props.onOpen().then((): void => {
+							this.setState({
+								...this.state,
+								loading: false,
+								open: true,
+							})
+						}).catch((): void => {
+							this.setState({
+								...this.state,
+								loading: false,
+							})
+						})
+					} else {
+						this.setState({
+							...this.state,
+							open: true,
+						})
+					}
 				}}
-			>Security Advisories{entries.length > 0 ?
-				` (${entries.length})` : ""}</button>
+			>Security Advisories</button>
 			{dialog}
 		</div>
 	}
