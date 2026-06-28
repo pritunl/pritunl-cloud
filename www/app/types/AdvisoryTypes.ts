@@ -25,8 +25,7 @@ export interface Vulnerability {
 export interface InstanceInfo {
 	id?: string;
 	name?: string;
-	action?: string;
-	state?: string;
+	status?: string;
 	timestamp?: string;
 	uptime?: string;
 	public_ips?: string[];
