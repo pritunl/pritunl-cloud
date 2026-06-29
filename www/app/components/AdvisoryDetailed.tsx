@@ -607,7 +607,6 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					style={css.sectionIcon}
 				/>
 				Vulnerabilities
-				<span style={css.count}>({vulns.length})</span>
 			</div>
 			{important.length > 0 ? <React.Fragment>
 				<div style={css.section}>
