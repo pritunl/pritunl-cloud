@@ -16,7 +16,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class PlanStatement extends React.Component<Props, {}> {
+export default class PlanEditor extends React.Component<Props, {}> {
 	onChange = (val: string): void => {
 		let curStatements = this.props.statements
 		let newStatements: PlanTypes.Statement[] = []
