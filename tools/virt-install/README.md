@@ -40,6 +40,28 @@ cd ./setup
 sudo firewall-cmd --zone=libvirt --add-port=8000/tcp --permanent
 python3 -m http.server
 
+sh almalinux8.sh
+sh almalinux9.sh
+sh almalinux10.sh
+sh oraclelinux7.sh
+sh oraclelinux8.sh
+sh oraclelinux9.sh
+sh oraclelinux10.sh
+sh rockylinux8.sh
+sh rockylinux9.sh
+sh rockylinux10.sh
+
+sh fedora43.sh
+sh fedora44.sh
+
+sh alpinelinux.sh
+sh archlinux.sh
+
+sh ubuntu24.sh
+sh ubuntu26.sh
+
+sh freebsd.sh
+
 # alpine linux
 setup-alpine
 curl -o /root/setup.sh http://192.168.122.1:8000/alpine.sh
@@ -90,10 +112,10 @@ sudo mkdir -p /mnt/images
 sudo chown cloud:cloud /mnt/images
 mkdir -p /mnt/images/stable
 mkdir -p /mnt/images/unstable
-rsync --human-readable --archive --xattrs --progress 127.0.0.1:/var/lib/virt/images/ /mnt/images/unstable/
+rsync --human-readable --archive --xattrs --progress image.panda.pritunl.net:/var/lib/virt/images/ /mnt/images/unstable/
 
-sudo wget -P /tmp https://raw.githubusercontent.com/pritunl/toolbox/73aacb9e22b09a34f87d389b3dc301d6c450b0e8/s3c/s3c.py
-echo "7d14fa361e47ff328bbadac302a06a995f6ab65abbe4efce7d8cde6657ba8dde  /tmp/s3c.py" | sha256sum -c - && sudo cp /tmp/s3c.py /usr/local/bin/s3c && sudo chmod +x /usr/local/bin/s3c
+sudo wget -P /tmp https://raw.githubusercontent.com/pritunl/toolbox/eae247b569672382df53d8d42ee843c219342097/s3c/s3c.py
+echo "fc7680352667822e3aa3cffa7678a6f8352a340daf1b72c356aa3c95e8ba9729  /tmp/s3c.py" | sha256sum -c - && sudo cp /tmp/s3c.py /usr/local/bin/s3c && sudo chmod +x /usr/local/bin/s3c
 sudo rm /tmp/s3c.py
 
 cd /mnt/images/unstable
