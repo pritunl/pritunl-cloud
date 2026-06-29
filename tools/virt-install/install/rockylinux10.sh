@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="rockylinux10"
-ISO_URL="https://sjc.mirror.rackspace.com/rocky/10/isos/x86_64/Rocky-10.1-x86_64-dvd1.iso"
-ISO_HASH="55f96d45a052c0ed4f06309480155cb66281a008691eb7f3f359957205b1849a"
+ISO_URL="https://sjc.mirror.rackspace.com/rocky/10/isos/x86_64/Rocky-10.2-x86_64-dvd1.iso"
+ISO_HASH="16ca9c96cdb221ba6e1f68579f21bd69fd8da81c6a921d9068949796f91c8feb"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
