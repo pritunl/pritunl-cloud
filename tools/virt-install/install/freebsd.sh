@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="freebsd"
-ISO_URL="https://download.freebsd.org/releases/amd64/amd64/ISO-IMAGES/15.0/FreeBSD-15.0-RELEASE-amd64-dvd1.iso"
-ISO_HASH="8cf8e03d8df16401fd5a507480a3270091aa30b59ecf79a9989f102338e359aa"
+ISO_URL="https://download.freebsd.org/releases/amd64/amd64/ISO-IMAGES/15.1/FreeBSD-15.1-RELEASE-amd64-dvd1.iso"
+ISO_HASH="027504262c65e096d78bd345d74905a8a7216bbb3c6155d55634ae8328f76c5d"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
