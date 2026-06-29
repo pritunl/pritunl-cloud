@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="almalinux10"
-ISO_URL="https://den.aws.repo.almalinux.org/10.1/isos/x86_64/AlmaLinux-10.1-x86_64-dvd.iso"
-ISO_HASH="4597a7483fd7b49bbb7a46958fe2574b7c575531e5ee64ad4d6c1d2779494400"
+ISO_URL="https://den.aws.repo.almalinux.org/almalinux/10.2/isos/x86_64/AlmaLinux-10.2-x86_64-dvd.iso"
+ISO_HASH="90244ac532f67c978831a381b420da8bda363729e1f4cf8fb8991daca70ee287"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
