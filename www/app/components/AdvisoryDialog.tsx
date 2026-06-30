@@ -260,6 +260,23 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		}
 	}
 
+	severityRank(severity: string): number {
+		switch ((severity || "").toLowerCase()) {
+			case "critical":
+				return 4;
+			case "important":
+			case "high":
+				return 3;
+			case "moderate":
+			case "medium":
+				return 2;
+			case "low":
+				return 1;
+			default:
+				return 0;
+		}
+	}
+
 	scoreSeverity(score: number): string {
 		switch (score) {
 			case SCORE_CRITICAL:
@@ -294,8 +311,14 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				pairs.push({id: vulnId, detail: vuln});
 			}
 
-			pairs.sort((a, b) =>
-				(b.detail.score || 0) - (a.detail.score || 0));
+			pairs.sort((a, b) => {
+				let rank = this.severityRank(b.detail.severity || "") -
+					this.severityRank(a.detail.severity || "");
+				if (rank !== 0) {
+					return rank;
+				}
+				return (b.detail.score || 0) - (a.detail.score || 0);
+			});
 
 			let importantCves = pairs.filter(
 				(p): boolean => (p.detail.severity === "critical" ||
