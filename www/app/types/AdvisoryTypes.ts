@@ -64,6 +64,13 @@ export interface Advisory {
 	nodes_info?: NodeInfo[];
 }
 
+export interface DismissData {
+	dismiss?: boolean;
+	restore?: boolean;
+	dismissals?: string[];
+	restores?: string[];
+}
+
 export interface Filter {
 	id?: string;
 	reference?: string;
