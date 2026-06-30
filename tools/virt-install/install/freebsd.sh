@@ -70,7 +70,7 @@ sudo virt-install \
   --name ${NAME} \
   --vcpus 8 \
   --memory 8192 \
-  --boot uefi \
+  --boot loader=/usr/share/edk2/ovmf/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=/usr/share/edk2/ovmf/OVMF_VARS.fd \
   --disk path=/var/lib/virt/${NAME}.qcow2,size=8,format=qcow2,bus=virtio \
   --os-variant freebsd14.0 \
   --network network=default \
