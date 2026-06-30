@@ -49,6 +49,7 @@ export interface Advisory {
 	id?: string;
 	organization?: string;
 	reference?: string;
+	dismissed?: boolean;
 	type?: string;
 	updated?: string;
 	severity?: string;
@@ -58,6 +59,7 @@ export interface Advisory {
 	vulnerabilities?: Vulnerability[];
 	instances?: string[];
 	nodes?: string[];
+	dismissals?: string[];
 	instances_info?: InstanceInfo[];
 	nodes_info?: NodeInfo[];
 }
@@ -68,6 +70,7 @@ export interface Filter {
 	type?: string;
 	severity?: string;
 	organization?: string;
+	dismissed?: boolean;
 }
 
 export type Advisories = Advisory[];
