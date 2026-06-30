@@ -27,6 +27,8 @@ interface State {
 	disabled: boolean;
 	expanded: {[key: string]: boolean};
 	expandedCves: boolean;
+	expandedDismissedNodes: boolean;
+	expandedDismissedInstances: boolean;
 	descHeight: number;
 	selected: {[key: string]: boolean};
 }
@@ -207,6 +209,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			disabled: false,
 			expanded: {},
 			expandedCves: false,
+			expandedDismissedNodes: false,
+			expandedDismissedInstances: false,
 			descHeight: DESC_MAX_HEIGHT,
 			selected: {},
 		};
@@ -831,6 +835,10 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			(node): boolean => !dismissals.has(node.id));
 		let instances = (advisory.instances_info || []).filter(
 			(inst): boolean => !dismissals.has(inst.id));
+		let dismissedNodes = (advisory.nodes_info || []).filter(
+			(node): boolean => dismissals.has(node.id));
+		let dismissedInstances = (advisory.instances_info || []).filter(
+			(inst): boolean => dismissals.has(inst.id));
 
 		let selectedNodes = nodes.filter(
 			(node): boolean => !!this.state.selected[node.id]).map(
@@ -950,7 +958,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			</div> : null}
 			<div style={css.cards}>
 				{this.renderVulnerabilities(vulnerabilities)}
-				{nodes.length > 0 ? <React.Fragment>
+				{(nodes.length > 0 || dismissedNodes.length > 0) ?
+						<React.Fragment>
 					<div style={css.section}>
 						<span
 							className="bp5-icon-standard bp5-icon-cloud"
@@ -971,8 +980,32 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					</div>
 					{nodes.map((node): JSX.Element =>
 						this.renderNodeCard(node))}
+					{dismissedNodes.length > 0 ? <React.Fragment>
+						<button
+							className={"bp5-button bp5-minimal " +
+								(this.state.expandedDismissedNodes ?
+									"bp5-icon-chevron-down" :
+									"bp5-icon-chevron-right")}
+							type="button"
+							style={{margin: '0 0 8px 0'}}
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									expandedDismissedNodes:
+										!this.state.expandedDismissedNodes,
+								});
+							}}
+						>
+							Dismissed ({dismissedNodes.length})
+						</button>
+						{this.state.expandedDismissedNodes ? <div>
+							{dismissedNodes.map((node): JSX.Element =>
+								this.renderNodeCard(node))}
+						</div> : null}
+					</React.Fragment> : null}
 				</React.Fragment> : null}
-				{instances.length > 0 ? <React.Fragment>
+				{(instances.length > 0 || dismissedInstances.length > 0) ?
+						<React.Fragment>
 					<div style={css.section}>
 						<span
 							className="bp5-icon-standard bp5-icon-desktop"
@@ -993,6 +1026,29 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					</div>
 					{instances.map((inst): JSX.Element =>
 						this.renderInstanceCard(inst))}
+					{dismissedInstances.length > 0 ? <React.Fragment>
+						<button
+							className={"bp5-button bp5-minimal " +
+								(this.state.expandedDismissedInstances ?
+									"bp5-icon-chevron-down" :
+									"bp5-icon-chevron-right")}
+							type="button"
+							style={{margin: '0 0 8px 0'}}
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									expandedDismissedInstances:
+										!this.state.expandedDismissedInstances,
+								});
+							}}
+						>
+							Dismissed ({dismissedInstances.length})
+						</button>
+						{this.state.expandedDismissedInstances ? <div>
+							{dismissedInstances.map((inst): JSX.Element =>
+								this.renderInstanceCard(inst))}
+						</div> : null}
+					</React.Fragment> : null}
 				</React.Fragment> : null}
 			</div>
 		</td>;
