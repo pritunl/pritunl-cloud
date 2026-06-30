@@ -22,6 +22,9 @@ const css = {
 	type: {
 		margin: '5px',
 	} as React.CSSProperties,
+	check: {
+		margin: '12px 5px 0 5px',
+	} as React.CSSProperties,
 };
 
 export default class AdvisoriesFilter extends React.Component<Props, {}> {
@@ -153,6 +156,27 @@ export default class AdvisoriesFilter extends React.Component<Props, {}> {
 					{organizationsSelect}
 				</select>
 			</div>
+			<label className="bp5-control bp5-checkbox" style={css.check}>
+				<input
+					type="checkbox"
+					checked={!!this.props.filter.dismissed}
+					onChange={(evt): void => {
+						let filter = {
+							...this.props.filter,
+						};
+
+						if (evt.target.checked) {
+							filter.dismissed = true;
+						} else {
+							delete filter.dismissed;
+						}
+
+						this.props.onFilter(filter);
+					}}
+				/>
+				<span className="bp5-control-indicator"/>
+				Show Dismissed
+			</label>
 		</div>;
 	}
 }
