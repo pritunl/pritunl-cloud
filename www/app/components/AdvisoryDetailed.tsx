@@ -173,6 +173,9 @@ const css = {
 	dismissSelected: {
 		marginLeft: 'auto',
 	} as React.CSSProperties,
+	dismissedRow: {
+		alignItems: 'center',
+	} as React.CSSProperties,
 	instBox: {
 		fontSize: '11px',
 		fontFamily: Theme.monospaceFont,
@@ -239,7 +242,25 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		AdvisoryActions.dismiss(this.props.advisory.id, true).then((): void => {
+		AdvisoryActions.dismiss(this.props.advisory.id).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onRestore = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.restore(this.props.advisory.id).then((): void => {
 			this.setState({
 				...this.state,
 				disabled: false,
@@ -279,6 +300,37 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			disabled: true,
 		});
 		AdvisoryActions.dismissResources(
+				this.props.advisory.id, resourceIds).then((): void => {
+			let selected = {
+				...this.state.selected,
+			};
+			for (let resourceId of resourceIds) {
+				delete selected[resourceId];
+			}
+
+			this.setState({
+				...this.state,
+				disabled: false,
+				selected: selected,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onRestoreSelected = (resourceIds: string[]): void => {
+		if (!resourceIds.length) {
+			return;
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.restoreResources(
 				this.props.advisory.id, resourceIds).then((): void => {
 			let selected = {
 				...this.state.selected,
@@ -846,6 +898,12 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let selectedInstances = instances.filter(
 			(inst): boolean => !!this.state.selected[inst.id]).map(
 			(inst): string => inst.id);
+		let selectedDismissedNodes = dismissedNodes.filter(
+			(node): boolean => !!this.state.selected[node.id]).map(
+			(node): string => node.id);
+		let selectedDismissedInstances = dismissedInstances.filter(
+			(inst): boolean => !!this.state.selected[inst.id]).map(
+			(inst): string => inst.id);
 
 		return <td
 			className="bp5-cell"
@@ -889,12 +947,15 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					</div>
 					<div className="flex tab-close"/>
 					<button
-						className="bp5-button bp5-minimal bp5-icon-disable"
+						className={"bp5-button bp5-minimal " +
+							(advisory.dismissed ?
+								"bp5-icon-undo" : "bp5-icon-disable")}
 						style={css.button}
 						type="button"
-						disabled={this.state.disabled || advisory.dismissed}
-						onClick={this.onDismiss}
-					>{advisory.dismissed ? "Dismissed" : "Dismiss"}</button>
+						disabled={this.state.disabled}
+						onClick={advisory.dismissed ?
+							this.onRestore : this.onDismiss}
+					>{advisory.dismissed ? "Restore" : "Dismiss"}</button>
 					<ConfirmButton
 						className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 						style={css.button}
@@ -981,23 +1042,37 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					{nodes.map((node): JSX.Element =>
 						this.renderNodeCard(node))}
 					{dismissedNodes.length > 0 ? <React.Fragment>
-						<button
-							className={"bp5-button bp5-minimal " +
-								(this.state.expandedDismissedNodes ?
-									"bp5-icon-chevron-down" :
-									"bp5-icon-chevron-right")}
-							type="button"
-							style={{margin: '0 0 8px 0'}}
-							onClick={(): void => {
-								this.setState({
-									...this.state,
-									expandedDismissedNodes:
-										!this.state.expandedDismissedNodes,
-								});
-							}}
-						>
-							Dismissed ({dismissedNodes.length})
-						</button>
+						<div className="layout horizontal"
+							style={css.dismissedRow}>
+							<button
+								className={"bp5-button bp5-minimal " +
+									(this.state.expandedDismissedNodes ?
+										"bp5-icon-chevron-down" :
+										"bp5-icon-chevron-right")}
+								type="button"
+								style={{margin: '0 0 8px 0'}}
+								onClick={(): void => {
+									this.setState({
+										...this.state,
+										expandedDismissedNodes:
+											!this.state.expandedDismissedNodes,
+									});
+								}}
+							>
+								Dismissed ({dismissedNodes.length})
+							</button>
+							{this.state.expandedDismissedNodes ? <button
+								className="bp5-button bp5-icon-undo"
+								style={css.dismissSelected}
+								type="button"
+								disabled={this.state.disabled ||
+									!selectedDismissedNodes.length}
+								onClick={(): void => {
+									this.onRestoreSelected(
+										selectedDismissedNodes);
+								}}
+							>Restore Selected</button> : null}
+						</div>
 						{this.state.expandedDismissedNodes ? <div>
 							{dismissedNodes.map((node): JSX.Element =>
 								this.renderNodeCard(node))}
@@ -1027,23 +1102,37 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					{instances.map((inst): JSX.Element =>
 						this.renderInstanceCard(inst))}
 					{dismissedInstances.length > 0 ? <React.Fragment>
-						<button
-							className={"bp5-button bp5-minimal " +
-								(this.state.expandedDismissedInstances ?
-									"bp5-icon-chevron-down" :
-									"bp5-icon-chevron-right")}
-							type="button"
-							style={{margin: '0 0 8px 0'}}
-							onClick={(): void => {
-								this.setState({
-									...this.state,
-									expandedDismissedInstances:
-										!this.state.expandedDismissedInstances,
-								});
-							}}
-						>
-							Dismissed ({dismissedInstances.length})
-						</button>
+						<div className="layout horizontal"
+							style={css.dismissedRow}>
+							<button
+								className={"bp5-button bp5-minimal " +
+									(this.state.expandedDismissedInstances ?
+										"bp5-icon-chevron-down" :
+										"bp5-icon-chevron-right")}
+								type="button"
+								style={{margin: '0 0 8px 0'}}
+								onClick={(): void => {
+									this.setState({
+										...this.state,
+										expandedDismissedInstances:
+											!this.state.expandedDismissedInstances,
+									});
+								}}
+							>
+								Dismissed ({dismissedInstances.length})
+							</button>
+							{this.state.expandedDismissedInstances ? <button
+								className="bp5-button bp5-icon-undo"
+								style={css.dismissSelected}
+								type="button"
+								disabled={this.state.disabled ||
+									!selectedDismissedInstances.length}
+								onClick={(): void => {
+									this.onRestoreSelected(
+										selectedDismissedInstances);
+								}}
+							>Restore Selected</button> : null}
+						</div>
 						{this.state.expandedDismissedInstances ? <div>
 							{dismissedInstances.map((inst): JSX.Element =>
 								this.renderInstanceCard(inst))}
