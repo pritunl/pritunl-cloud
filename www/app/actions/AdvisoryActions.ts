@@ -89,16 +89,14 @@ export function filter(filt: AdvisoryTypes.Filter): Promise<void> {
 	return sync();
 }
 
-export function dismiss(advisoryId: string,
-		dismissed: boolean): Promise<void> {
+function dismissUpdate(advisoryId: string,
+		data: AdvisoryTypes.DismissData): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.put('/advisory/' + advisoryId + '/dismiss')
-			.send({
-				dismissed: dismissed,
-			})
+			.send(data)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
@@ -112,7 +110,7 @@ export function dismiss(advisoryId: string,
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to dismiss advisory');
+					Alert.errorRes(res, 'Failed to update advisory');
 					reject(err);
 					return;
 				}
@@ -122,36 +120,29 @@ export function dismiss(advisoryId: string,
 	});
 }
 
+export function dismiss(advisoryId: string): Promise<void> {
+	return dismissUpdate(advisoryId, {
+		dismiss: true,
+	});
+}
+
+export function restore(advisoryId: string): Promise<void> {
+	return dismissUpdate(advisoryId, {
+		restore: true,
+	});
+}
+
 export function dismissResources(advisoryId: string,
 		dismissals: string[]): Promise<void> {
-	let loader = new Loader().loading();
+	return dismissUpdate(advisoryId, {
+		dismissals: dismissals,
+	});
+}
 
-	return new Promise<void>((resolve, reject): void => {
-		SuperAgent
-			.put('/advisory/' + advisoryId + '/dismiss')
-			.send({
-				dismissals: dismissals,
-			})
-			.set('Accept', 'application/json')
-			.set('Csrf-Token', Csrf.token)
-			.set('Organization', CompletionStore.userOrganization)
-			.end((err: any, res: SuperAgent.Response): void => {
-				loader.done();
-
-				if (res && res.status === 401) {
-					window.location.href = '/login';
-					resolve();
-					return;
-				}
-
-				if (err) {
-					Alert.errorRes(res, 'Failed to dismiss advisory resources');
-					reject(err);
-					return;
-				}
-
-				resolve();
-			});
+export function restoreResources(advisoryId: string,
+		restores: string[]): Promise<void> {
+	return dismissUpdate(advisoryId, {
+		restores: restores,
 	});
 }
 
