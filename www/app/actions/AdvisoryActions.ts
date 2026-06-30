@@ -128,7 +128,7 @@ export function dismissResources(advisoryId: string,
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.put('/advisory/' + advisoryId + '/dismissals')
+			.put('/advisory/' + advisoryId + '/dismiss')
 			.send({
 				dismissals: dismissals,
 			})
