@@ -89,6 +89,72 @@ export function filter(filt: AdvisoryTypes.Filter): Promise<void> {
 	return sync();
 }
 
+export function dismiss(advisoryId: string,
+		dismissed: boolean): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/advisory/' + advisoryId + '/dismiss')
+			.send({
+				dismissed: dismissed,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to dismiss advisory');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
+export function dismissResources(advisoryId: string,
+		dismissals: string[]): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/advisory/' + advisoryId + '/dismissals')
+			.send({
+				dismissals: dismissals,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to dismiss advisory resources');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function remove(advisoryId: string): Promise<void> {
 	let loader = new Loader().loading();
 
