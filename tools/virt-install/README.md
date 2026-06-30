@@ -120,7 +120,6 @@ sudo rm /tmp/s3c.py
 
 cd /mnt/images/unstable
 python3 ~/git/pritunl-cloud/tools/generate_files.py
-python3 ~/git/pritunl-cloud/tools/autoindex.py
 
 s3c cp almalinux8_$(date +%y%m%d).qcow2 pritunl-images:/unstable/almalinux8_$(date +%y%m%d).qcow2
 s3c cp almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/almalinux8_$(date +%y%m%d).qcow2.sig
@@ -157,12 +156,11 @@ s3c cp ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/ubuntu2404_
 s3c cp ubuntu2604_$(date +%y%m%d).qcow2 pritunl-images:/unstable/ubuntu2604_$(date +%y%m%d).qcow2
 s3c cp ubuntu2604_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/ubuntu2604_$(date +%y%m%d).qcow2.sig
 s3c cp files.json pritunl-images:/unstable/files.json
-s3c cp index.html pritunl-images:/unstable/index.html
+s3c index pritunl-images:/unstable/
 
 rsync --human-readable --archive --progress --delete /mnt/images/unstable/ /mnt/images/stable/
 cd /mnt/images/stable
 python3 ~/git/pritunl-cloud/tools/generate_files.py
-python3 ~/git/pritunl-cloud/tools/autoindex.py
 
 s3c cp almalinux8_$(date +%y%m%d).qcow2 pritunl-images:/stable/almalinux8_$(date +%y%m%d).qcow2
 s3c cp almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/almalinux8_$(date +%y%m%d).qcow2.sig
@@ -199,5 +197,5 @@ s3c cp ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/ubuntu2404_$(
 s3c cp ubuntu2604_$(date +%y%m%d).qcow2 pritunl-images:/stable/ubuntu2604_$(date +%y%m%d).qcow2
 s3c cp ubuntu2604_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/ubuntu2604_$(date +%y%m%d).qcow2.sig
 s3c cp files.json pritunl-images:/stable/files.json
-s3c cp index.html pritunl-images:/stable/index.html
+s3c index pritunl-images:/stable/
 ```
