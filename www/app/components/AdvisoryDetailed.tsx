@@ -310,9 +310,15 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 			this.setState({
 				...this.state,
-				disabled: false,
 				selected: selected,
 			});
+
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}, 1000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
@@ -341,9 +347,15 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 			this.setState({
 				...this.state,
-				disabled: false,
 				selected: selected,
 			});
+
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}, 1000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
