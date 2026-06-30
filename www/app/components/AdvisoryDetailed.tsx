@@ -262,6 +262,23 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 	}
 
+	severityRank(severity: string): number {
+		switch ((severity || '').toLowerCase()) {
+			case 'critical':
+				return 4;
+			case 'important':
+			case 'high':
+				return 3;
+			case 'moderate':
+			case 'medium':
+				return 2;
+			case 'low':
+				return 1;
+			default:
+				return 0;
+		}
+	}
+
 	severityBarColor(severity: string): string {
 		switch ((severity || '').toLowerCase()) {
 			case 'critical':
@@ -587,8 +604,14 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			return null;
 		}
 
-		let sorted = [...vulns].sort((a, b) =>
-			(b.score || 0) - (a.score || 0));
+		let sorted = [...vulns].sort((a, b) => {
+			let rank = this.severityRank(b.severity || "") -
+				this.severityRank(a.severity || "");
+			if (rank !== 0) {
+				return rank;
+			}
+			return (b.score || 0) - (a.score || 0);
+		});
 
 		let important: AdvisoryTypes.Vulnerability[] = [];
 		let other: AdvisoryTypes.Vulnerability[] = [];
