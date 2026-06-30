@@ -112,7 +112,7 @@ export default class Advisory extends React.Component<Props, {}> {
 			let org = CompletionStore.organization(advisory.organization);
 			orgName = org ? org.name : advisory.organization;
 		} else {
-			orgName = 'Global';
+			orgName = 'Node';
 		}
 
 		let severityText = MiscUtils.capitalize(advisory.severity) || 'Unknown';
