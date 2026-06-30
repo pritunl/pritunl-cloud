@@ -28,6 +28,7 @@ interface State {
 	expanded: {[key: string]: boolean};
 	expandedCves: boolean;
 	descHeight: number;
+	selected: {[key: string]: boolean};
 }
 
 const css = {
@@ -160,6 +161,16 @@ const css = {
 		padding: '5px 0 0 0',
 		marginBottom: '8px',
 	} as React.CSSProperties,
+	checkBox: {
+		display: 'flex',
+		margin: '0 5px 0 5px',
+	} as React.CSSProperties,
+	check: {
+		margin: "-5px -2px 0 -6px",
+	} as React.CSSProperties,
+	dismissSelected: {
+		marginLeft: 'auto',
+	} as React.CSSProperties,
 	instBox: {
 		fontSize: '11px',
 		fontFamily: Theme.monospaceFont,
@@ -197,6 +208,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			expanded: {},
 			expandedCves: false,
 			descHeight: DESC_MAX_HEIGHT,
+			selected: {},
 		};
 	}
 
@@ -209,6 +221,72 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			this.setState({
 				...this.state,
 				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onDismiss = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.dismiss(this.props.advisory.id, true).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onSelectResource = (resourceId: string): void => {
+		let selected = {
+			...this.state.selected,
+		};
+
+		if (selected[resourceId]) {
+			delete selected[resourceId];
+		} else {
+			selected[resourceId] = true;
+		}
+
+		this.setState({
+			...this.state,
+			selected: selected,
+		});
+	}
+
+	onDismissSelected = (resourceIds: string[]): void => {
+		if (!resourceIds.length) {
+			return;
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.dismissResources(
+				this.props.advisory.id, resourceIds).then((): void => {
+			let selected = {
+				...this.state.selected,
+			};
+			for (let resourceId of resourceIds) {
+				delete selected[resourceId];
+			}
+
+			this.setState({
+				...this.state,
+				disabled: false,
+				selected: selected,
 			});
 		}).catch((): void => {
 			this.setState({
@@ -391,6 +469,16 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			style={css.instCard}
 		>
 			<div className="layout horizontal flex" style={css.instBox}>
+				<div className="layout center" style={css.checkBox}>
+					<Blueprint.Checkbox
+						style={css.check}
+						alignIndicator={Blueprint.Alignment.RIGHT}
+						checked={!!this.state.selected[node.id]}
+						onClick={(): void => {
+							this.onSelectResource(node.id);
+						}}
+					/>
+				</div>
 				<div style={css.instItemFirst}>
 					<PageInfo
 						compact={true}
@@ -459,6 +547,16 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			style={css.instCard}
 		>
 			<div className="layout horizontal flex" style={css.instBox}>
+				<div className="layout center" style={css.checkBox}>
+					<Blueprint.Checkbox
+						style={css.check}
+						alignIndicator={Blueprint.Alignment.RIGHT}
+						checked={!!this.state.selected[inst.id]}
+						onClick={(): void => {
+							this.onSelectResource(inst.id);
+						}}
+					/>
+				</div>
 				<div style={css.instItemFirst}>
 					<PageInfo
 						compact={true}
@@ -726,9 +824,20 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			});
 		}
 
+		let dismissals = new Set(advisory.dismissals || []);
+
 		let vulnerabilities = advisory.vulnerabilities || [];
-		let nodes = advisory.nodes_info || [];
-		let instances = advisory.instances_info || [];
+		let nodes = (advisory.nodes_info || []).filter(
+			(node): boolean => !dismissals.has(node.id));
+		let instances = (advisory.instances_info || []).filter(
+			(inst): boolean => !dismissals.has(inst.id));
+
+		let selectedNodes = nodes.filter(
+			(node): boolean => !!this.state.selected[node.id]).map(
+			(node): string => node.id);
+		let selectedInstances = instances.filter(
+			(inst): boolean => !!this.state.selected[inst.id]).map(
+			(inst): string => inst.id);
 
 		return <td
 			className="bp5-cell"
@@ -771,6 +880,13 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						{MiscUtils.capitalize(advisory.severity) || 'Unknown'}
 					</div>
 					<div className="flex tab-close"/>
+					<button
+						className="bp5-button bp5-minimal bp5-icon-disable"
+						style={css.button}
+						type="button"
+						disabled={this.state.disabled || advisory.dismissed}
+						onClick={this.onDismiss}
+					>{advisory.dismissed ? "Dismissed" : "Dismiss"}</button>
 					<ConfirmButton
 						className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 						style={css.button}
@@ -842,6 +958,16 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						/>
 						Nodes
 						<span style={css.count}>({nodes.length})</span>
+						<button
+							className="bp5-button bp5-icon-disable"
+							style={css.dismissSelected}
+							type="button"
+							disabled={this.state.disabled ||
+								!selectedNodes.length}
+							onClick={(): void => {
+								this.onDismissSelected(selectedNodes);
+							}}
+						>Dismiss Selected</button>
 					</div>
 					{nodes.map((node): JSX.Element =>
 						this.renderNodeCard(node))}
@@ -854,6 +980,16 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						/>
 						Instances
 						<span style={css.count}>({instances.length})</span>
+						<button
+							className="bp5-button bp5-icon-disable"
+							style={css.dismissSelected}
+							type="button"
+							disabled={this.state.disabled ||
+								!selectedInstances.length}
+							onClick={(): void => {
+								this.onDismissSelected(selectedInstances);
+							}}
+						>Dismiss Selected</button>
 					</div>
 					{instances.map((inst): JSX.Element =>
 						this.renderInstanceCard(inst))}
