@@ -1040,6 +1040,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					<ConfirmButton
 						className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 						style={css.button}
+						hidden={true}
 						safe={true}
 						progressClassName="bp5-intent-danger"
 						dialogClassName="bp5-intent-danger bp5-icon-delete"
