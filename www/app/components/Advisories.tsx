@@ -143,6 +143,46 @@ export default class Advisories extends React.Component<{}, State> {
 		});
 	}
 
+	onDismiss = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.dismissMulti(
+			Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onRestore = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.restoreMulti(
+			Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let advisoriesDom: JSX.Element[] = [];
 
@@ -281,10 +321,29 @@ export default class Advisories extends React.Component<{}, State> {
 						>
 							Collapse All
 						</button>
+						<button
+							className="bp5-button bp5-intent-primary bp5-icon-disable"
+							style={css.button}
+							type="button"
+							disabled={!this.selected || this.state.disabled}
+							onClick={this.onDismiss}
+						>
+							Dismiss Selected
+						</button>
+						<button
+							className="bp5-button bp5-intent-success bp5-icon-undo"
+							style={css.button}
+							type="button"
+							disabled={!this.selected || this.state.disabled}
+							onClick={this.onRestore}
+						>
+							Restore Selected
+						</button>
 						<ConfirmButton
 							label="Delete Selected"
 							className="bp5-intent-danger bp5-icon-delete"
 							progressClassName="bp5-intent-danger"
+							hidden={true}
 							safe={true}
 							style={css.button}
 							confirmMsg="Permanently delete the selected advisories"
