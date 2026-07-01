@@ -59,7 +59,7 @@ export interface Advisory {
 	vulnerabilities?: Vulnerability[];
 	instances?: string[];
 	nodes?: string[];
-	dismissals?: string[];
+	dismissed_resources?: string[];
 	instances_info?: InstanceInfo[];
 	nodes_info?: NodeInfo[];
 }
