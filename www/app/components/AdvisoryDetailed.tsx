@@ -31,6 +31,7 @@ interface State {
 	expandedDismissedInstances: boolean;
 	descHeight: number;
 	selected: {[key: string]: boolean};
+	lastSelected: string;
 }
 
 const css = {
@@ -216,6 +217,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			expandedDismissedInstances: false,
 			descHeight: DESC_MAX_HEIGHT,
 			selected: {},
+			lastSelected: null,
 		};
 	}
 
@@ -273,10 +275,42 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onSelectResource = (resourceId: string): void => {
+	onSelectResource = (resourceId: string, shift: boolean,
+			orderedIds: string[]): void => {
 		let selected = {
 			...this.state.selected,
 		};
+
+		if (shift && this.state.lastSelected) {
+			let start: number;
+			let end: number;
+
+			for (let i = 0; i < orderedIds.length; i++) {
+				if (orderedIds[i] === resourceId) {
+					start = i;
+				} else if (orderedIds[i] === this.state.lastSelected) {
+					end = i;
+				}
+			}
+
+			if (start !== undefined && end !== undefined) {
+				if (start > end) {
+					end = [start, start = end][0];
+				}
+
+				for (let i = start; i <= end; i++) {
+					selected[orderedIds[i]] = true;
+				}
+
+				this.setState({
+					...this.state,
+					selected: selected,
+					lastSelected: resourceId,
+				});
+
+				return;
+			}
+		}
 
 		if (selected[resourceId]) {
 			delete selected[resourceId];
@@ -287,6 +321,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			selected: selected,
+			lastSelected: resourceId,
 		});
 	}
 
@@ -523,7 +558,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 	}
 
-	renderNodeCard(node: AdvisoryTypes.NodeInfo): JSX.Element {
+	renderNodeCard(node: AdvisoryTypes.NodeInfo,
+			orderedIds: string[]): JSX.Element {
 		let publicIps = node.public_ips && node.public_ips.length ?
 			node.public_ips : ['-'];
 		let publicIps6 = node.public_ips6 && node.public_ips6.length ?
@@ -542,8 +578,9 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						style={css.check}
 						alignIndicator={Blueprint.Alignment.RIGHT}
 						checked={!!this.state.selected[node.id]}
-						onClick={(): void => {
-							this.onSelectResource(node.id);
+						onClick={(evt): void => {
+							this.onSelectResource(
+								node.id, evt.shiftKey, orderedIds);
 						}}
 					/>
 				</div>
@@ -596,7 +633,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		</Blueprint.Card>;
 	}
 
-	renderInstanceCard(inst: AdvisoryTypes.InstanceInfo): JSX.Element {
+	renderInstanceCard(inst: AdvisoryTypes.InstanceInfo,
+			orderedIds: string[]): JSX.Element {
 		let statusValue = inst.status || '-';
 		let statusClass = this.instanceStatusClass(inst.status || '');
 
@@ -620,8 +658,9 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						style={css.check}
 						alignIndicator={Blueprint.Alignment.RIGHT}
 						checked={!!this.state.selected[inst.id]}
-						onClick={(): void => {
-							this.onSelectResource(inst.id);
+						onClick={(evt): void => {
+							this.onSelectResource(
+								inst.id, evt.shiftKey, orderedIds);
 						}}
 					/>
 				</div>
@@ -904,6 +943,12 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let dismissedInstances = (advisory.instances_info || []).filter(
 			(inst): boolean => dismissals.has(inst.id));
 
+		let nodeIds = nodes.map((node): string => node.id);
+		let instanceIds = instances.map((inst): string => inst.id);
+		let dismissedNodeIds = dismissedNodes.map((node): string => node.id);
+		let dismissedInstanceIds = dismissedInstances.map(
+			(inst): string => inst.id);
+
 		let selectedNodes = nodes.filter(
 			(node): boolean => !!this.state.selected[node.id]).map(
 			(node): string => node.id);
@@ -1052,7 +1097,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						>Dismiss Selected</button>
 					</div>
 					{nodes.map((node): JSX.Element =>
-						this.renderNodeCard(node))}
+						this.renderNodeCard(node, nodeIds))}
 					{dismissedNodes.length > 0 ? <React.Fragment>
 						<div className="layout horizontal"
 							style={css.dismissedRow}>
@@ -1087,7 +1132,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						</div>
 						{this.state.expandedDismissedNodes ? <div>
 							{dismissedNodes.map((node): JSX.Element =>
-								this.renderNodeCard(node))}
+								this.renderNodeCard(node, dismissedNodeIds))}
 						</div> : null}
 					</React.Fragment> : null}
 				</React.Fragment> : null}
@@ -1112,7 +1157,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						>Dismiss Selected</button>
 					</div>
 					{instances.map((inst): JSX.Element =>
-						this.renderInstanceCard(inst))}
+						this.renderInstanceCard(inst, instanceIds))}
 					{dismissedInstances.length > 0 ? <React.Fragment>
 						<div className="layout horizontal"
 							style={css.dismissedRow}>
@@ -1147,7 +1192,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						</div>
 						{this.state.expandedDismissedInstances ? <div>
 							{dismissedInstances.map((inst): JSX.Element =>
-								this.renderInstanceCard(inst))}
+								this.renderInstanceCard(
+									inst, dismissedInstanceIds))}
 						</div> : null}
 					</React.Fragment> : null}
 				</React.Fragment> : null}
