@@ -95,7 +95,7 @@ function dismissUpdate(advisoryId: string,
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.put('/advisory/' + advisoryId + '/dismiss')
+			.put('/advisory/' + advisoryId)
 			.send(data)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
