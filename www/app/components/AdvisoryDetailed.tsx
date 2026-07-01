@@ -559,7 +559,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 	}
 
 	renderNodeCard(node: AdvisoryTypes.NodeInfo,
-			orderedIds: string[]): JSX.Element {
+			orderedIds: string[], dismissed?: boolean): JSX.Element {
 		let publicIps = node.public_ips && node.public_ips.length ?
 			node.public_ips : ['-'];
 		let publicIps6 = node.public_ips6 && node.public_ips6.length ?
@@ -567,10 +567,18 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let privateIps = node.private_ips && node.private_ips.length ?
 			node.private_ips : ['-'];
 
+		let cardStyle = css.instCard;
+		if (dismissed) {
+			cardStyle = {
+				...css.instCard,
+				opacity: 0.5,
+			};
+		}
+
 		return <Blueprint.Card
 			key={node.id}
 			compact={true}
-			style={css.instCard}
+			style={cardStyle}
 		>
 			<div className="layout horizontal flex" style={css.instBox}>
 				<div className="layout center" style={css.checkBox}>
@@ -634,7 +642,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 	}
 
 	renderInstanceCard(inst: AdvisoryTypes.InstanceInfo,
-			orderedIds: string[]): JSX.Element {
+			orderedIds: string[], dismissed?: boolean): JSX.Element {
 		let statusValue = inst.status || '-';
 		let statusClass = this.instanceStatusClass(inst.status || '');
 
@@ -647,10 +655,18 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let privateIps6 = inst.private_ips6 && inst.private_ips6.length ?
 			inst.private_ips6 : ['-'];
 
+		let cardStyle = css.instCard;
+		if (dismissed) {
+			cardStyle = {
+				...css.instCard,
+				opacity: 0.5,
+			};
+		}
+
 		return <Blueprint.Card
 			key={inst.id}
 			compact={true}
-			style={css.instCard}
+			style={cardStyle}
 		>
 			<div className="layout horizontal flex" style={css.instBox}>
 				<div className="layout center" style={css.checkBox}>
@@ -1140,7 +1156,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						</div>
 						{this.state.expandedDismissedNodes ? <div>
 							{dismissedNodes.map((node): JSX.Element =>
-								this.renderNodeCard(node, dismissedNodeIds))}
+								this.renderNodeCard(
+									node, dismissedNodeIds, true))}
 						</div> : null}
 					</React.Fragment> : null}
 				</React.Fragment> : null}
@@ -1201,7 +1218,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						{this.state.expandedDismissedInstances ? <div>
 							{dismissedInstances.map((inst): JSX.Element =>
 								this.renderInstanceCard(
-									inst, dismissedInstanceIds))}
+									inst, dismissedInstanceIds, true))}
 						</div> : null}
 					</React.Fragment> : null}
 				</React.Fragment> : null}
