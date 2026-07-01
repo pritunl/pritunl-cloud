@@ -955,7 +955,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			});
 		}
 
-		let dismissals = new Set(advisory.dismissals || []);
+		let dismissals = new Set(advisory.dismissed_resources || []);
 
 		let vulnerabilities = advisory.vulnerabilities || [];
 		let nodes = (advisory.nodes_info || []).filter(
