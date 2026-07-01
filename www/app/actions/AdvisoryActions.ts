@@ -146,6 +146,50 @@ export function restoreResources(advisoryId: string,
 	});
 }
 
+function multiUpdate(data: AdvisoryTypes.MultiData): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/advisory')
+			.send(data)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to update advisories');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
+export function dismissMulti(advisoryIds: string[]): Promise<void> {
+	return multiUpdate({
+		ids: advisoryIds,
+		dismiss: true,
+	});
+}
+
+export function restoreMulti(advisoryIds: string[]): Promise<void> {
+	return multiUpdate({
+		ids: advisoryIds,
+		restore: true,
+	});
+}
+
 export function remove(advisoryId: string): Promise<void> {
 	let loader = new Loader().loading();
 
