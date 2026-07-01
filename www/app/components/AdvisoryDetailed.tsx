@@ -887,6 +887,14 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		let statusClass = 'tab-close ' + severityClass(advisory.severity);
 
+		let headerStyle = css.buttons;
+		if (advisory.dismissed) {
+			headerStyle = {
+				...css.buttons,
+				opacity: 0.5,
+			};
+		}
+
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -970,7 +978,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			<div className="layout horizontal wrap">
 				<div
 					className="layout horizontal tab-close bp5-card-header"
-					style={css.buttons}
+					style={headerStyle}
 					onClick={(evt): void => {
 						if (evt.target instanceof HTMLElement &&
 								evt.target.className.indexOf('tab-close') !== -1) {
