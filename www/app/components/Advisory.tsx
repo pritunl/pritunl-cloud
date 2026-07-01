@@ -121,9 +121,17 @@ export default class Advisory extends React.Component<Props, {}> {
 		let instanceCount = (advisory.instances_info || []).length;
 		let nodeCount = (advisory.nodes_info || []).length;
 
+		let cardStyle = css.card;
+		if (advisory.dismissed) {
+			cardStyle = {
+				...css.card,
+				opacity: 0.5,
+			};
+		}
+
 		return <div
 			className="bp5-card bp5-row"
-			style={css.card}
+			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
 
