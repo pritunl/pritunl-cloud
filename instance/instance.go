@@ -1209,21 +1209,22 @@ func (i *Instance) LoadVirt(poolsMap map[bson.ObjectID]*pool.Pool,
 	disks []*disk.Disk) {
 
 	i.Virt = &vm.VirtualMachine{
-		Id:           i.Id,
-		Organization: i.Organization,
-		UnixId:       i.UnixId,
-		DiskType:     i.DiskType,
-		DiskPool:     i.DiskPool,
-		Image:        i.Image,
-		Processors:   i.Processors,
-		Memory:       i.Memory,
-		Hugepages:    node.Self.Hugepages,
-		Vnc:          i.Vnc,
-		VncDisplay:   i.VncDisplay,
-		Spice:        i.Spice,
-		SpicePort:    i.SpicePort,
-		Gui:          i.Gui,
-		Disks:        []*vm.Disk{},
+		Id:            i.Id,
+		Organization:  i.Organization,
+		UnixId:        i.UnixId,
+		DiskType:      i.DiskType,
+		DiskPool:      i.DiskPool,
+		Image:         i.Image,
+		Processors:    i.Processors,
+		Memory:        i.Memory,
+		Hugepages:     node.Self.Hugepages,
+		Vnc:           i.Vnc,
+		VncDisplay:    i.VncDisplay,
+		Spice:         i.Spice,
+		SpicePort:     i.SpicePort,
+		Gui:           i.Gui,
+		Disks:         []*vm.Disk{},
+		ResetFirmware: i.ResetFirmware,
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
 				Type:       vm.Bridge,
@@ -1431,6 +1432,9 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) (bool, string) {
 	}
 	if i.Virt.NoHostAddress != curVirt.NoHostAddress {
 		return true, "Host address changed"
+	}
+	if i.Virt.ResetFirmware {
+		return true, "Firmware reset"
 	}
 
 	for i, adapter := range i.Virt.NetworkAdapters {
