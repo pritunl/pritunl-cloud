@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
@@ -450,16 +451,20 @@ func (i *Instance) Validate(db *database.Database) (
 	if i.Isos == nil {
 		i.Isos = []*iso.Iso{}
 	} else {
+		isos := []*iso.Iso{}
 		for _, is := range i.Isos {
-			is.Name = utils.FilterRelPath(is.Name)
+			isos = append(isos, &iso.Iso{
+				Name: filepath.Base(utils.FilterRelPath(is.Name)),
+			})
 		}
+		i.Isos = isos
 	}
 
 	if i.UsbDevices == nil {
 		i.UsbDevices = []*usb.Device{}
 	} else {
+		devices := []*usb.Device{}
 		for _, device := range i.UsbDevices {
-			device.Name = ""
 			device.Vendor = usb.FilterId(device.Vendor)
 			device.Product = usb.FilterId(device.Product)
 			device.Bus = usb.FilterAddr(device.Bus)
@@ -488,17 +493,22 @@ func (i *Instance) Validate(db *database.Database) (
 				}
 				return
 			}
+
+			devices = append(devices, &usb.Device{
+				Vendor:  device.Vendor,
+				Product: device.Product,
+				Bus:     device.Bus,
+				Address: device.Address,
+			})
 		}
+		i.UsbDevices = devices
 	}
 
 	if i.PciDevices == nil {
 		i.PciDevices = []*pci.Device{}
 	} else {
+		devices := []*pci.Device{}
 		for _, device := range i.PciDevices {
-			device.Name = ""
-			device.Class = ""
-			device.Driver = ""
-
 			if !pci.CheckSlot(device.Slot) {
 				errData = &errortypes.ErrorData{
 					Error:   "pci_device_slot_invalid",
@@ -506,7 +516,12 @@ func (i *Instance) Validate(db *database.Database) (
 				}
 				return
 			}
+
+			devices = append(devices, &pci.Device{
+				Slot: device.Slot,
+			})
 		}
+		i.PciDevices = devices
 	}
 
 	instanceDrives := set.NewSet()
@@ -518,6 +533,7 @@ func (i *Instance) Validate(db *database.Database) (
 	if i.DriveDevices == nil {
 		i.DriveDevices = []*drive.Device{}
 	} else {
+		devices := []*drive.Device{}
 		for _, device := range i.DriveDevices {
 			if !instanceDrives.Contains(device.Id) {
 				errData = &errortypes.ErrorData{
@@ -526,7 +542,12 @@ func (i *Instance) Validate(db *database.Database) (
 				}
 				return
 			}
+
+			devices = append(devices, &drive.Device{
+				Id: device.Id,
+			})
 		}
+		i.DriveDevices = devices
 	}
 
 	iscsiDevices := []*iscsi.Device{}
