@@ -69,6 +69,7 @@ type Instance struct {
 	Restart             bool                `bson:"restart" json:"restart"`
 	RestartReason       string              `bson:"restart_reason" json:"restart_reason"`
 	RestartBlockIp      bool                `bson:"restart_block_ip" json:"restart_block_ip"`
+	ResetFirmware       bool                `bson:"reset_firmware" json:"reset_firmware"`
 	Uefi                bool                `bson:"uefi" json:"uefi"`
 	SecureBoot          bool                `bson:"secure_boot" json:"secure_boot"`
 	Tpm                 bool                `bson:"tpm" json:"tpm"`
