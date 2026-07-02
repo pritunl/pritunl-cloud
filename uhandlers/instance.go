@@ -504,13 +504,16 @@ func instancesPut(c *gin.Context) {
 		return
 	}
 
-	doc := bson.M{
-		"action": dta.Action,
-	}
+	doc := bson.M{}
+	if dta.Action == instance.ResetFirmware {
+		doc["reset_firmware"] = true
+	} else {
+		doc["action"] = dta.Action
 
-	if dta.Action != instance.Start {
-		doc["restart"] = false
-		doc["restart_block_ip"] = false
+		if dta.Action != instance.Start {
+			doc["restart"] = false
+			doc["restart_block_ip"] = false
+		}
 	}
 
 	err = instance.UpdateMultiOrg(db, userOrg, dta.Ids, &doc)
