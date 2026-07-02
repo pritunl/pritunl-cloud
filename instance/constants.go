@@ -51,6 +51,7 @@ var (
 		Cleanup,
 		Restart,
 		Destroy,
+		ResetFirmware,
 	)
 	ValidCloudTypes = set.NewSet(
 		Linux,
