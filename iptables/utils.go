@@ -193,6 +193,19 @@ func diffRules(a, b *Rules) *RulesDiff {
 		return nil
 	}
 
+	if diff.HeaderDiff {
+		diff.SourceDestCheckDiff = true
+	}
+	if diff.SourceDestCheckDiff {
+		diff.IngressDiff = true
+	}
+	if diff.Header6Diff {
+		diff.SourceDestCheck6Diff = true
+	}
+	if diff.SourceDestCheck6Diff {
+		diff.Ingress6Diff = true
+	}
+
 	return diff
 }
 
