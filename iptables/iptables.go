@@ -720,12 +720,12 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 				"--dport", strings.Replace(rule.Port, "-", ":", 1),
 			)
 
-			cmd = rules.commentCommand(cmd, false)
+			cmd = rules.commentCommandHeader(cmd)
 			cmd = append(cmd,
 				"-j", "ACCEPT",
 			)
 
-			rules.Ingress = append(rules.Ingress, cmd)
+			rules.Header = append(rules.Header, cmd)
 			continue
 		}
 
@@ -1192,12 +1192,12 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 				"--dport", strings.Replace(rule.Port, "-", ":", 1),
 			)
 
-			cmd = rules.commentCommand(cmd, false)
+			cmd = rules.commentCommandHeader(cmd)
 			cmd = append(cmd,
 				"-j", "ACCEPT",
 			)
 
-			rules.Ingress = append(rules.Ingress, cmd)
+			rules.Header = append(rules.Header, cmd)
 			continue
 		}
 
