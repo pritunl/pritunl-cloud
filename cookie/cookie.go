@@ -192,11 +192,13 @@ func init() {
 			adminCookieAuthKey, adminCookieCryptoKey)
 		AdminStore.Options.Secure = true
 		AdminStore.Options.HttpOnly = true
+		AdminStore.Options.SameSite = http.SameSiteLaxMode
 
 		UserStore = sessions.NewCookieStore(
 			userCookieAuthKey, userCookieCryptoKey)
 		UserStore.Options.Secure = true
 		UserStore.Options.HttpOnly = true
+		UserStore.Options.SameSite = http.SameSiteLaxMode
 
 		return
 	}
