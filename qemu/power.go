@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/guest"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -132,9 +133,19 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = writeOvmfVars(virt)
+	err = writeOvmfVars(virt, virt.ResetFirmware)
 	if err != nil {
 		return
+	}
+
+	if virt.ResetFirmware {
+		err = instance.ClearResetFirmware(db, virt.Id)
+		if err != nil {
+			return
+		}
+		virt.ResetFirmware = false
+
+		event.PublishDispatch(db, "instance.change")
 	}
 
 	err = activateDisks(db, virt)
