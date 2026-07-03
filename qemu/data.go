@@ -159,7 +159,7 @@ func initPermissions(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
+func writeOvmfVars(virt *vm.VirtualMachine, force bool) (err error) {
 	if !virt.Uefi {
 		return
 	}
@@ -173,6 +173,21 @@ func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
 	err = utils.ExistsMkdir(paths.GetOvmfDir(), 0755)
 	if err != nil {
 		return
+	}
+
+	exists, err := utils.ExistsFile(ovmfVarsPath)
+	if err != nil {
+		return
+	}
+
+	if !force && exists {
+		return
+	}
+
+	if exists {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+		}).Info("qemu: Resetting OVMF variables")
 	}
 
 	err = utils.Exec("", "cp", ovmfVarsPathSource, ovmfVarsPath)
