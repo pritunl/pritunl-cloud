@@ -701,11 +701,24 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 
 			cmd = rules.newCommand()
 
+			if rule.Protocol == firewall.Multicast {
+				cmd = append(cmd,
+					"-d", "224.0.0.0/4",
+				)
+			}
+
 			cmd = append(cmd,
 				"-p", "udp",
 				"-m", "pkttype",
 				"--pkt-type", rule.Protocol,
 			)
+
+			if rule.Protocol == firewall.Broadcast {
+				cmd = append(cmd,
+					"-m", "addrtype",
+					"--dst-type", "BROADCAST",
+				)
+			}
 
 			if rules.Interface != "host" {
 				cmd = append(cmd,
@@ -1175,6 +1188,12 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 
 			cmd = rules.newCommand()
 
+			if rule.Protocol == firewall.Multicast {
+				cmd = append(cmd,
+					"-d", "224.0.0.0/4",
+				)
+			}
+
 			if iface != "host" {
 				cmd = append(cmd,
 					"-i", iface,
@@ -1186,6 +1205,13 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 				"-m", "pkttype",
 				"--pkt-type", rule.Protocol,
 			)
+
+			if rule.Protocol == firewall.Broadcast {
+				cmd = append(cmd,
+					"-m", "addrtype",
+					"--dst-type", "BROADCAST",
+				)
+			}
 
 			cmd = append(cmd,
 				"-m", "udp",
@@ -1664,6 +1690,12 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 
 			cmd = rules.newCommand()
 
+			if rule.Protocol == firewall.Multicast {
+				cmd = append(cmd,
+					"-d", "224.0.0.0/4",
+				)
+			}
+
 			if rules.Interface != "host" {
 				cmd = append(cmd,
 					"-o", rules.Interface,
@@ -1675,6 +1707,13 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 				"-m", "pkttype",
 				"--pkt-type", rule.Protocol,
 			)
+
+			if rule.Protocol == firewall.Broadcast {
+				cmd = append(cmd,
+					"-m", "addrtype",
+					"--dst-type", "BROADCAST",
+				)
+			}
 
 			cmd = append(cmd,
 				"-m", "udp",
