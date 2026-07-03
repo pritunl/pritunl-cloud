@@ -33,6 +33,7 @@ type VirtualMachine struct {
 	Disks               []*Disk           `json:"disks"`
 	DisksAvailable      bool              `json:"-"`
 	NetworkAdapters     []*NetworkAdapter `json:"network_adapters"`
+	ResetFirmware       bool              `json:"reset_firmware"`
 	CloudSubnet         string            `json:"cloud_subnet"`
 	CloudVnic           string            `json:"cloud_vnic"`
 	CloudVnicAttach     string            `json:"cloud_vnic_attach"`
