@@ -654,7 +654,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = writeOvmfVars(virt)
+	err = writeOvmfVars(virt, false)
 	if err != nil {
 		return
 	}
