@@ -47,16 +47,28 @@ func (r *Rule) SetName(ipv6 bool) (name string) {
 		break
 	case Multicast:
 		if ipv6 {
-			name = "pr6_multi"
+			name = fmt.Sprintf(
+				"pr6_multi_%s",
+				strings.Replace(r.Port, "-", "_", 1),
+			)
 		} else {
-			name = "pr4_multi"
+			name = fmt.Sprintf(
+				"pr4_multi_%s",
+				strings.Replace(r.Port, "-", "_", 1),
+			)
 		}
 		break
 	case Broadcast:
 		if ipv6 {
-			name = "pr6_broad"
+			name = fmt.Sprintf(
+				"pr6_broad_%s",
+				strings.Replace(r.Port, "-", "_", 1),
+			)
 		} else {
-			name = "pr4_broad"
+			name = fmt.Sprintf(
+				"pr4_broad_%s",
+				strings.Replace(r.Port, "-", "_", 1),
+			)
 		}
 		break
 	case Tcp, Udp:
