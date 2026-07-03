@@ -699,6 +699,22 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 		if rule.Protocol == firewall.Multicast ||
 			rule.Protocol == firewall.Broadcast {
 
+			for _, sourceIp := range rule.SourceIps {
+				if strings.Contains(sourceIp, ":") {
+					continue
+				}
+
+				if sourceIp == "0.0.0.0/0" {
+					all4 = true
+					break
+				}
+				set4 = true
+			}
+
+			if !all4 && !set4 {
+				continue
+			}
+
 			cmd = rules.newCommand()
 
 			if rule.Protocol == firewall.Multicast {
@@ -717,6 +733,13 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 				cmd = append(cmd,
 					"-m", "addrtype",
 					"--dst-type", "BROADCAST",
+				)
+			}
+
+			if !all4 {
+				cmd = append(cmd,
+					"-m", "set",
+					"--match-set", setName, "src",
 				)
 			}
 
@@ -1186,6 +1209,22 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		if rule.Protocol == firewall.Multicast ||
 			rule.Protocol == firewall.Broadcast {
 
+			for _, sourceIp := range rule.SourceIps {
+				if strings.Contains(sourceIp, ":") {
+					continue
+				}
+
+				if sourceIp == "0.0.0.0/0" {
+					all4 = true
+					break
+				}
+				set4 = true
+			}
+
+			if !all4 && !set4 {
+				continue
+			}
+
 			cmd = rules.newCommand()
 
 			if rule.Protocol == firewall.Multicast {
@@ -1210,6 +1249,13 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 				cmd = append(cmd,
 					"-m", "addrtype",
 					"--dst-type", "BROADCAST",
+				)
+			}
+
+			if !all4 {
+				cmd = append(cmd,
+					"-m", "set",
+					"--match-set", setName, "src",
 				)
 			}
 
@@ -1688,6 +1734,22 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 		if rule.Protocol == firewall.Multicast ||
 			rule.Protocol == firewall.Broadcast {
 
+			for _, sourceIp := range rule.SourceIps {
+				if strings.Contains(sourceIp, ":") {
+					continue
+				}
+
+				if sourceIp == "0.0.0.0/0" {
+					all4 = true
+					break
+				}
+				set4 = true
+			}
+
+			if !all4 && !set4 {
+				continue
+			}
+
 			cmd = rules.newCommand()
 
 			if rule.Protocol == firewall.Multicast {
@@ -1712,6 +1774,13 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 				cmd = append(cmd,
 					"-m", "addrtype",
 					"--dst-type", "BROADCAST",
+				)
+			}
+
+			if !all4 {
+				cmd = append(cmd,
+					"-m", "set",
+					"--match-set", setName, "src",
 				)
 			}
 
