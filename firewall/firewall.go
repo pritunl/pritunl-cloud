@@ -165,37 +165,41 @@ func (f *Firewall) Validate(db *database.Database) (
 			return
 		}
 
-		if rule.Protocol == Multicast || rule.Protocol == Broadcast {
-			rule.SourceIps = []string{}
-		} else {
-			for i, sourceIp := range rule.SourceIps {
-				if sourceIp == "" {
-					errData = &errortypes.ErrorData{
-						Error:   "invalid_ingress_rule_source_ip",
-						Message: "Empty ingress rule source IP",
-					}
-					return
+		for i, sourceIp := range rule.SourceIps {
+			if sourceIp == "" {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_ingress_rule_source_ip",
+					Message: "Empty ingress rule source IP",
 				}
-
-				if !strings.Contains(sourceIp, "/") {
-					if strings.Contains(sourceIp, ":") {
-						sourceIp += "/128"
-					} else {
-						sourceIp += "/32"
-					}
-				}
-
-				_, sourceCidr, e := net.ParseCIDR(sourceIp)
-				if e != nil {
-					errData = &errortypes.ErrorData{
-						Error:   "invalid_ingress_rule_source_ip",
-						Message: "Invalid ingress rule source IP",
-					}
-					return
-				}
-
-				rule.SourceIps[i] = sourceCidr.String()
+				return
 			}
+
+			if !strings.Contains(sourceIp, "/") {
+				if strings.Contains(sourceIp, ":") {
+					sourceIp += "/128"
+				} else {
+					sourceIp += "/32"
+				}
+			}
+
+			_, sourceCidr, e := net.ParseCIDR(sourceIp)
+			if e != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_ingress_rule_source_ip",
+					Message: "Invalid ingress rule source IP",
+				}
+				return
+			}
+
+			rule.SourceIps[i] = sourceCidr.String()
+		}
+
+		if len(rule.SourceIps) == 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "missing_source_ips",
+				Message: "Missing source IPs",
+			}
+			return
 		}
 	}
 
