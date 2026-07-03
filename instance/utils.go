@@ -663,6 +663,26 @@ func SetAction(db *database.Database, instId bson.ObjectID,
 	return
 }
 
+func ClearResetFirmware(db *database.Database,
+	instId bson.ObjectID) (err error) {
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"reset_firmware": false,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func SetDownloadProgress(db *database.Database,
 	instId bson.ObjectID, progress int, speedMb float64) (err error) {
 
