@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/ip"
+	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -104,10 +105,6 @@ var Nodes = []*node.Node{
 		Firewall:                false,
 		Roles:                   []string{"shape-m2"},
 		Memory:                  41.02,
-		HugePagesUsed:           0,
-		Load1:                   43.17,
-		Load5:                   43.33,
-		Load15:                  43.83,
 		CpuUnits:                128,
 		MemoryUnits:             512,
 		CpuUnitsRes:             68,
@@ -136,6 +133,30 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 2wIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+		Metric: &node.MetricData{
+			Memory:    41.02,
+			Swap:      4.12,
+			HugePages: 0,
+			Load1:     43.17,
+			Load5:     43.33,
+			Load15:    43.83,
+			Disks: []*metric.DiskStatic{
+				{Node: "nvme0n1"},
+				{Node: "nvme1n1"},
+			},
+			Mounts: []*metric.MountStatic{
+				{
+					Mount:  "/",
+					Used:   38.62,
+					Size:   429496729600,
+					Format: "xfs",
+				},
+			},
+			Interfaces: []*metric.InterfaceStatic{
+				{Name: "bond0.2"},
+				{Name: "bond0.4"},
+			},
+		},
 	},
 	{
 		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea0b"),
@@ -226,10 +247,6 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 		Firewall:                false,
 		Roles:                   []string{"shape-m2"},
 		Memory:                  62.02,
-		HugePagesUsed:           0,
-		Load1:                   67.12,
-		Load5:                   57.43,
-		Load15:                  55.23,
 		CpuUnits:                128,
 		MemoryUnits:             512,
 		CpuUnitsRes:             78,
@@ -258,6 +275,30 @@ mK9XwN2HgJ5YdL3RsP8VqT2MxK4NhR3JdY8WwL2TsM5QxN1PqK4YgJ7RxP8VsT3M
 PwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+		Metric: &node.MetricData{
+			Memory:    62.02,
+			Swap:      9.35,
+			HugePages: 0,
+			Load1:     67.12,
+			Load5:     57.43,
+			Load15:    55.23,
+			Disks: []*metric.DiskStatic{
+				{Node: "nvme0n1"},
+				{Node: "nvme1n1"},
+			},
+			Mounts: []*metric.MountStatic{
+				{
+					Mount:  "/",
+					Used:   45.19,
+					Size:   429496729600,
+					Format: "xfs",
+				},
+			},
+			Interfaces: []*metric.InterfaceStatic{
+				{Name: "bond0.2"},
+				{Name: "bond0.4"},
+			},
+		},
 	},
 	{
 		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea0c"),
@@ -348,10 +389,6 @@ PwIDAQAB
 		Firewall:                false,
 		Roles:                   []string{"shape-m2"},
 		Memory:                  41.02,
-		HugePagesUsed:           0,
-		Load1:                   76.53,
-		Load5:                   67.34,
-		Load15:                  67.87,
 		CpuUnits:                128,
 		MemoryUnits:             512,
 		CpuUnitsRes:             56,
@@ -380,6 +417,30 @@ wR5TnM8LpJ2XgH4VsN9BwK3TmQ5RxL8JpY7NwH2VsR4KgM9TnL5BxJ3QwN8VpH7Y
 KwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+		Metric: &node.MetricData{
+			Memory:    41.02,
+			Swap:      6.71,
+			HugePages: 0,
+			Load1:     76.53,
+			Load5:     67.34,
+			Load15:    67.87,
+			Disks: []*metric.DiskStatic{
+				{Node: "nvme0n1"},
+				{Node: "nvme1n1"},
+			},
+			Mounts: []*metric.MountStatic{
+				{
+					Mount:  "/",
+					Used:   41.73,
+					Size:   429496729600,
+					Format: "xfs",
+				},
+			},
+			Interfaces: []*metric.InterfaceStatic{
+				{Name: "bond0.2"},
+				{Name: "bond0.4"},
+			},
+		},
 	},
 	{
 		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea0d"),
@@ -470,10 +531,6 @@ KwIDAQAB
 		Firewall:                false,
 		Roles:                   []string{"shape-m2"},
 		Memory:                  41.02,
-		HugePagesUsed:           0,
-		Load1:                   24.63,
-		Load5:                   23.32,
-		Load15:                  21.43,
 		CpuUnits:                128,
 		MemoryUnits:             512,
 		CpuUnitsRes:             64,
@@ -502,6 +559,30 @@ wJ3BsT5HxL8KpN2YmF4DgR7VwQ3TsJ9KxH5BmL8NpY2FgT4RwK7VsH9JmQ3LxN8D
 FwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+		Metric: &node.MetricData{
+			Memory:    41.02,
+			Swap:      2.18,
+			HugePages: 0,
+			Load1:     24.63,
+			Load5:     23.32,
+			Load15:    21.43,
+			Disks: []*metric.DiskStatic{
+				{Node: "nvme0n1"},
+				{Node: "nvme1n1"},
+			},
+			Mounts: []*metric.MountStatic{
+				{
+					Mount:  "/",
+					Used:   27.85,
+					Size:   429496729600,
+					Format: "xfs",
+				},
+			},
+			Interfaces: []*metric.InterfaceStatic{
+				{Name: "bond0.2"},
+				{Name: "bond0.4"},
+			},
+		},
 	},
 	{
 		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea0e"),
@@ -528,6 +609,8 @@ FwIDAQAB
 		RequestsMin:          76,
 		ForwardedForHeader:   "",
 		ForwardedProtoHeader: "",
+		AdvisoryCount:        3,
+		AdvisoryMax:          4,
 		ExternalInterfaces:   []string{},
 		ExternalInterfaces6:  []string{},
 		InternalInterfaces:   []string{"bond0.2"},
@@ -592,10 +675,6 @@ FwIDAQAB
 		Firewall:                false,
 		Roles:                   []string{"shape-m2"},
 		Memory:                  41.02,
-		HugePagesUsed:           0,
-		Load1:                   88.45,
-		Load5:                   83.13,
-		Load15:                  72.34,
 		CpuUnits:                128,
 		MemoryUnits:             512,
 		CpuUnitsRes:             45,
@@ -624,6 +703,30 @@ xR2BgF8TpL7VsN3KwQ9YmH4DgJ5BxT2LsK8FpN3VwR7YgH4TmQ9KsL2BxJ5NpF8D
 RwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+		Metric: &node.MetricData{
+			Memory:    41.02,
+			Swap:      11.42,
+			HugePages: 0,
+			Load1:     88.45,
+			Load5:     83.13,
+			Load15:    72.34,
+			Disks: []*metric.DiskStatic{
+				{Node: "nvme0n1"},
+				{Node: "nvme1n1"},
+			},
+			Mounts: []*metric.MountStatic{
+				{
+					Mount:  "/",
+					Used:   52.31,
+					Size:   429496729600,
+					Format: "xfs",
+				},
+			},
+			Interfaces: []*metric.InterfaceStatic{
+				{Name: "bond0.2"},
+				{Name: "bond0.4"},
+			},
+		},
 	},
 	{
 		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea0f"),
@@ -650,6 +753,8 @@ RwIDAQAB
 		RequestsMin:          12,
 		ForwardedForHeader:   "",
 		ForwardedProtoHeader: "",
+		AdvisoryCount:        3,
+		AdvisoryMax:          4,
 		ExternalInterfaces:   []string{},
 		ExternalInterfaces6:  []string{},
 		InternalInterfaces:   []string{"bond0.2"},
@@ -714,10 +819,6 @@ RwIDAQAB
 		Firewall:                false,
 		Roles:                   []string{"shape-m2"},
 		Memory:                  41.02,
-		HugePagesUsed:           0,
-		Load1:                   53.44,
-		Load5:                   43.75,
-		Load15:                  43.93,
 		CpuUnits:                128,
 		MemoryUnits:             512,
 		CpuUnitsRes:             76,
@@ -746,5 +847,29 @@ gV4BsT9LmQ3KwR8YpN5DxH7FgJ2TsL4BwK9VmQ3NpY8RxT5LgH2DsK7BmF4JwN9Q
 TwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+		Metric: &node.MetricData{
+			Memory:    41.02,
+			Swap:      5.67,
+			HugePages: 0,
+			Load1:     53.44,
+			Load5:     43.75,
+			Load15:    43.93,
+			Disks: []*metric.DiskStatic{
+				{Node: "nvme0n1"},
+				{Node: "nvme1n1"},
+			},
+			Mounts: []*metric.MountStatic{
+				{
+					Mount:  "/",
+					Used:   39.48,
+					Size:   429496729600,
+					Format: "xfs",
+				},
+			},
+			Interfaces: []*metric.InterfaceStatic{
+				{Name: "bond0.2"},
+				{Name: "bond0.4"},
+			},
+		},
 	},
 }
