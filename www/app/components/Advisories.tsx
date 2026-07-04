@@ -1,6 +1,5 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as Constants from "../Constants";
 import * as AdvisoryTypes from '../types/AdvisoryTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import AdvisoriesStore from '../stores/AdvisoriesStore';
