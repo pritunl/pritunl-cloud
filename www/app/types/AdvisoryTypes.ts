@@ -71,6 +71,12 @@ export interface DismissData {
 	restores?: string[];
 }
 
+export interface MultiData {
+	ids?: string[];
+	dismiss?: boolean;
+	restore?: boolean;
+}
+
 export interface Filter {
 	id?: string;
 	reference?: string;
