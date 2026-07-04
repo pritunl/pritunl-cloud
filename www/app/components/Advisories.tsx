@@ -329,7 +329,7 @@ export default class Advisories extends React.Component<{}, State> {
 						>
 							Dismiss Selected
 						</button>
-						<button
+						{this.state.filter && this.state.filter.dismissed ? <button
 							className="bp5-button bp5-intent-success bp5-icon-undo"
 							style={css.button}
 							type="button"
@@ -337,7 +337,7 @@ export default class Advisories extends React.Component<{}, State> {
 							onClick={this.onRestore}
 						>
 							Restore Selected
-						</button>
+						</button> : null}
 						<ConfirmButton
 							label="Delete Selected"
 							className="bp5-intent-danger bp5-icon-delete"
