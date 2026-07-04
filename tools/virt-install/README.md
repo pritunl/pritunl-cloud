@@ -112,7 +112,7 @@ sudo mkdir -p /mnt/images
 sudo chown cloud:cloud /mnt/images
 mkdir -p /mnt/images/stable
 mkdir -p /mnt/images/unstable
-rsync --human-readable --archive --xattrs --progress image.panda.pritunl.net:/var/lib/virt/images/ /mnt/images/unstable/
+rsync --human-readable --archive --progress image.panda.pritunl.net:/var/lib/virt/images/ /mnt/images/unstable/
 
 sudo wget -P /tmp https://raw.githubusercontent.com/pritunl/toolbox/eae247b569672382df53d8d42ee843c219342097/s3c/s3c.py
 echo "fc7680352667822e3aa3cffa7678a6f8352a340daf1b72c356aa3c95e8ba9729  /tmp/s3c.py" | sha256sum -c - && sudo cp /tmp/s3c.py /usr/local/bin/s3c && sudo chmod +x /usr/local/bin/s3c
