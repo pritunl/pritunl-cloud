@@ -36,6 +36,8 @@ interface State {
 
 interface Props {
 	advisories: AdvisoryTypes.Advisory[];
+	advisoryCount: number;
+	advisoryMax: number;
 	onOpen?: () => Promise<void>;
 }
 
@@ -339,16 +341,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		return entries;
 	}
 
-	buttonIntent(entries: UpdateEntry[]): string {
-		let top = 0;
-		for (let entry of entries) {
-			let score = entry.score || 0;
-			if (score > top) {
-				top = score;
-			}
-		}
-
-		switch (top) {
+	buttonIntent(max: number): string {
+		switch (max) {
 			case SCORE_CRITICAL:
 				return "bp5-intent-danger";
 			case SCORE_HIGH:
@@ -708,7 +702,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		return <div>
 			<button
 				className={"bp5-button bp5-minimal bp5-icon-shield " +
-					this.buttonIntent(entries)}
+					this.buttonIntent(this.props.advisoryMax)}
 				type="button"
 				disabled={this.state.loading}
 				onClick={(): void => {
@@ -736,7 +730,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 						})
 					}
 				}}
-			>Security Advisories</button>
+			>Security Advisories{this.props.advisoryCount ?
+				` (${this.props.advisoryCount})` : ""}</button>
 			{dialog}
 		</div>
 	}
