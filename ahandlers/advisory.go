@@ -24,6 +24,12 @@ type advisoriesData struct {
 }
 
 func advisoryGet(c *gin.Context) {
+	if demo.IsDemo() {
+		adv := demo.Advisories[0].Advisory
+		c.JSON(200, adv)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
@@ -42,6 +48,16 @@ func advisoryGet(c *gin.Context) {
 }
 
 func advisoriesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &advisoriesData{
+			Advisories: demo.Advisories,
+			Count:      int64(len(demo.Advisories)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
