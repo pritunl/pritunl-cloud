@@ -872,6 +872,21 @@ func instanceAdvisoryGet(c *gin.Context) {
 		return
 	}
 
+	if demo.IsDemo() {
+		advisories := []*advisory.Advisory{}
+		for _, adv := range demo.Advisories {
+			for _, instId := range adv.Instances {
+				if instId == instanceId {
+					advisories = append(advisories, &adv.Advisory)
+					break
+				}
+			}
+		}
+
+		c.JSON(200, advisories)
+		return
+	}
+
 	inst, err := instance.GetOrg(db, userOrg, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
