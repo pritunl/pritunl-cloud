@@ -701,6 +701,21 @@ func nodeAdvisoryGet(c *gin.Context) {
 		return
 	}
 
+	if demo.IsDemo() {
+		advisories := []*advisory.Advisory{}
+		for _, adv := range demo.Advisories {
+			for _, ndeId := range adv.Nodes {
+				if ndeId == nodeId {
+					advisories = append(advisories, &adv.Advisory)
+					break
+				}
+			}
+		}
+
+		c.JSON(200, advisories)
+		return
+	}
+
 	advisories, err := advisory.GetNode(db, nodeId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
