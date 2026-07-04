@@ -11,7 +11,7 @@ import PageInfo from './PageInfo';
 import * as PageInfos from './PageInfo';
 import ConfirmButton from './ConfirmButton';
 import CompletionStore from '../stores/CompletionStore';
-import {severityClass, scoreLabel} from './Advisory';
+import {scoreLabel} from './Advisory';
 
 const DESC_MAX_HEIGHT = 400;
 
@@ -62,7 +62,13 @@ const css = {
 		paddingTop: '3px',
 	} as React.CSSProperties,
 	status: {
-		margin: '6px 0 0 1px',
+		margin: '2px 0 3px 1px',
+	} as React.CSSProperties,
+	reference: {
+		margin: '5px 0 0 12px',
+		fontFamily: 'monospace',
+		fontSize: '14px',
+		fontWeight: 600,
 	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
@@ -205,6 +211,23 @@ const css = {
 		margin: '0 5px',
 	} as React.CSSProperties,
 };
+
+function severityClass(severity: string): string {
+	switch ((severity || '').toLowerCase()) {
+		case 'critical':
+			return 'bp5-intent-danger';
+		case 'important':
+		case 'high':
+			return 'bp5-intent-warning';
+		case 'moderate':
+		case 'medium':
+			return 'bp5-intent-primary';
+		case 'low':
+			return 'bp5-intent-success';
+		default:
+			return '';
+	}
+}
 
 export default class AdvisoryDetailed extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
@@ -898,10 +921,12 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		let typeLabel = advisory.type;
 		if (advisory.type === 'rhel') {
-			typeLabel = 'Red Hat';
+			typeLabel = 'Red Hat Security Advisory';
 		}
 
-		let statusClass = 'tab-close ' + severityClass(advisory.severity);
+		let statusClass = 'bp5-tag tab-close ' + severityClass(advisory.severity);
+
+		let referenceLink = this.advisoryLink(advisory.reference || "");
 
 		let headerStyle = css.buttons;
 		if (advisory.dismissed) {
@@ -1026,6 +1051,15 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						/>
 						{MiscUtils.capitalize(advisory.severity) || 'Unknown'}
 					</div>
+					{advisory.reference ? (referenceLink ?
+						<a
+							href={referenceLink}
+							target="_blank"
+							rel="noopener noreferrer"
+							style={css.reference}
+						>{advisory.reference}</a> :
+						<div style={css.reference}>{advisory.reference}</div>
+					) : null}
 					<div className="flex tab-close"/>
 					<button
 						className={"bp5-button bp5-minimal " +
