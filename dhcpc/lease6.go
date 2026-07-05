@@ -141,9 +141,6 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 	}
 	defer client.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), DhcpTimeout)
-	defer cancel()
-
 	l.IaId6 = [4]byte{0, 0, 0, 1}
 
 	modifiers := []dhcpv6.Modifier{
@@ -172,9 +169,15 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 		modifiers = append(modifiers, dhcpv6.WithOption(iaNa))
 	}
 
-	reply, err := client.RapidSolicit(ctx, modifiers...)
+	rapidCtx, rapidCancel := context.WithTimeout(
+		context.Background(), DhcpExchangeTimeout)
+	reply, err := client.RapidSolicit(rapidCtx, modifiers...)
+	rapidCancel()
 	if err != nil {
-		reply, err = client.Solicit(ctx, modifiers...)
+		solicitCtx, solicitCancel := context.WithTimeout(
+			context.Background(), DhcpExchangeTimeout)
+		reply, err = client.Solicit(solicitCtx, modifiers...)
+		solicitCancel()
 		if err != nil {
 			err = &errortypes.RequestError{
 				errors.Wrap(err, "dhcpc: DHCPv6 exchange failed"),
