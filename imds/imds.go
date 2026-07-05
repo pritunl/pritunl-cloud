@@ -298,6 +298,7 @@ func Sync(db *database.Database, namespace string,
 		curIpPrefix6 := ""
 		curIpCached := false
 		curIpCached6 := false
+		curIpDynamic6 := false
 		newIp := ""
 		newIp6 := ""
 		newIpPrefix := ""
@@ -326,6 +327,7 @@ func Sync(db *database.Database, namespace string,
 						curIp6 = address6.Local
 						curIpPrefix6 = fmt.Sprintf(
 							"%s/%d", address6.Local, address6.Prefix)
+						curIpDynamic6 = address6.Dynamic
 					}
 				}
 			}
@@ -347,6 +349,7 @@ func Sync(db *database.Database, namespace string,
 						curIp6 = address6.Local
 						curIpPrefix6 = fmt.Sprintf(
 							"%s/%d", address6.Local, address6.Prefix)
+						curIpDynamic6 = address6.Dynamic
 					}
 				}
 			}
@@ -368,6 +371,7 @@ func Sync(db *database.Database, namespace string,
 						curIp6 = address6.Local
 						curIpPrefix6 = fmt.Sprintf(
 							"%s/%d", address6.Local, address6.Prefix)
+						curIpDynamic6 = address6.Dynamic
 					}
 				}
 			}
@@ -429,6 +433,7 @@ func Sync(db *database.Database, namespace string,
 					curIp6 = address6.Local
 					curIpPrefix6 = fmt.Sprintf(
 						"%s/%d", address6.Local, address6.Prefix)
+					curIpDynamic6 = address6.Dynamic
 				}
 			}
 
@@ -440,7 +445,7 @@ func Sync(db *database.Database, namespace string,
 					"new_ip6":   newIpPrefix6,
 				}).Info("imds: Updating instance DHCP IPv6 address")
 
-				if curIpPrefix6 != "" {
+				if curIpPrefix6 != "" && !curIpDynamic6 {
 					_, err = pritunlutils.ExecCombinedOutputLogged(
 						[]string{"File exists", "Cannot assign"},
 						"ip", "netns", "exec", namespace,
