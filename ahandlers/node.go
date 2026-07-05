@@ -351,6 +351,27 @@ func nodeChartGet(c *gin.Context) {
 		interval = 24
 	}
 
+	if demo.IsDemo() {
+		startTime := time.Now().UTC().Add(
+			time.Duration(-period) * time.Minute)
+		endTime := time.Now().UTC()
+
+		data, err := demo.GetNodeChartData(nodeId, resource, startTime,
+			endTime, time.Duration(interval)*time.Minute)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		chartData := &nodeChartData{
+			HasData: len(data) > 0,
+			Data:    data,
+		}
+
+		c.JSON(200, chartData)
+		return
+	}
+
 	nde, err := node.Get(db, nodeId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
