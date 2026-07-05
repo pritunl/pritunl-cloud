@@ -12,9 +12,9 @@ import (
 )
 
 func (l *Lease) Renew6() (ok bool, err error) {
-	if l.Address6 == nil || l.Address6.IP == nil || l.ServerAddress == nil {
+	if l.Address6 == nil || l.Address6.IP == nil || l.ServerAddress6 == nil {
 		err = &errortypes.ReadError{
-			errors.Wrap(err, "dhcpc: Cannot call renew with unset address"),
+			errors.New("dhcpc: Cannot call renew with unset address"),
 		}
 		return
 	}
