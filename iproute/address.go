@@ -77,7 +77,7 @@ func AddressGetIface(namespace, name string) (
 		return
 	}
 
-	dynamic6 := false
+	static6 := false
 	if label != "" {
 		for _, iface := range ifaces {
 			if iface.Name == name && iface.Addresses != nil {
@@ -88,9 +88,9 @@ func AddressGetIface(namespace, name string) (
 						if address == nil && addr.Family == "inet" {
 							address = addr
 						} else if addr.Family == "inet6" {
-							if addr.Dynamic && !dynamic6 {
+							if !addr.Dynamic && !static6 {
 								address6 = addr
-								dynamic6 = true
+								static6 = true
 							} else if address6 == nil {
 								address6 = addr
 							}
@@ -108,9 +108,9 @@ func AddressGetIface(namespace, name string) (
 					if address == nil && addr.Family == "inet" {
 						address = addr
 					} else if addr.Family == "inet6" {
-						if addr.Dynamic && !dynamic6 {
+						if !addr.Dynamic && !static6 {
 							address6 = addr
-							dynamic6 = true
+							static6 = true
 						} else if address6 == nil {
 							address6 = addr
 						}
@@ -140,6 +140,8 @@ func AddressGetIfaceMod(namespace, name string) (
 	var address6Mod *Address
 	var addressMod6 *Address
 	var address6Mod6 *Address
+	staticMod6 := false
+	static6Mod6 := false
 
 	var output string
 	if namespace != "" {
@@ -180,7 +182,7 @@ func AddressGetIfaceMod(namespace, name string) (
 		return
 	}
 
-	dynamic6 := false
+	static6 := false
 	if label != "" {
 		for _, iface := range ifaces {
 			if strings.HasPrefix(iface.Name, name) && iface.Addresses != nil {
@@ -191,9 +193,9 @@ func AddressGetIfaceMod(namespace, name string) (
 						if address == nil && addr.Family == "inet" {
 							address = addr
 						} else if addr.Family == "inet6" {
-							if addr.Dynamic && !dynamic6 {
+							if !addr.Dynamic && !static6 {
 								address6 = addr
-								dynamic6 = true
+								static6 = true
 							} else if address6 == nil {
 								address6 = addr
 							}
@@ -211,9 +213,9 @@ func AddressGetIfaceMod(namespace, name string) (
 					if address == nil && addr.Family == "inet" {
 						address = addr
 					} else if addr.Family == "inet6" {
-						if addr.Dynamic && !dynamic6 {
+						if !addr.Dynamic && !static6 {
 							address6 = addr
-							dynamic6 = true
+							static6 = true
 						} else if address6 == nil {
 							address6 = addr
 						}
@@ -228,9 +230,9 @@ func AddressGetIfaceMod(namespace, name string) (
 					if addressMod == nil && addr.Family == "inet" {
 						addressMod = addr
 					} else if addr.Family == "inet6" {
-						if addr.Dynamic && !dynamic6 {
+						if !addr.Dynamic && !staticMod6 {
 							addressMod6 = addr
-							dynamic6 = true
+							staticMod6 = true
 						} else if addressMod6 == nil {
 							addressMod6 = addr
 						}
@@ -245,9 +247,9 @@ func AddressGetIfaceMod(namespace, name string) (
 					if address6Mod == nil && addr.Family == "inet" {
 						address6Mod = addr
 					} else if addr.Family == "inet6" {
-						if addr.Dynamic && !dynamic6 {
+						if !addr.Dynamic && !static6Mod6 {
 							address6Mod6 = addr
-							dynamic6 = true
+							static6Mod6 = true
 						} else if address6Mod6 == nil {
 							address6Mod6 = addr
 						}
