@@ -17,6 +17,17 @@ type Address struct {
 	Label      string `json:"label"`
 	Dynamic    bool   `json:"dynamic"`
 	Deprecated bool   `json:"deprecated"`
+	Protocol   string `json:"protocol"`
+}
+
+func addressRank6(addr *Address) int {
+	if !addr.Dynamic {
+		return 3
+	}
+	if addr.Protocol != "kernel_ra" {
+		return 2
+	}
+	return 1
 }
 
 type AddressIface struct {
@@ -77,7 +88,7 @@ func AddressGetIface(namespace, name string) (
 		return
 	}
 
-	static6 := false
+	rank6 := 0
 	if label != "" {
 		for _, iface := range ifaces {
 			if iface.Name == name && iface.Addresses != nil {
@@ -88,11 +99,9 @@ func AddressGetIface(namespace, name string) (
 						if address == nil && addr.Family == "inet" {
 							address = addr
 						} else if addr.Family == "inet6" {
-							if !addr.Dynamic && !static6 {
+							if addressRank6(addr) > rank6 {
 								address6 = addr
-								static6 = true
-							} else if address6 == nil {
-								address6 = addr
+								rank6 = addressRank6(addr)
 							}
 						}
 					}
@@ -108,11 +117,9 @@ func AddressGetIface(namespace, name string) (
 					if address == nil && addr.Family == "inet" {
 						address = addr
 					} else if addr.Family == "inet6" {
-						if !addr.Dynamic && !static6 {
+						if addressRank6(addr) > rank6 {
 							address6 = addr
-							static6 = true
-						} else if address6 == nil {
-							address6 = addr
+							rank6 = addressRank6(addr)
 						}
 					}
 				}
@@ -140,8 +147,8 @@ func AddressGetIfaceMod(namespace, name string) (
 	var address6Mod *Address
 	var addressMod6 *Address
 	var address6Mod6 *Address
-	staticMod6 := false
-	static6Mod6 := false
+	rankMod6 := 0
+	rank6Mod6 := 0
 
 	var output string
 	if namespace != "" {
@@ -182,7 +189,7 @@ func AddressGetIfaceMod(namespace, name string) (
 		return
 	}
 
-	static6 := false
+	rank6 := 0
 	if label != "" {
 		for _, iface := range ifaces {
 			if strings.HasPrefix(iface.Name, name) && iface.Addresses != nil {
@@ -193,11 +200,9 @@ func AddressGetIfaceMod(namespace, name string) (
 						if address == nil && addr.Family == "inet" {
 							address = addr
 						} else if addr.Family == "inet6" {
-							if !addr.Dynamic && !static6 {
+							if addressRank6(addr) > rank6 {
 								address6 = addr
-								static6 = true
-							} else if address6 == nil {
-								address6 = addr
+								rank6 = addressRank6(addr)
 							}
 						}
 					}
@@ -213,11 +218,9 @@ func AddressGetIfaceMod(namespace, name string) (
 					if address == nil && addr.Family == "inet" {
 						address = addr
 					} else if addr.Family == "inet6" {
-						if !addr.Dynamic && !static6 {
+						if addressRank6(addr) > rank6 {
 							address6 = addr
-							static6 = true
-						} else if address6 == nil {
-							address6 = addr
+							rank6 = addressRank6(addr)
 						}
 					}
 				}
@@ -230,11 +233,9 @@ func AddressGetIfaceMod(namespace, name string) (
 					if addressMod == nil && addr.Family == "inet" {
 						addressMod = addr
 					} else if addr.Family == "inet6" {
-						if !addr.Dynamic && !staticMod6 {
+						if addressRank6(addr) > rankMod6 {
 							addressMod6 = addr
-							staticMod6 = true
-						} else if addressMod6 == nil {
-							addressMod6 = addr
+							rankMod6 = addressRank6(addr)
 						}
 					}
 				}
@@ -247,11 +248,9 @@ func AddressGetIfaceMod(namespace, name string) (
 					if address6Mod == nil && addr.Family == "inet" {
 						address6Mod = addr
 					} else if addr.Family == "inet6" {
-						if !addr.Dynamic && !static6Mod6 {
+						if addressRank6(addr) > rank6Mod6 {
 							address6Mod6 = addr
-							static6Mod6 = true
-						} else if address6Mod6 == nil {
-							address6Mod6 = addr
+							rank6Mod6 = addressRank6(addr)
 						}
 					}
 				}
