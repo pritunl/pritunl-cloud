@@ -40,7 +40,8 @@ func (l *Lease) Renew6() (ok bool, err error) {
 	}
 	defer client.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), DhcpTimeout)
+	ctx, cancel := context.WithTimeout(
+		context.Background(), DhcpExchangeTimeout)
 	defer cancel()
 
 	serverAddr := &net.UDPAddr{
