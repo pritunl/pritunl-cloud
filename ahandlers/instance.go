@@ -857,6 +857,27 @@ func instanceChartGet(c *gin.Context) {
 		interval = 24
 	}
 
+	if demo.IsDemo() {
+		startTime := time.Now().UTC().Add(
+			time.Duration(-period) * time.Minute)
+		endTime := time.Now().UTC()
+
+		data, err := demo.GetChartData(instanceId, resource, startTime,
+			endTime, time.Duration(interval)*time.Minute)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		chartData := &instanceChartData{
+			HasData: len(data) > 0,
+			Data:    data,
+		}
+
+		c.JSON(200, chartData)
+		return
+	}
+
 	inst, err := instance.Get(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
