@@ -30,7 +30,7 @@ func UpdateDatabase(db *Database) {
 	database.Store(db)
 }
 
-func LoadConfig(domains []*types.Domain) {
+func LoadConfig(dnsServers, dnsServers6 []string, domains []*types.Domain) {
 	db := &Database{
 		A:     map[string][]net.IP{},
 		AAAA:  map[string][]net.IP{},
@@ -49,4 +49,8 @@ func LoadConfig(domains []*types.Domain) {
 	}
 
 	UpdateDatabase(db)
+
+	if Default != nil {
+		Default.UpdateUpstream(dnsServers, dnsServers6)
+	}
 }
