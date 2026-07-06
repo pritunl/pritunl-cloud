@@ -2,20 +2,93 @@ package dnss
 
 import (
 	"context"
+	"net"
+	"slices"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/coredns/coredns/plugin"
+	"github.com/coredns/coredns/plugin/forward"
+	"github.com/coredns/coredns/plugin/pkg/proxy"
+	"github.com/coredns/coredns/plugin/pkg/transport"
 	"github.com/miekg/dns"
 )
 
 type Plugin struct {
-	Next plugin.Handler
+	next      atomic.Pointer[forward.Forward]
+	upstreams []string
+	lock      sync.Mutex
+}
+
+func (p *Plugin) setNext(next *forward.Forward) {
+	p.next.Store(next)
+}
+
+func (p *Plugin) getNext() *forward.Forward {
+	return p.next.Load()
+}
+
+func (p *Plugin) UpdateUpstream(dnsServers []string) {
+	upstreams := []string{}
+	for _, addr := range dnsServers {
+		if addr == "" {
+			continue
+		}
+		upstreams = append(upstreams, net.JoinHostPort(addr, "53"))
+	}
+
+	if len(upstreams) == 0 {
+		upstreams = []string{DefaultDnsServer}
+	}
+
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	if slices.Equal(p.upstreams, upstreams) {
+		return
+	}
+
+	fwd := forward.New()
+	for _, upstream := range upstreams {
+		prxy := proxy.NewProxy(upstream, upstream, transport.DNS)
+		prxy.SetReadTimeout(2 * time.Second)
+		prxy.Start(60 * time.Second)
+		fwd.SetProxy(prxy)
+	}
+
+	oldFwd := p.getNext()
+	p.setNext(fwd)
+
+	if oldFwd != nil {
+		oldFwd.OnShutdown()
+	}
+	p.upstreams = upstreams
+}
+
+func (p *Plugin) Shutdown() {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	fwd := p.getNext()
+	if fwd != nil {
+		fwd.OnShutdown()
+	}
+
+	p.upstreams = []string{}
+	p.setNext(nil)
 }
 
 func (p *Plugin) ServeDNS(ctx context.Context,
 	w dns.ResponseWriter, r *dns.Msg) (int, error) {
 
+	next := p.getNext()
+	if next == nil {
+		return dns.RcodeServerFailure, nil
+	}
+
 	if len(r.Question) == 0 {
-		return plugin.NextOrFailure(p.Name(), p.Next, ctx, w, r)
+		return plugin.NextOrFailure(p.Name(), next, ctx, w, r)
 	}
 
 	q := r.Question[0]
@@ -67,7 +140,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					rw := &Response{
 						ResponseWriter: w,
 					}
-					code, err := p.Next.ServeDNS(ctx, rw, targetQuery)
+					code, err := next.ServeDNS(ctx, rw, targetQuery)
 
 					if err == nil && rw.msg != nil {
 						answers = append(answers, rw.msg.Answer...)
@@ -101,7 +174,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					rw := &Response{
 						ResponseWriter: w,
 					}
-					code, err := p.Next.ServeDNS(ctx, rw, targetQuery)
+					code, err := next.ServeDNS(ctx, rw, targetQuery)
 
 					if err == nil && rw.msg != nil {
 						answers = append(answers, rw.msg.Answer...)
@@ -177,9 +250,13 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 		return dns.RcodeSuccess, nil
 	}
 
-	return plugin.NextOrFailure(p.Name(), p.Next, ctx, w, r)
+	return plugin.NextOrFailure(p.Name(), next, ctx, w, r)
 }
 
 func (p *Plugin) Name() string {
 	return "pritunl-cloud"
+}
+
+func (p *Plugin) Init() {
+	p.UpdateUpstream(nil)
 }
