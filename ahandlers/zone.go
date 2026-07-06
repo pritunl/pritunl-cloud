@@ -20,10 +20,12 @@ import (
 )
 
 type zoneData struct {
-	Id         bson.ObjectID `json:"id"`
-	Datacenter bson.ObjectID `json:"datacenter"`
-	Name       string        `json:"name"`
-	Comment    string        `json:"comment"`
+	Id          bson.ObjectID `json:"id"`
+	Datacenter  bson.ObjectID `json:"datacenter"`
+	Name        string        `json:"name"`
+	Comment     string        `json:"comment"`
+	DnsServers  []string      `json:"dns_servers"`
+	DnsServers6 []string      `json:"dns_servers6"`
 }
 
 type zonesData struct {
@@ -59,10 +61,14 @@ func zonePut(c *gin.Context) {
 
 	zne.Name = data.Name
 	zne.Comment = data.Comment
+	zne.DnsServers = data.DnsServers
+	zne.DnsServers6 = data.DnsServers6
 
 	fields := set.NewSet(
 		"name",
 		"comment",
+		"dns_servers",
+		"dns_servers6",
 	)
 
 	errData, err := zne.Validate(db)
