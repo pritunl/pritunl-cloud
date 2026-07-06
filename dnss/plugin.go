@@ -84,6 +84,9 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 
 	next := p.getNext()
 	if next == nil {
+		msg := new(dns.Msg)
+		msg.SetRcode(r, dns.RcodeServerFailure)
+		w.WriteMsg(msg)
 		return dns.RcodeServerFailure, nil
 	}
 
