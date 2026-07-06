@@ -39,8 +39,8 @@ func (s *Server) ListenTcp() (err error) {
 	return
 }
 
-func (s *Server) UpdateUpstream(dnsServers []string) {
-	s.plugin.UpdateUpstream(dnsServers)
+func (s *Server) UpdateUpstream(dnsServers, dnsServers6 []string) {
+	s.plugin.UpdateUpstream(dnsServers, dnsServers6)
 }
 
 func (s *Server) Shutdown() (err error) {
