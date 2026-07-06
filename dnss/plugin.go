@@ -6,31 +6,42 @@ import (
 	"slices"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/coredns/coredns/plugin"
-	"github.com/coredns/coredns/plugin/forward"
-	"github.com/coredns/coredns/plugin/pkg/proxy"
-	"github.com/coredns/coredns/plugin/pkg/transport"
 	"github.com/miekg/dns"
 )
 
 type Plugin struct {
-	next      atomic.Pointer[forward.Forward]
-	upstreams []string
-	lock      sync.Mutex
+	next        atomic.Pointer[ForwardMulti]
+	dnsServers  []string
+	dnsServers6 []string
+	lock        sync.Mutex
 }
 
-func (p *Plugin) setNext(next *forward.Forward) {
+func (p *Plugin) setNext(next *ForwardMulti) {
 	p.next.Store(next)
 }
 
-func (p *Plugin) getNext() *forward.Forward {
+func (p *Plugin) getNext() *ForwardMulti {
 	return p.next.Load()
 }
 
-func (p *Plugin) UpdateUpstream(dnsServers []string) {
+func (p *Plugin) UpdateUpstream(dnsServers, dnsServers6 []string) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	curFwd := p.getNext()
+	if curFwd != nil && slices.Equal(dnsServers, p.dnsServers) &&
+		slices.Equal(dnsServers6, p.dnsServers6) {
+
+		return
+	}
+	p.dnsServers = slices.Clone(dnsServers)
+	p.dnsServers6 = slices.Clone(dnsServers6)
+
 	upstreams := []string{}
+	upstreams6 := []string{}
+
 	for _, addr := range dnsServers {
 		if addr == "" {
 			continue
@@ -38,32 +49,29 @@ func (p *Plugin) UpdateUpstream(dnsServers []string) {
 		upstreams = append(upstreams, net.JoinHostPort(addr, "53"))
 	}
 
-	if len(upstreams) == 0 {
+	for _, addr := range dnsServers6 {
+		if addr == "" {
+			continue
+		}
+		upstreams6 = append(upstreams6, net.JoinHostPort(addr, "53"))
+	}
+
+	if len(upstreams) == 0 && len(upstreams6) == 0 {
 		upstreams = []string{DefaultDnsServer}
 	}
 
-	p.lock.Lock()
-	defer p.lock.Unlock()
-
-	if slices.Equal(p.upstreams, upstreams) {
-		return
+	var fwd *ForwardMulti
+	if len(upstreams6) > 0 {
+		fwd = NewForwardMulti(upstreams6, upstreams)
+	} else {
+		fwd = NewForwardMulti(upstreams, nil)
 	}
 
-	fwd := forward.New()
-	for _, upstream := range upstreams {
-		prxy := proxy.NewProxy(upstream, upstream, transport.DNS)
-		prxy.SetReadTimeout(2 * time.Second)
-		prxy.Start(60 * time.Second)
-		fwd.SetProxy(prxy)
-	}
-
-	oldFwd := p.getNext()
 	p.setNext(fwd)
 
-	if oldFwd != nil {
-		oldFwd.OnShutdown()
+	if curFwd != nil {
+		curFwd.Shutdown()
 	}
-	p.upstreams = upstreams
 }
 
 func (p *Plugin) Shutdown() {
@@ -72,10 +80,11 @@ func (p *Plugin) Shutdown() {
 
 	fwd := p.getNext()
 	if fwd != nil {
-		fwd.OnShutdown()
+		fwd.Shutdown()
 	}
 
-	p.upstreams = []string{}
+	p.dnsServers = []string{}
+	p.dnsServers6 = []string{}
 	p.setNext(nil)
 }
 
@@ -261,5 +270,5 @@ func (p *Plugin) Name() string {
 }
 
 func (p *Plugin) Init() {
-	p.UpdateUpstream(nil)
+	p.UpdateUpstream(nil, nil)
 }
