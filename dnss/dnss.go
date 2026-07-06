@@ -2,20 +2,17 @@ package dnss
 
 import (
 	"context"
-	"time"
 
-	"github.com/coredns/coredns/plugin/forward"
-	"github.com/coredns/coredns/plugin/pkg/proxy"
-	"github.com/coredns/coredns/plugin/pkg/transport"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/miekg/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Server struct {
-	mux *dns.ServeMux
-	udp *dns.Server
-	tcp *dns.Server
+	mux    *dns.ServeMux
+	udp    *dns.Server
+	tcp    *dns.Server
+	plugin *Plugin
 }
 
 func (s *Server) ListenUdp() (err error) {
@@ -42,6 +39,10 @@ func (s *Server) ListenTcp() (err error) {
 	return
 }
 
+func (s *Server) UpdateUpstream(dnsServers []string) {
+	s.plugin.UpdateUpstream(dnsServers)
+}
+
 func (s *Server) Shutdown() (err error) {
 	e := s.tcp.Shutdown()
 	if e != nil {
@@ -53,29 +54,24 @@ func (s *Server) Shutdown() (err error) {
 		err = e
 	}
 
+	s.plugin.Shutdown()
+
 	return
 }
 
 func NewServer(host string) (server *Server) {
 	mux := dns.NewServeMux()
 
-	prxy := proxy.NewProxy("google", "8.8.8.8:53", transport.DNS)
-	prxy.SetReadTimeout(2 * time.Second)
-	prxy.Start(60 * time.Second)
-
-	fwd := forward.New()
-	fwd.SetProxy(prxy)
-
-	custom := &Plugin{
-		Next: fwd,
-	}
+	custom := &Plugin{}
+	custom.Init()
 
 	mux.HandleFunc(".", func(w dns.ResponseWriter, r *dns.Msg) {
 		custom.ServeDNS(context.Background(), w, r)
 	})
 
 	return &Server{
-		mux: mux,
+		mux:    mux,
+		plugin: custom,
 		udp: &dns.Server{
 			Addr:    host,
 			Net:     "udp",
