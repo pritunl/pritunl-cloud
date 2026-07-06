@@ -7,7 +7,10 @@ import (
 	"github.com/coredns/coredns/plugin/forward"
 	"github.com/coredns/coredns/plugin/pkg/proxy"
 	"github.com/coredns/coredns/plugin/pkg/transport"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/miekg/dns"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/tools/logger"
 )
 
 type ForwardMulti struct {
@@ -37,6 +40,13 @@ func (f *ForwardMulti) ServeDNS(ctx context.Context,
 		w.WriteMsg(rw.msg)
 		return code, nil
 	}
+
+	err = &errortypes.RequestError{
+		errors.Wrap(err, "dnss: Primary DNS error"),
+	}
+	logger.WithFields(logger.Fields{
+		"error": err,
+	}).Error("dnss: Primary DNS error")
 
 	return f.secondary.ServeDNS(ctx, w, r)
 }
