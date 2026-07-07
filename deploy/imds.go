@@ -29,6 +29,7 @@ func (s *Imds) buildInstance(db *database.Database,
 	conf *types.Config, err error) {
 
 	vc := s.stat.Vpc(inst.Vpc)
+	zne := s.stat.GetZone(inst.Zone)
 
 	var subnet *vpc.Subnet
 	if vc != nil {
@@ -37,7 +38,7 @@ func (s *Imds) buildInstance(db *database.Database,
 
 	conf, err = imds.BuildConfig(
 		inst, virt, nil, nil,
-		vc, subnet,
+		zne, vc, subnet,
 		[]*pod.Pod{},
 		map[bson.ObjectID][]*unit.Unit{},
 		map[bson.ObjectID]*deployment.Deployment{},
@@ -62,6 +63,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	conf *types.Config, err error) {
 
 	vc := s.stat.Vpc(inst.Vpc)
+	zne := s.stat.GetZone(inst.Zone)
 
 	var subnet *vpc.Subnet
 	if vc != nil {
@@ -133,7 +135,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 
 	conf, err = imds.BuildConfig(
 		inst, virt, instUnt, spc,
-		vc, subnet,
+		zne, vc, subnet,
 		pods,
 		podUnitsMap,
 		s.stat.DeploymentsDeployed(),
