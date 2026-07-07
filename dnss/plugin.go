@@ -9,6 +9,7 @@ import (
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/miekg/dns"
+	"github.com/pritunl/tools/logger"
 )
 
 type Plugin struct {
@@ -58,6 +59,13 @@ func (p *Plugin) UpdateUpstream(dnsServers, dnsServers6 []string) {
 
 	if len(upstreams) == 0 && len(upstreams6) == 0 {
 		upstreams = []string{DefaultDnsServer}
+	}
+
+	if curFwd != nil {
+		logger.WithFields(logger.Fields{
+			"upstreams":  upstreams,
+			"upstreams6": upstreams6,
+		}).Info("dnss: Update upstreams")
 	}
 
 	var fwd *ForwardMulti
