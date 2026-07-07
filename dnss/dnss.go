@@ -8,6 +8,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
+var Default *Server
+
 type Server struct {
 	mux    *dns.ServeMux
 	udp    *dns.Server
@@ -83,4 +85,10 @@ func NewServer(host string) (server *Server) {
 			Handler: mux,
 		},
 	}
+}
+
+func Init(host string) (server *Server) {
+	server = NewServer(host)
+	Default = server
+	return
 }
