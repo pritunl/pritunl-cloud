@@ -36,15 +36,13 @@ func (p *ZonesState) Refresh(pkg *Package,
 	db *database.Database) (err error) {
 
 	nodeDc := Datacenter.NodeDatacenter()
-	if nodeDc == nil || !nodeDc.Vxlan() {
+	if nodeDc == nil {
 		p.vxlan = false
 		p.zoneMap = nil
 		p.nodes = nil
 		pkg.Evict()
 		return
 	}
-
-	p.vxlan = true
 
 	znes, e := zone.GetAllDatacenter(db, nodeDc.Id)
 	if e != nil {
@@ -58,13 +56,20 @@ func (p *ZonesState) Refresh(pkg *Package,
 	}
 	p.zoneMap = zonesMap
 
-	ndes, e := node.GetAllNet(db)
-	if e != nil {
-		err = e
-		return
+	if nodeDc.Vxlan() {
+		p.vxlan = true
+
+		ndes, e := node.GetAllNet(db)
+		if e != nil {
+			err = e
+			return
+		}
+
+		p.nodes = ndes
+	} else {
+		p.vxlan = false
 	}
 
-	p.nodes = ndes
 	pkg.Cache(10 * time.Second)
 
 	return
