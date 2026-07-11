@@ -20,6 +20,8 @@ type Config struct {
 	Pods           []*Pod         `json:"pods"`
 	Journals       []*Journal     `json:"journals"`
 	Domains        []*Domain      `json:"domains"`
+	DnsServers     []string       `json:"dns_servers"`
+	DnsServers6    []string       `json:"dns_servers6"`
 	Hash           uint32         `json:"hash"`
 }
 
