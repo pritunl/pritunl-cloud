@@ -169,7 +169,7 @@ func (r *Router) Init() {
 		MaxHeaderBytes: 4096,
 	}
 
-	r.dnsServer = dnss.NewServer(fmt.Sprintf(
+	r.dnsServer = dnss.Init(fmt.Sprintf(
 		"%s:53",
 		constants.Host,
 	))
