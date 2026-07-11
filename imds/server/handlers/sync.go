@@ -86,7 +86,7 @@ func hostSyncPut(c *gin.Context) {
 
 	if data.Hash != 0 {
 		config.Config = data
-		dnss.LoadConfig(data.Domains)
+		dnss.LoadConfig(data.DnsServers, data.DnsServers6, data.Domains)
 	}
 
 	ste := state.Global.State.Copy()
