@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 var (
@@ -23,11 +24,19 @@ var (
 )
 
 func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
-	unt *unit.Unit, spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet,
-	pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
+	unt *unit.Unit, spc *spec.Spec, zne *zone.Zone, vc *vpc.Vpc,
+	subnet *vpc.Subnet, pods []*pod.Pod,
+	podUnitsMap map[bson.ObjectID][]*unit.Unit,
 	deployments map[bson.ObjectID]*deployment.Deployment,
 	secrs []*secret.Secret, certs []*certificate.Certificate,
 	domains []*types.Domain) (conf *types.Config, err error) {
+
+	var dnsServers []string
+	var dnsServers6 []string
+	if zne != nil {
+		dnsServers = zne.GetDnsServers()
+		dnsServers6 = zne.GetDnsServers6()
+	}
 
 	conf = &types.Config{
 		ImdsHostSecret: virt.ImdsHostSecret,
@@ -40,6 +49,8 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 		Secrets:        types.NewSecrets(secrs),
 		Certificates:   types.NewCertificates(certs),
 		Domains:        domains,
+		DnsServers:     dnsServers,
+		DnsServers6:    dnsServers6,
 	}
 
 	if spc != nil {
