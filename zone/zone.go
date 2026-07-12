@@ -2,6 +2,7 @@ package zone
 
 import (
 	"net"
+	"slices"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -93,6 +94,25 @@ func (z *Zone) GetDnsServerSecondary() string {
 	return settings.Hypervisor.DnsServerSecondary
 }
 
+func (z *Zone) GetDnsServers() (dnsServers []string) {
+	if len(z.DnsServers) > 0 {
+		dnsServers = slices.Clone(z.DnsServers)
+		return
+	}
+
+	dnsPrimary := settings.Hypervisor.DnsServerPrimary
+	if dnsPrimary != "" {
+		dnsServers = append(dnsServers, dnsPrimary)
+	}
+
+	dnsSecondary := settings.Hypervisor.DnsServerSecondary
+	if dnsSecondary != "" {
+		dnsServers = append(dnsServers, dnsSecondary)
+	}
+
+	return
+}
+
 func (z *Zone) GetDnsServerPrimary6() string {
 	if len(z.DnsServers6) > 0 {
 		return z.DnsServers6[0]
@@ -105,6 +125,25 @@ func (z *Zone) GetDnsServerSecondary6() string {
 		return z.DnsServers6[1]
 	}
 	return settings.Hypervisor.DnsServerSecondary6
+}
+
+func (z *Zone) GetDnsServers6() (dnsServers6 []string) {
+	if len(z.DnsServers6) > 0 {
+		dnsServers6 = slices.Clone(z.DnsServers6)
+		return
+	}
+
+	dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
+	if dnsPrimary6 != "" {
+		dnsServers6 = append(dnsServers6, dnsPrimary6)
+	}
+
+	dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
+	if dnsSecondary6 != "" {
+		dnsServers6 = append(dnsServers6, dnsSecondary6)
+	}
+
+	return
 }
 
 func (z *Zone) Commit(db *database.Database) (err error) {
