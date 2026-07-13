@@ -67,8 +67,8 @@ type hypervisor struct {
 	NdpRaInterval          int    `bson:"ndp_ra_interval" default:"6"`
 	DnsServerPrimary       string `bson:"dns_server_primary" default:"8.8.8.8"`
 	DnsServerSecondary     string `bson:"dns_server_secondary" default:"8.8.4.4"`
-	DnsServerPrimary6      string `bson:"dns_server_primary6"`
-	DnsServerSecondary6    string `bson:"dns_server_secondary6"`
+	DnsServerPrimary6      string `bson:"dns_server_primary6" default:"2001:4860:4860::8888"`
+	DnsServerSecondary6    string `bson:"dns_server_secondary6" default:"2001:4860:4860::8844"`
 	NodePortMaxAttempts    int    `bson:"node_port_max_attempts" default:"10000"`
 	MaxDeploymentFailures  int    `bson:"max_deployment_failures" default:"3"`
 }
