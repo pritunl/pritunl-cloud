@@ -53,7 +53,6 @@ config:
         dns_nameservers:
           - {{.Dns1}}
           - {{.Dns2}}
-          - {{.Dns3}}
       - type: static6
         address: {{.AddressCidr6}}
         gateway: {{.Gateway6}}
@@ -73,7 +72,6 @@ config:
         dns_nameservers:
           - {{.Dns1}}
           - {{.Dns2}}
-          - {{.Dns3}}
       - type: static
         address: {{.AddressCidr6}}
         gateway: {{.Gateway6}}
@@ -93,7 +91,6 @@ ethernets:
       addresses:
         - {{.Dns1}}
         - {{.Dns2}}
-        - {{.Dns3}}
 `
 
 const netMtu = `
@@ -227,7 +224,6 @@ type netConfigData struct {
 	Gateway6     string
 	Dns1         string
 	Dns2         string
-	Dns3         string
 }
 
 type cloudConfigData struct {
@@ -316,22 +312,18 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 		if inst.IsIpv6Only() {
 			dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
+			dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
 			if dnsPrimary6 != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsPrimary6)
-			}
-
-			dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
-			if dnsSecondary6 != "" {
+			} else if dnsSecondary6 != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsSecondary6)
 			}
 		} else {
 			dnsPrimary := settings.Hypervisor.DnsServerPrimary
+			dnsSecondary := settings.Hypervisor.DnsServerSecondary
 			if dnsPrimary != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsPrimary)
-			}
-
-			dnsSecondary := settings.Hypervisor.DnsServerSecondary
-			if dnsSecondary != "" {
+			} else if dnsSecondary != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsSecondary)
 			}
 		}
@@ -677,15 +669,24 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	addr6 = vc.GetIp6(inst.Id)
 	gateway6 = vc.GetGatewayIp6(inst.Id)
 
-	dns1 := ""
 	dns2 := ""
 	dnsCloud := strings.Split(settings.Hypervisor.ImdsAddress, "/")[0]
 	if inst.IsIpv6Only() {
-		dns1 = settings.Hypervisor.DnsServerPrimary6
-		dns2 = settings.Hypervisor.DnsServerSecondary6
+		dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
+		dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
+		if dnsPrimary6 != "" {
+			dns2 = dnsPrimary6
+		} else if dnsSecondary6 != "" {
+			dns2 = dnsSecondary6
+		}
 	} else {
-		dns1 = settings.Hypervisor.DnsServerPrimary
-		dns2 = settings.Hypervisor.DnsServerSecondary
+		dnsPrimary := settings.Hypervisor.DnsServerPrimary
+		dnsSecondary := settings.Hypervisor.DnsServerSecondary
+		if dnsPrimary != "" {
+			dns2 = dnsPrimary
+		} else if dnsSecondary != "" {
+			dns2 = dnsSecondary
+		}
 	}
 
 	data := netConfigData{
@@ -699,8 +700,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		AddressCidr6: addr6.String() + "/64",
 		Gateway6:     gateway6.String(),
 		Dns1:         dnsCloud,
-		Dns2:         dns1,
-		Dns3:         dns2,
+		Dns2:         dns2,
 	}
 
 	if virt.CloudType == instance.BSD {
