@@ -315,15 +315,25 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		resolvConf := fmt.Sprintf("nameserver %s\n", dnsCloud)
 
 		if inst.IsIpv6Only() {
-			resolvConf += fmt.Sprintf("nameserver %s\n",
-				zne.GetDnsServerPrimary6())
-			resolvConf += fmt.Sprintf("nameserver %s\n",
-				zne.GetDnsServerSecondary6())
+			dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
+			if dnsPrimary6 != "" {
+				resolvConf += fmt.Sprintf("nameserver %s\n", dnsPrimary6)
+			}
+
+			dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
+			if dnsSecondary6 != "" {
+				resolvConf += fmt.Sprintf("nameserver %s\n", dnsSecondary6)
+			}
 		} else {
-			resolvConf += fmt.Sprintf("nameserver %s\n",
-				zne.GetDnsServerPrimary())
-			resolvConf += fmt.Sprintf("nameserver %s\n",
-				zne.GetDnsServerSecondary())
+			dnsPrimary := settings.Hypervisor.DnsServerPrimary
+			if dnsPrimary != "" {
+				resolvConf += fmt.Sprintf("nameserver %s\n", dnsPrimary)
+			}
+
+			dnsSecondary := settings.Hypervisor.DnsServerSecondary
+			if dnsSecondary != "" {
+				resolvConf += fmt.Sprintf("nameserver %s\n", dnsSecondary)
+			}
 		}
 
 		writeFiles = append(writeFiles, &fileData{
@@ -671,11 +681,11 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	dns2 := ""
 	dnsCloud := strings.Split(settings.Hypervisor.ImdsAddress, "/")[0]
 	if inst.IsIpv6Only() {
-		dns1 = utils.FilterIp(zne.GetDnsServerPrimary6())
-		dns2 = utils.FilterIp(zne.GetDnsServerSecondary6())
+		dns1 = settings.Hypervisor.DnsServerPrimary6
+		dns2 = settings.Hypervisor.DnsServerSecondary6
 	} else {
-		dns1 = utils.FilterIp(zne.GetDnsServerPrimary())
-		dns2 = utils.FilterIp(zne.GetDnsServerSecondary())
+		dns1 = settings.Hypervisor.DnsServerPrimary
+		dns2 = settings.Hypervisor.DnsServerSecondary
 	}
 
 	data := netConfigData{
