@@ -408,7 +408,6 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 		DnsServers: []string{
 			strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
 			zne.GetDnsServerPrimary(),
-			zne.GetDnsServerSecondary(),
 		},
 		Mtu:      mtu,
 		Lifetime: settings.Hypervisor.DhcpLifetime,
