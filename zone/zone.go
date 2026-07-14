@@ -117,30 +117,20 @@ func (z *Zone) GetDnsServerPrimary6() string {
 	if len(z.DnsServers6) > 0 {
 		return z.DnsServers6[0]
 	}
-	return settings.Hypervisor.DnsServerPrimary6
+	return ""
 }
 
 func (z *Zone) GetDnsServerSecondary6() string {
 	if len(z.DnsServers6) > 1 {
 		return z.DnsServers6[1]
 	}
-	return settings.Hypervisor.DnsServerSecondary6
+	return ""
 }
 
 func (z *Zone) GetDnsServers6() (dnsServers6 []string) {
 	if len(z.DnsServers6) > 0 {
 		dnsServers6 = slices.Clone(z.DnsServers6)
 		return
-	}
-
-	dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
-	if dnsPrimary6 != "" {
-		dnsServers6 = append(dnsServers6, dnsPrimary6)
-	}
-
-	dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
-	if dnsSecondary6 != "" {
-		dnsServers6 = append(dnsServers6, dnsSecondary6)
 	}
 
 	return
