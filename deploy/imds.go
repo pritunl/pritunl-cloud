@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -72,17 +73,22 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 
 	deply := s.stat.Deployment(virt.Deployment)
 	if deply == nil {
-		println("**************************************************1")
-		println(inst.Id.Hex())
-		println("**************************************************1")
+		logrus.WithFields(logrus.Fields{
+			"instance":   virt.Id.Hex(),
+			"deployment": virt.Deployment.Hex(),
+		}).Error("deploy: Failed to find deployment for instance")
+
 		return
 	}
 
 	spc := s.stat.Spec(deply.Spec)
 	if spc == nil {
-		println("**************************************************2")
-		println(inst.Id.Hex())
-		println("**************************************************2")
+		logrus.WithFields(logrus.Fields{
+			"instance":   virt.Id.Hex(),
+			"deployment": virt.Deployment.Hex(),
+			"spec":       deply.Spec.Hex(),
+		}).Error("deploy: Failed to find spec for instance deployment")
+
 		return
 	}
 
