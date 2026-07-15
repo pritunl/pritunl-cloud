@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"crypto"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go/v7"
@@ -39,13 +42,18 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/openpgp"
 )
 
 var (
 	imageLock        = utils.NewMultiTimeoutLock(10 * time.Minute)
 	backingImageLock = utils.NewMultiTimeoutLock(5 * time.Minute)
 	nbdLock          = sync.Mutex{}
+	pgpConfig        = &packet.Config{
+		RejectMessageHashAlgorithms: map[crypto.Hash]bool{
+			crypto.MD5:  true,
+			crypto.SHA1: true,
+		},
+	}
 )
 
 func getImageS3(db *database.Database, store *storage.Storage,
@@ -405,7 +413,7 @@ func checkImageSigS3(db *database.Database, store *storage.Storage,
 	}
 
 	entity, err := openpgp.CheckArmoredDetachedSignature(
-		keyring, tmpImg, signature)
+		keyring, tmpImg, signature, pgpConfig)
 	if err != nil || entity == nil {
 		err = &errortypes.VerificationError{
 			errors.Wrap(err, "data: Image signature verification failed"),
@@ -479,7 +487,7 @@ func checkImageSigWeb(db *database.Database, store *storage.Storage,
 	}
 
 	entity, err := openpgp.CheckArmoredDetachedSignature(
-		keyring, tmpImg, resp.Body)
+		keyring, tmpImg, io.LimitReader(resp.Body, 65536), pgpConfig)
 	if err != nil || entity == nil {
 		err = &errortypes.VerificationError{
 			errors.Wrap(err, "data: Image signature verification failed"),
