@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/journal"
+	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -453,6 +454,11 @@ func Remove(db *database.Database, instId bson.ObjectID) (err error) {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": instId.Hex(),
 		}).Info("instance: Delete protection ignore instance remove")
+		return
+	}
+
+	err = manifest.RemoveResource(db, instId)
+	if err != nil {
 		return
 	}
 
