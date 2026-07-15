@@ -123,11 +123,6 @@ func (p *Planner) checkInstance(db *database.Database,
 			"unit":       deply.Unit.Hex(),
 		}).Error("scheduler: Failed to find unit for deployment")
 
-		// err = deployment.Remove(db, deply.Id)
-		// if err != nil {
-		// 	return
-		// }
-
 		return
 	}
 
