@@ -3,7 +3,8 @@ module github.com/pritunl/pritunl-cloud
 go 1.26.0
 
 require (
-	github.com/aws/aws-sdk-go v1.55.5
+	github.com/ProtonMail/go-crypto v1.4.1
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/cloudflare/cloudflare-go v0.104.0
 	github.com/coredns/coredns v1.14.4
 	github.com/dropbox/godropbox v0.0.0-20230623171840-436d2007a9fd
@@ -25,10 +26,10 @@ require (
 	github.com/twilio/twilio-go v1.23.0
 	github.com/ua-parser/uap-go v0.0.0-20250213224047-9c035f085b90
 	github.com/ulikunitz/xz v0.5.15
-	golang.org/x/crypto v0.53.0
+	golang.org/x/crypto v0.54.0
 	golang.org/x/net v0.56.0
 	golang.org/x/oauth2 v0.36.0
-	golang.org/x/sys v0.46.0
+	golang.org/x/sys v0.47.0
 	google.golang.org/api v0.285.0
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -42,6 +43,7 @@ require (
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/cloudflare/circl v1.6.4 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/coredns/caddy v1.1.4 // indirect
@@ -117,10 +119,10 @@ require (
 	go.uber.org/mock v0.6.0 // indirect
 	golang.org/x/arch v0.10.0 // indirect
 	golang.org/x/mod v0.37.0 // indirect
-	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.46.0 // indirect
+	golang.org/x/tools v0.47.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260615183401-62b3387ff324 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260615183401-62b3387ff324 // indirect
 	google.golang.org/grpc v1.81.1 // indirect
