@@ -4,6 +4,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -355,6 +356,11 @@ func GetAllNet(db *database.Database) (nodes []*Node, err error) {
 
 func Remove(db *database.Database, nodeId bson.ObjectID) (err error) {
 	coll := db.Nodes()
+
+	err = manifest.RemoveResource(db, nodeId)
+	if err != nil {
+		return
+	}
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": nodeId,
