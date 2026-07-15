@@ -7,6 +7,7 @@ Add security advisories
 Add instance and node metrics
 Add Google Cloud DNS support
 Add support to manual renew certificates
+Live DNS server updates
 Fix host network bridge management issues
 Optimize database indexes
 
