@@ -85,29 +85,36 @@ func (s *Systemd) followJournal() (err error) {
 		}
 	}()
 
-	existsTime := time.Time{}
 	for {
-		resp, _ := commander.Exec(&commander.Opt{
-			Name: "systemctl",
-			Args: []string{
-				"status",
-				s.unit,
-			},
-			PipeOut: true,
-			PipeErr: true,
-		})
-
-		if resp.ExitCode != 4 {
-			if existsTime.IsZero() {
-				existsTime = time.Now()
-			}
-
-			if resp.ExitCode == 0 || time.Since(existsTime) > 10*time.Second {
-				break
-			}
+		select {
+		case <-s.ctx.Done():
+			return
+		default:
 		}
 
-		time.Sleep(800 * time.Millisecond)
+		resp, _ := commander.Exec(&commander.Opt{
+			Name: "journalctl",
+			Args: []string{
+				"-q",
+				"-b",
+				"-n", "1",
+				"-o", "cat",
+				"--all",
+				"-u", s.unit,
+			},
+			Timeout: 10 * time.Second,
+			PipeOut: true,
+		})
+
+		if resp != nil && len(resp.Output) > 0 {
+			break
+		}
+
+		select {
+		case <-time.After(800 * time.Millisecond):
+		case <-s.ctx.Done():
+			return
+		}
 	}
 
 	s.cmd = exec.CommandContext(s.ctx, "journalctl",
@@ -115,6 +122,7 @@ func (s *Systemd) followJournal() (err error) {
 		"-b",
 		"-n", "20",
 		"-o", "json",
+		"--all",
 		"-u", s.unit,
 	)
 
@@ -134,15 +142,42 @@ func (s *Systemd) followJournal() (err error) {
 		return
 	}
 
+	firstLine := make(chan struct{})
+	followDone := make(chan struct{})
+	defer close(followDone)
+
+	watchCmd := s.cmd
+	go func() {
+		select {
+		case <-firstLine:
+		case <-followDone:
+		case <-s.ctx.Done():
+		case <-time.After(20 * time.Second):
+			logger.WithFields(logger.Fields{
+				"unit": s.unit,
+			}).Warn("agent: Journal follower stalled, restarting")
+
+			if watchCmd.Process != nil {
+				watchCmd.Process.Kill()
+			}
+		}
+	}()
+
 	scanner := bufio.NewScanner(stdout)
 	buf := make([]byte, maxCapacity)
-	scanner.Buffer(buf, maxCapacity)
+	scanner.Buffer(buf, journalMaxCapacity)
 
+	first := true
 	for scanner.Scan() {
 		select {
 		case <-s.ctx.Done():
 			return
 		default:
+		}
+
+		if first {
+			first = false
+			close(firstLine)
 		}
 
 		line := scanner.Bytes()
@@ -183,7 +218,7 @@ func (s *Systemd) followJournal() (err error) {
 		case s.output <- &types.Entry{
 			Timestamp: timestamp,
 			Level:     level,
-			Message:   strings.TrimSuffix(entry.Message, "\n"),
+			Message:   strings.TrimSuffix(string(entry.Message), "\n"),
 		}:
 		default:
 		}
