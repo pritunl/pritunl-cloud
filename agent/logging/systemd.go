@@ -17,18 +17,50 @@ import (
 	"github.com/pritunl/tools/logger"
 )
 
+const journalMaxCapacity = 2 * 1024 * 1024
+
+type journalEntry struct {
+	Message   journalMessage `json:"MESSAGE"`
+	Priority  string         `json:"PRIORITY"`
+	Timestamp string         `json:"__REALTIME_TIMESTAMP"`
+}
+
+type journalMessage string
+
+func (m *journalMessage) UnmarshalJSON(data []byte) (err error) {
+	var msgStr string
+	if json.Unmarshal(data, &msgStr) == nil {
+		*m = journalMessage(msgStr)
+		return
+	}
+
+	var msgBytes []byte
+	if json.Unmarshal(data, &msgBytes) == nil {
+		*m = journalMessage(msgBytes)
+		return
+	}
+
+	var msgVals []journalMessage
+	if json.Unmarshal(data, &msgVals) == nil {
+		vals := make([]string, 0, len(msgVals))
+		for _, val := range msgVals {
+			vals = append(vals, string(val))
+		}
+
+		*m = journalMessage(strings.Join(vals, "\n"))
+		return
+	}
+
+	*m = ""
+	return
+}
+
 type Systemd struct {
 	unit   string
 	output chan *types.Entry
 	cmd    *exec.Cmd
 	ctx    context.Context
 	cancel context.CancelFunc
-}
-
-type journalEntry struct {
-	Message   string `json:"MESSAGE"`
-	Priority  string `json:"PRIORITY"`
-	Timestamp string `json:"__REALTIME_TIMESTAMP"`
 }
 
 func (s *Systemd) GetOutput() (entries []*types.Entry) {
