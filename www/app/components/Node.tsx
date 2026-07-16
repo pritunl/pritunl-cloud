@@ -108,35 +108,29 @@ export default class Node extends React.Component<Props, {}> {
 		}
 
 		let updateElm: JSX.Element
-		let updateScore = 0
-		node.updates?.forEach((update) => {
-			let score = update.score || 0
-			if (score > updateScore) {
-				updateScore = score
+		if (node.advisory_count) {
+			let updateClass = ""
+			switch (node.advisory_max) {
+				case 4:
+					updateClass = "bp5-icon-issue bp5-intent-danger"
+					break
+				case 3:
+					updateClass = "bp5-icon-issue bp5-intent-warning"
+					break
+				case 2:
+					updateClass = "bp5-icon-issue bp5-intent-primary"
+					break
 			}
-		})
-		let updateClass = ""
-		switch (updateScore) {
-			case 4:
-				updateClass = "bp5-icon-issue bp5-intent-danger"
-				break
-			case 3:
-				updateClass = "bp5-icon-issue bp5-intent-warning"
-				break
-			case 2:
-				updateClass = "bp5-icon-issue bp5-intent-primary"
-				break
-		}
 
-		if (updateClass) {
 			updateElm = <Blueprint.Tooltip
-				content={`Security advisories (${node.updates?.length || 0})`}
+				content={`Security advisories (${node.advisory_count || 0})`}
 				openOnTargetFocus={false}
 				compact={true}
 				renderTarget={({isOpen, ...tooltipProps}) => (
 					<span
 						{...tooltipProps}
 						style={css.updateIcon}
+						hidden={!active}
 						className={"bp5-icon-standard " + updateClass}
 					/>
 				)}
