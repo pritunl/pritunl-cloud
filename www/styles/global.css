@@ -573,6 +573,58 @@ label.bp5-label .bp5-button-group {
   content: "" !important;
 }
 
+.monaco-editor .ansi-black {
+  color: #666666;
+}
+.monaco-editor .ansi-red {
+  color: #f14c4c;
+}
+.monaco-editor .ansi-green {
+  color: #23d18b;
+}
+.monaco-editor .ansi-yellow {
+  color: #f5f543;
+}
+.monaco-editor .ansi-blue {
+  color: #3b8eea;
+}
+.monaco-editor .ansi-magenta {
+  color: #d670d6;
+}
+.monaco-editor .ansi-cyan {
+  color: #29b8db;
+}
+.monaco-editor .ansi-white {
+  color: #e5e5e5;
+}
+.monaco-editor .ansi-bright-black {
+  color: #888888;
+}
+.monaco-editor .ansi-bright-red {
+  color: #ff6e6e;
+}
+.monaco-editor .ansi-bright-green {
+  color: #4ce68f;
+}
+.monaco-editor .ansi-bright-yellow {
+  color: #f8f88a;
+}
+.monaco-editor .ansi-bright-blue {
+  color: #6ba9f0;
+}
+.monaco-editor .ansi-bright-magenta {
+  color: #e394e3;
+}
+.monaco-editor .ansi-bright-cyan {
+  color: #56cfe1;
+}
+.monaco-editor .ansi-bright-white {
+  color: #ffffff;
+}
+.monaco-editor .ansi-bold {
+  font-weight: bold;
+}
+
 /***********************************************************************
 highlight.js
 ***********************************************************************/
