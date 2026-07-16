@@ -19,9 +19,9 @@ and more information can be found at
 sudo dnf -y install git-core iptables net-tools ipset ipvsadm xorriso qemu-kvm qemu-img swtpm-tools
 
 sudo rm -rf /usr/local/go
-wget https://go.dev/dl/go1.25.5.linux-amd64.tar.gz
-echo "9e9b755d63b36acf30c12a9a3fc379243714c1c6d3dd72861da637f336ebb35b go1.25.5.linux-amd64.tar.gz" | sha256sum -c - && sudo tar -C /usr/local -xf go1.25.5.linux-amd64.tar.gz
-rm -f go1.25.5.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.26.5.linux-amd64.tar.gz
+echo "5c2c3b16caefa1d968a94c1daca04a7ca301a496d9b086e17ad77bb81393f053 go1.26.5.linux-amd64.tar.gz" | sha256sum -c - && sudo tar -C /usr/local -xf go1.26.5.linux-amd64.tar.gz
+rm -f go1.26.5.linux-amd64.tar.gz
 
 tee -a ~/.bashrc << EOF
 export GOPATH=\$HOME/go
