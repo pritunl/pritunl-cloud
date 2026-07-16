@@ -700,7 +700,17 @@ func (s *Spec) parseJournal(db *database.Database,
 		return
 	}
 
+	inputKeys := set.NewSet()
 	for _, input := range data.Inputs {
+		if inputKeys.Contains(input.Key) {
+			errData = &errortypes.ErrorData{
+				Error:   "journal_duplicate_key",
+				Message: "Journal has duplicate key",
+			}
+			return
+		}
+		inputKeys.Add(input.Key)
+
 		input.Index = curIndexes[input.Key]
 		if input.Index == 0 {
 			if jrnlKindGen == nil {
