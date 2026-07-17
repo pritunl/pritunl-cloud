@@ -17,6 +17,7 @@ interface UpdateEntry {
 	packages: string[];
 	cves: CveDetail[];
 	importantCves: CveDetail[];
+	dismissed: boolean;
 	link?: string;
 }
 
@@ -29,6 +30,7 @@ interface State {
 	open: boolean;
 	loading: boolean;
 	showLowSeverity: boolean;
+	expandedDismissed: boolean;
 	expanded: {[key: string]: boolean};
 	expandedStatements: {[key: string]: boolean};
 	expandedCves: {[advisory: string]: boolean};
@@ -38,6 +40,7 @@ interface Props {
 	advisories: AdvisoryTypes.Advisory[];
 	advisoryCount: number;
 	advisoryMax: number;
+	resourceId?: string;
 	onOpen?: () => Promise<void>;
 }
 
@@ -197,6 +200,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			open: false,
 			loading: false,
 			showLowSeverity: false,
+			expandedDismissed: false,
 			expanded: {},
 			expandedStatements: {},
 			expandedCves: {},
@@ -300,8 +304,12 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			return [];
 		}
 
+		let resourceId = this.props.resourceId;
 		let entries: UpdateEntry[] = [];
 		for (let advisory of advisories) {
+			let dismissed = !!advisory.dismissed || (!!resourceId &&
+				(advisory.dismissed_resources || []).indexOf(resourceId) !== -1);
+
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
 			for (let vuln of (advisory.vulnerabilities || [])) {
@@ -334,6 +342,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				packages: advisory.packages || [],
 				cves: pairs,
 				importantCves: importantCves,
+				dismissed: dismissed,
 				link: this.advisoryLink(advisory.reference || ""),
 			});
 		}
@@ -497,7 +506,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		</>;
 	}
 
-	renderUpdateCard(entry: UpdateEntry): JSX.Element {
+	renderUpdateCard(entry: UpdateEntry, dismissed?: boolean): JSX.Element {
 		let update = entry;
 		let severity = this.scoreSeverity(update.score || 0);
 		let sevIntent = this.severityIntent(severity);
@@ -523,12 +532,20 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			...css.descriptionLimited,
 		};
 
+		let cardStyle: React.CSSProperties = {
+			...css.updateCard,
+			borderLeftColor: this.severityBarColor(severity),
+		};
+		if (dismissed) {
+			cardStyle = {
+				...cardStyle,
+				opacity: 0.5,
+			};
+		}
+
 		return <div key={update.id}
 			className="bp5-card bp5-elevation-0"
-			style={{
-				...css.updateCard,
-				borderLeftColor: this.severityBarColor(severity),
-			}}>
+			style={cardStyle}>
 			<div className="layout horizontal" style={css.updateHeader}>
 				<Blueprint.Tag
 					large={true}
@@ -610,8 +627,11 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 		let important: UpdateEntry[] = [];
 		let other: UpdateEntry[] = [];
+		let dismissed: UpdateEntry[] = [];
 		for (let entry of entries) {
-			if ((entry.score || 0) >= SCORE_HIGH) {
+			if (entry.dismissed) {
+				dismissed.push(entry);
+			} else if ((entry.score || 0) >= SCORE_HIGH) {
 				important.push(entry);
 			} else {
 				other.push(entry);
@@ -651,6 +671,28 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				</button>
 				{this.state.showLowSeverity ? <div>
 					{other.map((e): JSX.Element => this.renderUpdateCard(e))}
+				</div> : null}
+			</> : null}
+			{dismissed.length > 0 ? <>
+				<button
+					className={"bp5-button bp5-minimal " +
+						(this.state.expandedDismissed ?
+							"bp5-icon-chevron-down" :
+							"bp5-icon-chevron-right")}
+					type="button"
+					style={{margin: "8px 0"}}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							expandedDismissed: !this.state.expandedDismissed,
+						});
+					}}
+				>
+					Dismissed ({dismissed.length})
+				</button>
+				{this.state.expandedDismissed ? <div>
+					{dismissed.map((e): JSX.Element =>
+						this.renderUpdateCard(e, true))}
 				</div> : null}
 			</> : null}
 		</div>;
