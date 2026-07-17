@@ -41,7 +41,7 @@ const css = {
 		padding: '8px',
 	} as React.CSSProperties,
 	nameSpan: {
-		margin: '1px 5px 0 0',
+		margin: '2px 5px 0 0',
 	} as React.CSSProperties,
 	item: {
 		verticalAlign: 'top',
