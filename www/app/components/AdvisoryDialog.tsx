@@ -2,6 +2,7 @@
 import * as React from "react";
 import * as Blueprint from "@blueprintjs/core";
 import * as AdvisoryTypes from "../types/AdvisoryTypes";
+import * as AdvisoryActions from "../actions/AdvisoryActions";
 import * as MiscUtils from "../utils/MiscUtils";
 
 interface CveDetail {
@@ -11,6 +12,7 @@ interface CveDetail {
 
 interface UpdateEntry {
 	id: string;
+	advisoryId: string;
 	severity: string;
 	description: string;
 	score: number;
@@ -29,6 +31,7 @@ const SCORE_CRITICAL = 4;
 interface State {
 	open: boolean;
 	loading: boolean;
+	disabled: boolean;
 	showLowSeverity: boolean;
 	expandedDismissed: boolean;
 	expanded: {[key: string]: boolean};
@@ -37,10 +40,10 @@ interface State {
 }
 
 interface Props {
+	resourceId?: string;
 	advisories: AdvisoryTypes.Advisory[];
 	advisoryCount: number;
 	advisoryMax: number;
-	resourceId?: string;
 	onOpen?: () => Promise<void>;
 }
 
@@ -191,6 +194,10 @@ const css = {
 		minHeight: "0",
 		fontSize: "12px",
 	} as React.CSSProperties,
+	dismissButton: {
+		marginLeft: "auto",
+		height: "30px",
+	} as React.CSSProperties,
 }
 
 export default class AdvisoryDialog extends React.Component<Props, State> {
@@ -199,12 +206,77 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		this.state = {
 			open: false,
 			loading: false,
+			disabled: false,
 			showLowSeverity: false,
 			expandedDismissed: false,
 			expanded: {},
 			expandedStatements: {},
 			expandedCves: {},
 		}
+	}
+
+	onDismiss = (advisoryId: string): void => {
+		if (!advisoryId || !this.props.resourceId) {
+			return;
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.dismissResources(
+				advisoryId, [this.props.resourceId]).then((): void => {
+			let prom = this.props.onOpen ?
+				this.props.onOpen() : Promise.resolve();
+			prom.then((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}).catch((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onRestore = (advisoryId: string): void => {
+		if (!advisoryId || !this.props.resourceId) {
+			return;
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.restoreResources(
+				advisoryId, [this.props.resourceId]).then((): void => {
+			let prom = this.props.onOpen ?
+				this.props.onOpen() : Promise.resolve();
+			prom.then((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}).catch((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
 	}
 
 	rpmName(pkg: string): string {
@@ -336,6 +408,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 			entries.push({
 				id: advisory.reference || "",
+				advisoryId: advisory.id || "",
 				severity: advisory.severity || "",
 				description: advisory.description || "",
 				score: advisory.score || 0,
@@ -563,6 +636,20 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				>{update.id}</a> : <span style={css.title}>
 					{update.id}
 				</span>}
+				{this.props.resourceId ? <button
+					className={"bp5-button bp5-minimal " +
+						(dismissed ? "bp5-icon-undo" : "bp5-icon-disable")}
+					style={css.dismissButton}
+					type="button"
+					disabled={this.state.disabled}
+					onClick={(): void => {
+						if (dismissed) {
+							this.onRestore(entry.advisoryId);
+						} else {
+							this.onDismiss(entry.advisoryId);
+						}
+					}}
+				>{dismissed ? "Restore" : "Dismiss"}</button> : null}
 			</div>
 			{hasDescription && <div style={descriptionStyle}>
 				{update.description}
