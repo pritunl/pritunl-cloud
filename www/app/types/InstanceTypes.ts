@@ -162,8 +162,6 @@ export interface Guest {
 	load1?: number;
 	load5?: number;
 	load15?: number;
-	updates?: Update[];
-	vulnerabilities?: Vulnerability[];
 }
 
 export interface Update {
