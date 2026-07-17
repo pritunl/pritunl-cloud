@@ -77,8 +77,6 @@ export interface Node {
 	load1?: number;
 	load5?: number;
 	load15?: number;
-	updates?: InstanceTypes.Update[];
-	vulnerabilities?: InstanceTypes.Vulnerability[];
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: Record<string, string>;
