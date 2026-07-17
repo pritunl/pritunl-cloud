@@ -116,7 +116,7 @@ export default class Advisory extends React.Component<Props, {}> {
 		}
 
 		let severityText = MiscUtils.capitalize(advisory.severity) || 'Unknown';
-		let severityCls = 'bp5-cell ' + severityClass(advisory.severity);
+		let scoreCls = 'bp5-cell ' + severityClass(scoreLabel(advisory.score));
 
 		let instanceCount = (advisory.instances_info || []).length;
 		let nodeCount = (advisory.nodes_info || []).length;
@@ -165,19 +165,19 @@ export default class Advisory extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className={severityCls} style={css.item}>
+			<div className={scoreCls} style={css.item}>
 				<span
 					style={css.icon}
 					className="bp5-icon-standard bp5-icon-warning-sign"
 				/>
-				{severityText}
+				{scoreLabel(advisory.score)}
 			</div>
 			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
 					className="bp5-icon-standard bp5-text-muted bp5-icon-pulse"
 				/>
-				{scoreLabel(advisory.score)}
+				{severityText}
 			</div>
 			<div className="bp5-cell" style={css.item}>
 				<span
