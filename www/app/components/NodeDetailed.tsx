@@ -1685,6 +1685,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<div className="flex tab-close"/>
 						<AdvisoryDialog
+							resourceId={node.id}
 							advisories={this.state.advisories}
 							advisoryCount={node.advisory_count}
 							advisoryMax={node.advisory_max}
