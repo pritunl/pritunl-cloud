@@ -2065,6 +2065,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 						<div className="flex tab-close"/>
 						<AdvisoryDialog
+							resourceId={instance.id}
 							advisories={this.state.advisories}
 							advisoryCount={instance.advisory_count}
 							advisoryMax={instance.advisory_max}
