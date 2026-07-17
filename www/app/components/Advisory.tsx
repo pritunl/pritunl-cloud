@@ -192,7 +192,14 @@ export default class Advisory extends React.Component<Props, {}> {
 					style={css.icon}
 					className="bp5-icon-standard bp5-text-muted bp5-icon-dashboard"
 				/>
-				{instanceCount} instances, {nodeCount} nodes
+				{instanceCount} Instances
+			</div>
+			<div className="bp5-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className="bp5-icon-standard bp5-text-muted bp5-icon-layers"
+				/>
+				{nodeCount} Nodes
 			</div>
 		</div>;
 	}
