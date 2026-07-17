@@ -947,19 +947,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				value: org ? org.name : (advisory.organization || 'Global'),
 			},
 			{
-				label: 'Reference',
-				value: advisory.reference || '-',
-				copy: true,
-				link: this.advisoryLink(advisory.reference || ""),
-			},
-			{
 				label: 'Type',
 				value: typeLabel || '-',
-			},
-			{
-				label: 'Severity',
-				value: MiscUtils.capitalize(advisory.severity) || 'Unknown',
-				valueClass: severityClass(advisory.severity),
 			},
 			{
 				label: 'Score',
