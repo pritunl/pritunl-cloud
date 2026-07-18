@@ -65,9 +65,7 @@ const css = {
 		margin: '2px 0 3px 1px',
 	} as React.CSSProperties,
 	reference: {
-		margin: '5px 0 0 12px',
-		fontFamily: 'monospace',
-		fontSize: '14px',
+		margin: '7px 0 0 12px',
 		fontWeight: 600,
 	} as React.CSSProperties,
 	icon: {
