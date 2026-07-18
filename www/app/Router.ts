@@ -1,4 +1,5 @@
 /// <reference path="./References.d.ts"/>
+import * as AdvisoryActions from './actions/AdvisoryActions';
 import * as CompletionActions from './actions/CompletionActions';
 import * as UserActions from './actions/UserActions';
 import * as SessionActions from './actions/SessionActions';
@@ -54,10 +55,6 @@ export function refresh(callback?: () => void) {
 				callback()
 			}
 		});
-	} else if (pathname === '/user') {
-		if (callback) {
-			callback()
-		}
 	} else if (pathname.startsWith('/user/')) {
 		UserActions.reload().then((): void => {
 			if (callback) {
@@ -269,6 +266,16 @@ export function refresh(callback?: () => void) {
 		});
 	} else if (pathname === '/pods') {
 		PodActions.sync().then((): void => {
+			if (callback) {
+				callback()
+			}
+		}).catch((): void => {
+			if (callback) {
+				callback()
+			}
+		});
+	} else if (pathname === '/advisories') {
+		AdvisoryActions.sync().then((): void => {
 			if (callback) {
 				callback()
 			}
