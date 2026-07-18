@@ -29,6 +29,21 @@ export interface Disk {
 	new_size?: number;
 	backup?: boolean;
 	backups?: Backup[];
+	instance_info?: InstanceInfo;
+}
+
+export interface InstanceInfo {
+	id?: string;
+	name?: string;
+	status?: string;
+	timestamp?: string;
+	uptime?: string;
+	public_ips?: string[];
+	public_ips6?: string[];
+	private_ips?: string[];
+	private_ips6?: string[];
+	cloud_public_ips?: string[];
+	cloud_public_ips6?: string[];
 }
 
 export interface Filter {
