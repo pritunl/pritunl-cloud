@@ -180,6 +180,36 @@ export default class Instance extends React.Component<Props, {}> {
 			/>
 		}
 
+		let diskElm: JSX.Element
+		let diskMount: string
+		let diskMax = 0
+		for (let disk of (instance.guest?.disks || [])) {
+			let percent = disk.size ? ((disk.used || 0) / disk.size) * 100 : 0
+			if (percent > diskMax) {
+				diskMount = disk.mount
+				diskMax = percent
+			}
+		}
+		if (diskMax >= 80) {
+			let diskClass = diskMax >= 90 ?
+				"bp5-icon-database bp5-intent-danger" :
+				"bp5-icon-database bp5-intent-warning"
+
+			diskElm = <Blueprint.Tooltip
+				content={`High disk usage: ${diskMount} ${Math.round(diskMax)}%`}
+				openOnTargetFocus={false}
+				compact={true}
+				renderTarget={({isOpen, ...tooltipProps}) => (
+					<span
+						{...tooltipProps}
+						style={css.updateIcon}
+						hidden={!instance.status}
+						className={"bp5-icon-standard " + diskClass}
+					/>
+				)}
+			/>
+		}
+
 		return <div
 			className="bp5-card bp5-row"
 			style={cardStyle}
@@ -218,6 +248,7 @@ export default class Instance extends React.Component<Props, {}> {
 							className={"bp5-icon-standard bp5-icon-power" + statusClass}
 						/>
 						{updateElm}
+						{diskElm}
 						{instance.name}
 					</div>
 				</div>
