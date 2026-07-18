@@ -1001,7 +1001,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="bp5-cell"
-			colSpan={5}
+			colSpan={6}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
