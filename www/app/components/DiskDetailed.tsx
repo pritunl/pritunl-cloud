@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from "@blueprintjs/core";
+import * as Theme from '../Theme';
 import * as DiskTypes from '../types/DiskTypes';
 import * as DiskActions from '../actions/DiskActions';
 import * as OrganizationTypes from '../types/OrganizationTypes';
@@ -105,6 +107,56 @@ const css = {
 	} as React.CSSProperties,
 	rules: {
 		marginBottom: '15px',
+	} as React.CSSProperties,
+	instSection: {
+		width: '100%',
+		padding: '0 10px',
+		marginTop: '4px',
+	} as React.CSSProperties,
+	section: {
+		display: 'flex',
+		alignItems: 'center',
+		margin: '14px 0 8px 0',
+		fontWeight: 600,
+	} as React.CSSProperties,
+	sectionIcon: {
+		marginRight: '6px',
+	} as React.CSSProperties,
+	indexTag: {
+		marginLeft: '8px',
+		paddingTop: '3px',
+		paddingBottom: '3px',
+	} as React.CSSProperties,
+	instCard: {
+		padding: '5px 0 0 0',
+		marginBottom: '10px',
+	} as React.CSSProperties,
+	instBox: {
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	instInfo: {
+		marginBottom: '0px',
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	instItemFirst: {
+		flex: '1 1 auto',
+		minWidth: '100px',
+		maxWidth: '170px',
+		margin: '0 5px 0 10px',
+	} as React.CSSProperties,
+	instItem: {
+		flex: '1 1 auto',
+		width: 0,
+		margin: '0 5px',
+	} as React.CSSProperties,
+	instItemFull: {
+		flex: '2 1 auto',
+		width: 0,
+		margin: '0 5px',
 	} as React.CSSProperties,
 };
 
@@ -305,6 +357,138 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				disabled: false,
 			});
 		});
+	}
+
+	instanceStatusClass(status: string): string {
+		switch (status) {
+			case 'Running':
+				return 'bp5-text-intent-success';
+			case 'Starting':
+			case 'Restarting':
+			case 'Updating':
+			case 'Provisioning':
+				return 'bp5-text-intent-primary';
+			case 'Failed':
+			case 'Stopping':
+			case 'Stopped':
+			case 'Destroying':
+				return 'bp5-text-intent-danger';
+			default:
+				if (status && status.startsWith('Restart Required')) {
+					return 'bp5-text-intent-warning';
+				}
+				return '';
+		}
+	}
+
+	renderInstanceCard(): JSX.Element {
+		let inst = this.props.disk.instance_info;
+		if (!inst) {
+			return null;
+		}
+
+		let statusValue = inst.status || '-';
+		let statusClass = this.instanceStatusClass(inst.status || '');
+
+		let publicIps = inst.public_ips && inst.public_ips.length ?
+			inst.public_ips : ['-'];
+		let publicIps6 = inst.public_ips6 && inst.public_ips6.length ?
+			inst.public_ips6 : ['-'];
+		let privateIps = inst.private_ips && inst.private_ips.length ?
+			inst.private_ips : ['-'];
+		let privateIps6 = inst.private_ips6 && inst.private_ips6.length ?
+			inst.private_ips6 : ['-'];
+
+		let index = this.props.disk.index;
+
+		return <div style={css.instSection}>
+			<div style={css.section}>
+				<span
+					className="bp5-icon-standard bp5-icon-data-connection"
+					style={css.sectionIcon}
+				/>
+				Attached Instance
+				{Number(index) || index === '0' ? <Blueprint.Tag
+					minimal={true}
+					style={css.indexTag}
+				>Index {index}</Blueprint.Tag> : null}
+			</div>
+			<Blueprint.Card
+				compact={true}
+				style={css.instCard}
+			>
+				<div className="layout horizontal flex" style={css.instBox}>
+					<div style={css.instItemFirst}>
+						<PageInfo
+							compact={true}
+							style={css.instInfo}
+							fields={[
+								{
+									label: 'Instance',
+									value: inst.name || '-',
+								},
+								{
+									label: 'Instance ID',
+									value: inst.id || '-',
+									copy: true,
+								},
+							]}
+						/>
+					</div>
+					<div style={css.instItem}>
+						<PageInfo
+							compact={true}
+							style={css.instInfo}
+							fields={[
+								{
+									label: 'Status',
+									value: statusValue,
+									valueClass: statusClass,
+								},
+								{
+									label: 'Uptime',
+									value: inst.uptime || '-',
+								},
+							]}
+						/>
+					</div>
+					<div style={css.instItem}>
+						<PageInfo
+							compact={true}
+							style={css.instInfo}
+							fields={[
+								{
+									label: 'Private IPv4',
+									value: privateIps,
+								},
+								{
+									label: 'Public IPv4',
+									value: publicIps,
+								},
+							]}
+						/>
+					</div>
+					<div style={css.instItemFull}>
+						<PageInfo
+							compact={true}
+							style={css.instInfo}
+							fields={[
+								{
+									label: 'Private IPv6',
+									value: privateIps6,
+									maxLines: 2,
+								},
+								{
+									label: 'Public IPv6',
+									value: publicIps6,
+									maxLines: 2,
+								},
+							]}
+						/>
+					</div>
+				</div>
+			</Blueprint.Card>
+		</div>;
 	}
 
 	render(): JSX.Element {
@@ -666,6 +850,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					</PageSelectButtonConfirm>
 				</div>
 			</div>
+			{this.renderInstanceCard()}
 			<PageSave
 				style={css.save}
 				hidden={!this.state.disk && !this.state.message}
