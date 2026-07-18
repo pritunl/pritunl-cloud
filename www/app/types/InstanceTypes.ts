@@ -162,6 +162,13 @@ export interface Guest {
 	load1?: number;
 	load5?: number;
 	load15?: number;
+	disks?: Disk[];
+}
+
+export interface Disk {
+	mount?: string;
+	used?: number;
+	size?: number;
 }
 
 export interface Update {
