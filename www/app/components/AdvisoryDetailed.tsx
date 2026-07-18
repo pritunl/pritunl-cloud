@@ -922,7 +922,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			typeLabel = 'Red Hat Security Advisory';
 		}
 
-		let statusClass = 'bp5-tag tab-close ' + severityClass(advisory.severity);
+		let statusClass = 'bp5-tag tab-close ' +
+			severityClass(scoreLabel(advisory.score));
 
 		let referenceLink = this.advisoryLink(advisory.reference || "");
 
@@ -949,8 +950,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				value: typeLabel || '-',
 			},
 			{
-				label: 'Score',
-				value: scoreLabel(advisory.score),
+				label: 'Severity',
+				value: MiscUtils.capitalize(advisory.severity) || 'Unknown',
 			},
 			{
 				label: 'Updated',
@@ -1036,7 +1037,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 							style={css.icon}
 							className="bp5-icon-standard bp5-icon-warning-sign"
 						/>
-						{MiscUtils.capitalize(advisory.severity) || 'Unknown'}
+						{scoreLabel(advisory.score)}
 					</div>
 					{advisory.reference ? (referenceLink ?
 						<a
