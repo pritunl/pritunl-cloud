@@ -942,6 +942,11 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				copy: true,
 			},
 			{
+				label: 'Reference',
+				value: advisory.reference || 'Unknown',
+				copy: true,
+			},
+			{
 				label: 'Organization',
 				value: org ? org.name : (advisory.organization || 'Global'),
 			},
