@@ -463,6 +463,47 @@ export function naturalSort(a: string, b: string): number {
 	return 0;
 };
 
+export function humanReadableBytes(bytes: number): string {
+  if (!bytes || bytes <= 0) {
+    return '0 B';
+  }
+
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+  let val = bytes;
+  let i = 0;
+  while (val >= 1024 && i < units.length - 1) {
+    val /= 1024;
+    i += 1;
+  }
+
+  if (i === 0) {
+    return `${val} ${units[i]}`;
+  }
+  return `${val.toFixed(1)} ${units[i]}`;
+}
+
+export function humanReadableBytesPair(used: number, total: number): string {
+  used = used > 0 ? used : 0;
+  total = total > 0 ? total : 0;
+
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+  let scale = total;
+  let i = 0;
+  while (scale >= 1024 && i < units.length - 1) {
+    scale /= 1024;
+    i += 1;
+  }
+
+  let div = Math.pow(1024, i);
+  let usedVal = used / div;
+  let totalVal = total / div;
+
+  if (i === 0) {
+    return `${usedVal} / ${totalVal} ${units[i]}`;
+  }
+  return `${usedVal.toFixed(1)} / ${totalVal.toFixed(1)} ${units[i]}`;
+}
+
 export function humanReadableSpeedMb(speedMb: number): string {
   if (!speedMb || speedMb <= 0) {
     return '';
