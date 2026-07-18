@@ -2014,6 +2014,21 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					color: '#7207d4',
 				});
 			}
+
+			if (this.state.showSettings) {
+				for (let disk of (this.props.instance.guest.disks || [])) {
+					let size = disk.size || 0;
+					let used = disk.used || 0;
+					let percent = size ? (used / size) * 100 : 0;
+
+					resourceBars.push({
+						progressClass: 'bp5-no-stripes',
+						label: `${disk.mount} ` +
+							`(${MiscUtils.humanReadableBytesPair(used, size)})`,
+						value: percent,
+					});
+				}
+			}
 		}
 
 		let vncStyle = {
