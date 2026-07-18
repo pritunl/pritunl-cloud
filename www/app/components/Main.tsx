@@ -193,13 +193,6 @@ export default class Main extends React.Component<{}, State> {
 						Disks
 					</RouterLink>
 					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-warning-sign"
-						style={css.link}
-						to="/advisories"
-					>
-						Advisories
-					</RouterLink>
-					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-compressed"
 						style={css.link}
 						to="/images"
@@ -272,6 +265,13 @@ export default class Main extends React.Component<{}, State> {
 						to="/plans"
 					>
 						Plans
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-warning-sign"
+						style={css.link}
+						to="/advisories"
+					>
+						Advisories
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-people"
