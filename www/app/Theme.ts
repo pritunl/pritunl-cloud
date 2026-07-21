@@ -18,6 +18,30 @@ export const monospaceSize = "12px"
 export const monospaceFont = "Consolas, Menlo, 'Roboto Mono', 'DejaVu Sans Mono'"
 export const monospaceWeight = "500"
 
+export function chartColor1(): string {
+	if (theme === "light") {
+		return 'rgba(0, 0, 0, 0.9)';
+	} else {
+		return 'rgba(255, 255, 255, 1)';
+	}
+}
+
+export function chartColor2(): string {
+	if (theme === "light") {
+		return 'rgba(0, 0, 0, 0.2)';
+	} else {
+		return 'rgba(255, 255, 255, 0.2)';
+	}
+}
+
+export function chartColor3(): string {
+	if (theme === "light") {
+		return '#6f6f6f';
+	} else {
+		return '#e5e5e5';
+	}
+}
+
 export function save(): Promise<void> {
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
