@@ -12,6 +12,7 @@ import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
+let dataSyncReqs: {[key: string]: SuperAgent.Request} = {};
 
 export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -305,6 +306,59 @@ export function loadAdvisories(
 				resolve(res.body || []);
 			});
 	});
+}
+
+export function chart(instanceId: string, resource: string,
+		period: number, interval: number): Promise<any> {
+	let curDataSyncId = MiscUtils.uuid();
+
+	let loader = new Loader().loading();
+
+	// TODO Duplicate requests for numbered resource
+
+	resource = resource.replace(/[0-9]/g, '');
+
+	return new Promise<any>((resolve, reject): void => {
+		let req = SuperAgent.get('/instance/' + instanceId + '/chart')
+			.query({
+				resource: resource,
+				period: period.toString(),
+				interval: interval.toString(),
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.on('abort', () => {
+				loader.done();
+				resolve(null);
+			});
+		dataSyncReqs[curDataSyncId] = req;
+
+		req.end((err: any, res: SuperAgent.Response): void => {
+			delete dataSyncReqs[curDataSyncId];
+			loader.done();
+
+			if (res && res.status === 401) {
+				window.location.href = '/login';
+				resolve(null);
+				return;
+			}
+
+			if (err) {
+				Alert.errorRes(res, 'Failed to load instance chart');
+				reject(err);
+				return;
+			}
+
+			resolve(res.body);
+		});
+	});
+}
+
+export function dataCancel(): void {
+	for (let val of Object.values(dataSyncReqs)) {
+		val.abort();
+	}
 }
 
 export function syncNode(node: string, pool: string): Promise<void> {
