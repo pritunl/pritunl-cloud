@@ -2016,16 +2016,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			}
 
 			if (this.state.showSettings) {
-				for (let disk of (this.props.instance.guest.disks || [])) {
+				for (let disk of (this.props.instance.guest.mounts || [])) {
 					let size = disk.size || 0;
 					let used = disk.used || 0;
-					let percent = size ? (used / size) * 100 : 0;
+					let usedBytes = Math.round(size * used);
 
 					resourceBars.push({
 						progressClass: 'bp5-no-stripes',
 						label: `${disk.mount} ` +
-							`(${MiscUtils.humanReadableBytesPair(used, size)})`,
-						value: percent,
+							`(${MiscUtils.humanReadableBytesPair(usedBytes, size)})`,
+						value: used,
 					});
 				}
 			}
