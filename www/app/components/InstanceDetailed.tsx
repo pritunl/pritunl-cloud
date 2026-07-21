@@ -2024,8 +2024,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					let used = disk.used || 0;
 					let usedBytes = Math.round(size * used / 100);
 
+					let diskClass = "bp5-no-stripes"
+					if (used > 90) {
+						diskClass += " bp5-intent-danger"
+					} else if (used > 80) {
+						diskClass += " bp5-intent-warning"
+					}
+
 					resourceBars.push({
-						progressClass: 'bp5-no-stripes',
+						progressClass: diskClass,
 						label: `${disk.mount} ` +
 							`(${MiscUtils.humanReadableBytesPair(usedBytes, size)})`,
 						value: used,
