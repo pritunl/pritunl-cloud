@@ -158,6 +158,7 @@ export interface Guest {
 	timestamp?: string;
 	heartbeat?: string;
 	memory?: number;
+	swap?: number;
 	hugepages?: number;
 	load1?: number;
 	load5?: number;
