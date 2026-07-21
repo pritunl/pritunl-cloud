@@ -164,12 +164,23 @@ export interface Guest {
 	load5?: number;
 	load15?: number;
 	disks?: Disk[];
+	mounts?: Mount[];
+	interfaces?: Interface[];
 }
 
 export interface Disk {
+	node?: string;
+}
+
+export interface Mount {
 	mount?: string;
 	used?: number;
 	size?: number;
+	format?: string;
+}
+
+export interface Interface {
+	name?: string;
 }
 
 export interface Update {
