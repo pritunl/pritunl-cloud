@@ -27,6 +27,7 @@ import PageSelectButton from "./PageSelectButton";
 import PageTextArea from "./PageTextArea";
 import Relations from './Relations';
 import AdvisoryDialog from './AdvisoryDialog';
+import MetricCharts from './MetricCharts';
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -52,6 +53,7 @@ interface State {
 	startupScript: boolean;
 	forwardedChecked: boolean;
 	showSettings: boolean;
+	metrics: boolean;
 	vnc: boolean;
 	vncCtrl: boolean;
 	vncAlt: boolean;
@@ -159,6 +161,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			startupScript: null,
 			forwardedChecked: false,
 			showSettings: false,
+			metrics: false,
 			vnc: false,
 			vncCtrl: false,
 			vncAlt: false,
@@ -2681,6 +2684,36 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				>
 					VNC Console
 				</button>
+				<button
+					className="bp5-button bp5-intent-success bp5-icon-timeline-line-chart"
+					hidden={this.state.metrics}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							metrics: true,
+						});
+					}}
+				>
+					View Metrics
+				</button>
+				<button
+					className="bp5-button bp5-intent-danger bp5-icon-timeline-line-chart"
+					hidden={!this.state.metrics}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							metrics: false,
+						});
+					}}
+				>
+					View Metrics
+				</button>
 			</PageSave>
 			<div style={css.vncBox}>
 				<div className="layout horizontal">
@@ -2791,6 +2824,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					hidden={!this.state.vnc}
 				/>
 			</div>
+			<MetricCharts
+				instance={this.props.instance.id}
+				disabled={!this.state.metrics}
+			/>
 		</td>;
 	}
 }
