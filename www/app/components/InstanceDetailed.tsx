@@ -2019,7 +2019,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				for (let disk of (this.props.instance.guest.mounts || [])) {
 					let size = disk.size || 0;
 					let used = disk.used || 0;
-					let usedBytes = Math.round(size * used);
+					let usedBytes = Math.round(size * used / 100);
 
 					resourceBars.push({
 						progressClass: 'bp5-no-stripes',
