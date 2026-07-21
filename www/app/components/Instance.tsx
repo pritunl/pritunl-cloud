@@ -183,11 +183,10 @@ export default class Instance extends React.Component<Props, {}> {
 		let diskElm: JSX.Element
 		let diskMount: string
 		let diskMax = 0
-		for (let disk of (instance.guest?.disks || [])) {
-			let percent = disk.size ? ((disk.used || 0) / disk.size) * 100 : 0
-			if (percent > diskMax) {
+		for (let disk of (instance.guest?.mounts || [])) {
+			if ((disk.used || 0) > diskMax) {
 				diskMount = disk.mount
-				diskMax = percent
+				diskMax = disk.used
 			}
 		}
 		if (diskMax >= 80) {
