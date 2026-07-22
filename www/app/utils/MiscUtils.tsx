@@ -463,6 +463,22 @@ export function naturalSort(a: string, b: string): number {
 	return 0;
 };
 
+export function formatBytes(bytes: number, decimals: number): string {
+	if (!bytes) {
+		return '0B';
+	}	else if (bytes < 1024) {
+		return bytes + 'B';
+	} else if (bytes < 1048576) {
+		return Math.round(bytes / 1024).toFixed(decimals) + 'KB';
+	} else if (bytes < 1073741824) {
+		return (bytes / 1048576).toFixed(decimals) + 'MB';
+	} else if (bytes < 1099511627776) {
+		return (bytes / 1073741824).toFixed(decimals) + 'GB';
+	} else {
+		return (bytes / 1099511627776).toFixed(decimals) + 'TB';
+	}
+}
+
 export function humanReadableBytes(bytes: number): string {
   if (!bytes || bytes <= 0) {
     return '0 B';
