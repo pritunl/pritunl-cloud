@@ -4,6 +4,7 @@ import * as Blueprint from "@blueprintjs/core";
 import * as AdvisoryTypes from "../types/AdvisoryTypes";
 import * as AdvisoryActions from "../actions/AdvisoryActions";
 import * as MiscUtils from "../utils/MiscUtils";
+import ConfirmButton from "./ConfirmButton";
 
 interface CveDetail {
 	id: string;
@@ -20,6 +21,8 @@ interface UpdateEntry {
 	cves: CveDetail[];
 	importantCves: CveDetail[];
 	dismissed: boolean;
+	dismissedAll: boolean;
+	dismissedResource: boolean;
 	link?: string;
 }
 
@@ -194,9 +197,17 @@ const css = {
 		minHeight: "0",
 		fontSize: "12px",
 	} as React.CSSProperties,
-	dismissButton: {
+	dismissActions: {
 		marginLeft: "auto",
+		alignItems: "center",
+		gap: "4px",
+	} as React.CSSProperties,
+	dismissButton: {
 		height: "30px",
+	} as React.CSSProperties,
+	dismissedAllTag: {
+		paddingTop: "3px",
+		paddingBottom: "3px",
 	} as React.CSSProperties,
 }
 
@@ -215,20 +226,15 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		}
 	}
 
-	onDismiss = (advisoryId: string): void => {
-		if (!advisoryId || !this.props.resourceId) {
-			return;
-		}
-
+	runAction = (prom: Promise<void>): void => {
 		this.setState({
 			...this.state,
 			disabled: true,
 		});
-		AdvisoryActions.dismissResources(
-				advisoryId, [this.props.resourceId]).then((): void => {
-			let prom = this.props.onOpen ?
+		prom.then((): void => {
+			let refresh = this.props.onOpen ?
 				this.props.onOpen() : Promise.resolve();
-			prom.then((): void => {
+			refresh.then((): void => {
 				this.setState({
 					...this.state,
 					disabled: false,
@@ -247,36 +253,34 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		});
 	}
 
+	onDismiss = (advisoryId: string): void => {
+		if (!advisoryId || !this.props.resourceId) {
+			return;
+		}
+		this.runAction(AdvisoryActions.dismissResources(
+			advisoryId, [this.props.resourceId]));
+	}
+
 	onRestore = (advisoryId: string): void => {
 		if (!advisoryId || !this.props.resourceId) {
 			return;
 		}
+		this.runAction(AdvisoryActions.restoreResources(
+			advisoryId, [this.props.resourceId]));
+	}
 
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
-		AdvisoryActions.restoreResources(
-				advisoryId, [this.props.resourceId]).then((): void => {
-			let prom = this.props.onOpen ?
-				this.props.onOpen() : Promise.resolve();
-			prom.then((): void => {
-				this.setState({
-					...this.state,
-					disabled: false,
-				});
-			}).catch((): void => {
-				this.setState({
-					...this.state,
-					disabled: false,
-				});
-			});
-		}).catch((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-		});
+	onDismissAll = (advisoryId: string): void => {
+		if (!advisoryId) {
+			return;
+		}
+		this.runAction(AdvisoryActions.dismiss(advisoryId));
+	}
+
+	onRestoreAll = (advisoryId: string): void => {
+		if (!advisoryId) {
+			return;
+		}
+		this.runAction(AdvisoryActions.restore(advisoryId));
 	}
 
 	rpmName(pkg: string): string {
@@ -379,8 +383,10 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		let resourceId = this.props.resourceId;
 		let entries: UpdateEntry[] = [];
 		for (let advisory of advisories) {
-			let dismissed = !!advisory.dismissed || (!!resourceId &&
-				(advisory.dismissed_resources || []).indexOf(resourceId) !== -1);
+			let dismissedAll = !!advisory.dismissed;
+			let dismissedResource = !!resourceId &&
+				(advisory.dismissed_resources || []).indexOf(resourceId) !== -1;
+			let dismissed = dismissedAll || dismissedResource;
 
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
@@ -416,6 +422,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				cves: pairs,
 				importantCves: importantCves,
 				dismissed: dismissed,
+				dismissedAll: dismissedAll,
+				dismissedResource: dismissedResource,
 				link: this.advisoryLink(advisory.reference || ""),
 			});
 		}
@@ -636,20 +644,55 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				>{update.id}</a> : <span style={css.title}>
 					{update.id}
 				</span>}
-				{this.props.resourceId ? <button
-					className={"bp5-button bp5-minimal " +
-						(dismissed ? "bp5-icon-undo" : "bp5-icon-disable")}
-					style={css.dismissButton}
-					type="button"
-					disabled={this.state.disabled}
-					onClick={(): void => {
-						if (dismissed) {
+				{this.props.resourceId ? <div
+					className="layout horizontal"
+					style={css.dismissActions}>
+					{entry.dismissedAll ? <Blueprint.Tag
+						minimal={true}
+						icon="disable"
+						style={css.dismissedAllTag}>All Resources</Blueprint.Tag> :
+						null}
+					{entry.dismissedAll ? <button
+						className="bp5-button bp5-minimal bp5-icon-undo"
+						style={css.dismissButton}
+						type="button"
+						disabled={this.state.disabled}
+						onClick={(): void => {
+							this.onRestoreAll(entry.advisoryId);
+						}}
+					>Restore All</button> : entry.dismissedResource ? <button
+						className="bp5-button bp5-minimal bp5-icon-undo"
+						style={css.dismissButton}
+						type="button"
+						disabled={this.state.disabled}
+						onClick={(): void => {
 							this.onRestore(entry.advisoryId);
-						} else {
-							this.onDismiss(entry.advisoryId);
-						}
-					}}
-				>{dismissed ? "Restore" : "Dismiss"}</button> : null}
+						}}
+					>Restore</button> : <>
+						<button
+							className="bp5-button bp5-minimal bp5-icon-disable"
+							style={css.dismissButton}
+							type="button"
+							disabled={this.state.disabled}
+							onClick={(): void => {
+								this.onDismiss(entry.advisoryId);
+							}}
+						>Dismiss</button>
+						<ConfirmButton
+							className="bp5-minimal bp5-icon-disable"
+							dialogClassName="bp5-intent-danger bp5-icon-disable"
+							style={css.dismissButton}
+							safe={true}
+							label="Dismiss All"
+							confirmMsg="Dismiss this advisory for all resources"
+							items={[entry.id]}
+							disabled={this.state.disabled}
+							onConfirm={(): void => {
+								this.onDismissAll(entry.advisoryId);
+							}}
+						/>
+					</>}
+				</div> : null}
 			</div>
 			{hasDescription && <div style={descriptionStyle}>
 				{update.description}
