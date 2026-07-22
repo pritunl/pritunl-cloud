@@ -13,6 +13,7 @@ import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
 let dataSyncReqs: {[key: string]: SuperAgent.Request} = {};
+let chartReqs: {[key: string]: Promise<any>} = {};
 
 export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -310,15 +311,20 @@ export function loadAdvisories(
 
 export function chart(instanceId: string, resource: string,
 		period: number, interval: number): Promise<any> {
+	resource = resource.replace(/[0-9]/g, '');
+
+	let cacheKey = instanceId + ':' + resource + ':' +
+		period + ':' + interval;
+	let existing = chartReqs[cacheKey];
+	if (existing) {
+		return existing;
+	}
+
 	let curDataSyncId = MiscUtils.uuid();
 
 	let loader = new Loader().loading();
 
-	// TODO Duplicate requests for numbered resource
-
-	resource = resource.replace(/[0-9]/g, '');
-
-	return new Promise<any>((resolve, reject): void => {
+	let promise = new Promise<any>((resolve, reject): void => {
 		let req = SuperAgent.get('/instance/' + instanceId + '/chart')
 			.query({
 				resource: resource,
@@ -353,6 +359,14 @@ export function chart(instanceId: string, resource: string,
 			resolve(res.body);
 		});
 	});
+
+	chartReqs[cacheKey] = promise;
+	let clear = (): void => {
+		delete chartReqs[cacheKey];
+	};
+	promise.then(clear, clear);
+
+	return promise;
 }
 
 export function dataCancel(): void {
