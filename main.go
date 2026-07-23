@@ -31,6 +31,7 @@ Commands:
   disable-firewall  Disable firewall on this node
   start-instance    Start instance by name
   stop-instance     Stop instance by name
+  shutdown          Shutdown all instances running on this node
   mtu-check         Check and show instance MTUs
   backup            Backup local data
 `
@@ -221,6 +222,14 @@ func main() {
 		flag.Parse()
 		InitLimited()
 		err := cmd.StopInstance(flag.Args()[1])
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "shutdown":
+		flag.Parse()
+		InitLimited()
+		err := cmd.Shutdown()
 		if err != nil {
 			panic(err)
 		}
