@@ -3,6 +3,7 @@ package zone
 import (
 	"net"
 	"slices"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -79,6 +80,14 @@ func (z *Zone) Validate(db *database.Database) (
 	}
 	z.DnsServers6 = dnsServers6
 
+	if z.AnnounceRate < 0 {
+		z.AnnounceRate = 0
+	}
+
+	if z.StartupRate < 0 {
+		z.StartupRate = 0
+	}
+
 	return
 }
 
@@ -136,6 +145,20 @@ func (z *Zone) GetDnsServers6() (dnsServers6 []string) {
 	}
 
 	return
+}
+
+func (z *Zone) GetAnnounceRate() time.Duration {
+	if z.AnnounceRate > 0 {
+		return time.Duration(z.AnnounceRate) * time.Second
+	}
+	return time.Duration(settings.Hypervisor.AnnounceRate) * time.Second
+}
+
+func (z *Zone) GetStartupRate() time.Duration {
+	if z.StartupRate > 0 {
+		return time.Duration(z.StartupRate) * time.Second
+	}
+	return time.Duration(settings.Hypervisor.StartupRate) * time.Second
 }
 
 func (z *Zone) Commit(db *database.Database) (err error) {
