@@ -14,12 +14,14 @@ import (
 )
 
 type Zone struct {
-	Id          bson.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter  bson.ObjectID `bson:"datacenter" json:"datacenter"`
-	Name        string        `bson:"name" json:"name"`
-	Comment     string        `bson:"comment" json:"comment"`
-	DnsServers  []string      `bson:"dns_servers" json:"dns_servers"`
-	DnsServers6 []string      `bson:"dns_servers6" json:"dns_servers6"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter   bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Name         string        `bson:"name" json:"name"`
+	Comment      string        `bson:"comment" json:"comment"`
+	DnsServers   []string      `bson:"dns_servers" json:"dns_servers"`
+	DnsServers6  []string      `bson:"dns_servers6" json:"dns_servers6"`
+	AnnounceRate int           `bson:"announce_rate" json:"announce_rate"`
+	StartupRate  int           `bson:"startup_rate" json:"startup_rate"`
 }
 
 type Completion struct {
