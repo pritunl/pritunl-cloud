@@ -6,13 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-)
-
-var (
-	lock = utils.NewTimeoutLock(6 * time.Minute)
 )
 
 type NetConf struct {
@@ -111,10 +105,6 @@ type NetConf struct {
 }
 
 func (n *NetConf) Init(db *database.Database) (err error) {
-	delay := time.Duration(settings.Hypervisor.NetworkRate) * time.Second
-	lockId := lock.Lock()
-	defer lock.DelayUnlock(lockId, delay)
-
 	err = n.Validate()
 	if err != nil {
 		return
