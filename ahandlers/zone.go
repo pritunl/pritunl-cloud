@@ -20,12 +20,14 @@ import (
 )
 
 type zoneData struct {
-	Id          bson.ObjectID `json:"id"`
-	Datacenter  bson.ObjectID `json:"datacenter"`
-	Name        string        `json:"name"`
-	Comment     string        `json:"comment"`
-	DnsServers  []string      `json:"dns_servers"`
-	DnsServers6 []string      `json:"dns_servers6"`
+	Id           bson.ObjectID `json:"id"`
+	Datacenter   bson.ObjectID `json:"datacenter"`
+	Name         string        `json:"name"`
+	Comment      string        `json:"comment"`
+	DnsServers   []string      `json:"dns_servers"`
+	DnsServers6  []string      `json:"dns_servers6"`
+	AnnounceRate int           `json:"announce_rate"`
+	StartupRate  int           `json:"startup_rate"`
 }
 
 type zonesData struct {
@@ -63,12 +65,16 @@ func zonePut(c *gin.Context) {
 	zne.Comment = data.Comment
 	zne.DnsServers = data.DnsServers
 	zne.DnsServers6 = data.DnsServers6
+	zne.AnnounceRate = data.AnnounceRate
+	zne.StartupRate = data.StartupRate
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"dns_servers",
 		"dns_servers6",
+		"announce_rate",
+		"startup_rate",
 	)
 
 	errData, err := zne.Validate(db)
@@ -110,9 +116,13 @@ func zonePost(c *gin.Context) {
 	}
 
 	zne := &zone.Zone{
-		Datacenter: data.Datacenter,
-		Name:       data.Name,
-		Comment:    data.Comment,
+		Datacenter:   data.Datacenter,
+		Name:         data.Name,
+		Comment:      data.Comment,
+		DnsServers:   data.DnsServers,
+		DnsServers6:  data.DnsServers6,
+		AnnounceRate: data.AnnounceRate,
+		StartupRate:  data.StartupRate,
 	}
 
 	errData, err := zne.Validate(db)
