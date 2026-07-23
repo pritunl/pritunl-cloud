@@ -82,10 +82,14 @@ func (z *Zone) Validate(db *database.Database) (
 
 	if z.AnnounceRate < 0 {
 		z.AnnounceRate = 0
+	} else if z.AnnounceRate > 600 {
+		z.AnnounceRate = 600
 	}
 
 	if z.StartupRate < 0 {
 		z.StartupRate = 0
+	} else if z.StartupRate > 600 {
+		z.StartupRate = 600
 	}
 
 	return
