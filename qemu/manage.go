@@ -714,6 +714,9 @@ func Create(db *database.Database, inst *instance.Instance,
 		}
 	}
 
+	lockId := startupLock.Lock()
+	defer startupLock.DelayUnlock(lockId, zne.GetStartupRate())
+
 	err = systemd.Start(unitName)
 	if err != nil {
 		return
