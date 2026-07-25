@@ -2,12 +2,14 @@
 import * as React from 'react';
 import * as ChartJs from 'chart.js';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as NodeActions from '../actions/NodeActions';
 import * as ChartTypes from '../types/ChartTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Theme from '../Theme';
 
 interface Props {
-	instance: string;
+	instance?: string;
+	node?: string;
 	resource: string;
 	sync: number;
 	period: number;
@@ -385,6 +387,24 @@ export default class MetricChart extends React.Component<Props, State> {
 		return config;
 	}
 
+	loadChart(): Promise<any> {
+		if (this.props.node) {
+			return NodeActions.chart(
+				this.props.node,
+				this.props.resource,
+				this.period,
+				this.interval,
+			);
+		}
+
+		return InstanceActions.chart(
+			this.props.instance,
+			this.props.resource,
+			this.period,
+			this.interval,
+		);
+	}
+
 	update(sync: number, period: number, interval: number): void {
 		this.sync = sync;
 		this.period = period;
@@ -393,12 +413,7 @@ export default class MetricChart extends React.Component<Props, State> {
 		let loading = true;
 		this.props.onLoading();
 
-		InstanceActions.chart(
-			this.props.instance,
-			this.props.resource,
-			this.period,
-			this.interval,
-		).then((data: ChartTypes.InstanceData): void => {
+		this.loadChart().then((data: ChartTypes.InstanceData): void => {
 			if (loading) {
 				loading = false;
 				this.props.onLoaded();
@@ -482,12 +497,7 @@ export default class MetricChart extends React.Component<Props, State> {
 		let loading = true;
 		this.props.onLoading();
 
-		InstanceActions.chart(
-			this.props.instance,
-			this.props.resource,
-			this.period,
-			this.interval,
-		).then((data: ChartTypes.InstanceData): void => {
+		this.loadChart().then((data: ChartTypes.InstanceData): void => {
 			if (loading) {
 				loading = false;
 				this.props.onLoaded();
