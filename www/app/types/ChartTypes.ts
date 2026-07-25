@@ -40,7 +40,7 @@ export function getChartLabels(resource: string, data: any): Labels {
 				resource_label: 'Percent',
 				resource_type: 'float',
 				resource_suffix: '%',
-				resource_fixed: 3,
+				resource_fixed: 2,
 				resource_min: 0,
 				resource_max: 100,
 				datasets: [
@@ -64,7 +64,7 @@ export function getChartLabels(resource: string, data: any): Labels {
 				resource_label: 'Load',
 				resource_type: 'float',
 				resource_suffix: '',
-				resource_fixed: 4,
+				resource_fixed: 2,
 				resource_min: 0,
 				datasets: [
 					{
@@ -93,7 +93,7 @@ export function getChartLabels(resource: string, data: any): Labels {
 				resource_label: 'Usage',
 				resource_type: 'float',
 				resource_suffix: '%',
-				resource_fixed: 3,
+				resource_fixed: 2,
 				resource_min: 0,
 				resource_max: 100,
 				hide_zero: true,
