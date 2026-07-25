@@ -57,6 +57,7 @@ interface State {
 	forwardedChecked: boolean;
 	forwardedProtoChecked: boolean;
 	advisories: AdvisoryTypes.Advisory[];
+	metrics: boolean;
 }
 
 const css = {
@@ -94,6 +95,10 @@ const css = {
 	} as React.CSSProperties,
 	save: {
 		paddingBottom: '10px',
+	} as React.CSSProperties,
+	controlButton: {
+		marginRight: '10px',
+		marginBottom: '10px',
 	} as React.CSSProperties,
 	restart: {
 		marginRight: '10px',
@@ -158,6 +163,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			forwardedChecked: false,
 			forwardedProtoChecked: false,
 			advisories: [],
+			metrics: false,
 		};
 	}
 
@@ -2527,6 +2533,36 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					zones={this.props.zones}
 					blocks={this.props.blocks}
 				/>
+				<button
+					className="bp5-button bp5-intent-success bp5-icon-timeline-line-chart"
+					hidden={this.state.metrics}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							metrics: true,
+						});
+					}}
+				>
+					View Metrics
+				</button>
+				<button
+					className="bp5-button bp5-intent-danger bp5-icon-timeline-line-chart"
+					hidden={!this.state.metrics}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							metrics: false,
+						});
+					}}
+				>
+					View Metrics
+				</button>
 			</PageSave>
 			<MetricCharts
 				node={this.props.node.id}
