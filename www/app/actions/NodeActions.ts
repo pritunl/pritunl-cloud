@@ -13,6 +13,8 @@ import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
 let syncZonesId: string;
+let dataSyncReqs: {[key: string]: SuperAgent.Request} = {};
+let chartReqs: {[key: string]: Promise<any>} = {};
 
 export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -327,6 +329,72 @@ export function loadAdvisories(
 				resolve(res.body || []);
 			});
 	});
+}
+
+export function chart(nodeId: string, resource: string,
+		period: number, interval: number): Promise<any> {
+	resource = resource.replace(/[0-9]/g, '');
+
+	let cacheKey = nodeId + ':' + resource + ':' +
+		period + ':' + interval;
+	let existing = chartReqs[cacheKey];
+	if (existing) {
+		return existing;
+	}
+
+	let curDataSyncId = MiscUtils.uuid();
+
+	let loader = new Loader().loading();
+
+	let promise = new Promise<any>((resolve, reject): void => {
+		let req = SuperAgent.get('/node/' + nodeId + '/chart')
+			.query({
+				resource: resource,
+				period: period.toString(),
+				interval: interval.toString(),
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.on('abort', () => {
+				loader.done();
+				resolve(null);
+			});
+		dataSyncReqs[curDataSyncId] = req;
+
+		req.end((err: any, res: SuperAgent.Response): void => {
+			delete dataSyncReqs[curDataSyncId];
+			loader.done();
+
+			if (res && res.status === 401) {
+				window.location.href = '/login';
+				resolve(null);
+				return;
+			}
+
+			if (err) {
+				Alert.errorRes(res, 'Failed to load node chart');
+				reject(err);
+				return;
+			}
+
+			resolve(res.body);
+		});
+	});
+
+	chartReqs[cacheKey] = promise;
+	let clear = (): void => {
+		delete chartReqs[cacheKey];
+	};
+	promise.then(clear, clear);
+
+	return promise;
+}
+
+export function dataCancel(): void {
+	for (let val of Object.values(dataSyncReqs)) {
+		val.abort();
+	}
 }
 
 EventDispatcher.register((action: NodeTypes.NodeDispatch) => {
