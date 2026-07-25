@@ -967,9 +967,18 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let detailFields: PageInfos.Field[] = [];
 
 		if (advisory.vuxmls) {
+			let vuxmls: PageInfos.LinkValue[] = [];
+
+			for (let vuxml of advisory.vuxmls) {
+				vuxmls.push({
+					value: vuxml,
+					link: `https://vuxml.freebsd.org/freebsd/${vuxml}.html`,
+				})
+			}
+
 			detailFields.push({
-				label: 'FreeBSD VuXML IDs',
-				value: [...advisory.vuxmls],
+				label: 'FreeBSD VuXML Advisories',
+				value: [...vuxmls],
 			});
 		}
 
