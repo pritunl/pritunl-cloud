@@ -28,6 +28,7 @@ import AdvisoryDialog from './AdvisoryDialog';
 import ConfirmButton from './ConfirmButton';
 import Relations from './Relations';
 import Help from './Help';
+import MetricCharts from './MetricCharts';
 
 interface Props {
 	node: NodeTypes.NodeRo;
@@ -2527,6 +2528,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					blocks={this.props.blocks}
 				/>
 			</PageSave>
+			<MetricCharts
+				node={this.props.node.id}
+				disabled={!this.state.metrics}
+			/>
 		</td>;
 	}
 }
