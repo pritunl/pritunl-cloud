@@ -3,9 +3,11 @@ import * as React from 'react';
 import PageSelect from './PageSelect';
 import MetricChart from './MetricChart';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as NodeActions from '../actions/NodeActions';
 
 interface Props {
-	instance: string;
+	instance?: string;
+	node?: string;
 	disabled: boolean;
 }
 
@@ -203,7 +205,11 @@ export default class MetricCharts extends React.Component<Props, State> {
 						type="button"
 						onClick={(): void => {
 							if (Object.entries(this.state.cancelable).length) {
-								InstanceActions.dataCancel();
+								if (this.props.node) {
+									NodeActions.dataCancel();
+								} else {
+									InstanceActions.dataCancel();
+								}
 							} else {
 								this.setState({
 									...this.state,
@@ -304,6 +310,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 				<div style={css.chartGroup}>
 					<MetricChart
 						instance={this.props.instance}
+						node={this.props.node}
 						resource={'system'}
 						sync={this.state.sync}
 						period={this.state.period}
@@ -323,6 +330,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 				<div style={css.chartGroup}>
 					<MetricChart
 						instance={this.props.instance}
+						node={this.props.node}
 						resource={'load'}
 						sync={this.state.sync}
 						period={this.state.period}
@@ -344,6 +352,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 				<div style={css.chartGroup}>
 					<MetricChart
 						instance={this.props.instance}
+						node={this.props.node}
 						resource={'disk'}
 						sync={this.state.sync}
 						period={this.state.period}
@@ -363,6 +372,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 				<div style={css.chartGroup}>
 					<MetricChart
 						instance={this.props.instance}
+						node={this.props.node}
 						resource={'network'}
 						sync={this.state.sync}
 						period={this.state.period}
@@ -384,6 +394,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 				<div style={css.chartGroup}>
 					<MetricChart
 						instance={this.props.instance}
+						node={this.props.node}
 						resource={'diskio0'}
 						sync={this.state.sync}
 						period={this.state.period}
@@ -403,6 +414,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 				<div style={css.chartGroup}>
 					<MetricChart
 						instance={this.props.instance}
+						node={this.props.node}
 						resource={'diskio1'}
 						sync={this.state.sync}
 						period={this.state.period}
