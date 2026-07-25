@@ -63,7 +63,7 @@ export function getChartLabels(resource: string, data: any): Labels {
 				title: 'Load Average',
 				resource_label: 'Load',
 				resource_type: 'float',
-				resource_suffix: '',
+				resource_suffix: '%',
 				resource_fixed: 2,
 				resource_min: 0,
 				datasets: [
