@@ -8,12 +8,17 @@ export interface Field {
 	valueClasses?: string[];
 	key?: string;
 	label: string;
-	value?: string | number | string[];
+	value?: string | number | string[] | LinkValue[];
 	hover?: JSX.Element;
 	link?: string;
 	copy?: boolean;
 	embedded?: Props;
 	maxLines?: number;
+}
+
+export interface LinkValue {
+	value?: string;
+	link?: string;
 }
 
 export interface Bar {
@@ -119,12 +124,33 @@ export default class PageInfo extends React.Component<Props, {}> {
 			} else if (field.value) {
 				value = [];
 				for (let i = 0; i < field.value.length; i++) {
+					let item = field.value[i];
+					let itemValue: string;
+					let itemLink: string;
+
+					if (typeof item === 'object') {
+						itemValue = item.value;
+						itemLink = item.link;
+					} else {
+						itemValue = item;
+					}
+
 					let copyItemBtn: JSX.Element;
 
 					if (field.copy) {
 						copyItemBtn = <CopyButton
-							value={field.value[i]}
+							value={itemValue}
 						/>;
+					}
+
+					let itemContent: string | JSX.Element = itemValue;
+					if (itemLink) {
+						itemContent = <a
+							target="_blank"
+							href={itemLink}
+						>
+							{itemValue}
+						</a>;
 					}
 
 					value.push(
@@ -136,7 +162,7 @@ export default class PageInfo extends React.Component<Props, {}> {
 								(field.valueClass || 'bp5-text-muted')
 							}
 						>
-							{field.value[i]}{copyItemBtn}
+							{itemContent}{copyItemBtn}
 						</div>
 					);
 				}
