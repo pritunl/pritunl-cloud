@@ -56,6 +56,7 @@ export interface Advisory {
 	description?: string;
 	score?: number;
 	packages?: string[];
+	vuxmls?: string[];
 	vulnerabilities?: Vulnerability[];
 	instances?: string[];
 	nodes?: string[];
