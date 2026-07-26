@@ -95,6 +95,7 @@ shred -u /var/lib/systemd/random-seed || true
 rm -rf /var/log/*.gz
 rm -rf /var/log/*.[0-9]
 rm -rf /var/log/*-????????
+rm -rf /var/log/journal
 rm -rf /var/lib/cloud/instances/*
 rm -f /var/lib/systemd/random-seed
 rm -f /etc/machine-id
