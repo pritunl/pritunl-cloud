@@ -652,15 +652,19 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 						icon="disable"
 						style={css.dismissedAllTag}>All Resources</Blueprint.Tag> :
 						null}
-					{entry.dismissedAll ? <button
-						className="bp5-button bp5-minimal bp5-icon-undo"
-						style={css.dismissButton}
-						type="button"
-						disabled={this.state.disabled}
-						onClick={(): void => {
-							this.onRestoreAll(entry.advisoryId);
-						}}
-					>Restore All</button> : entry.dismissedResource ? <button
+					{entry.dismissedAll ? <ConfirmButton
+							className="bp5-button bp5-minimal bp5-icon-undo"
+							dialogClassName="bp5-intent-success bp5-icon-undo"
+							style={css.dismissButton}
+							safe={true}
+							label="Restore All"
+							confirmMsg="Restore this advisory for all resources"
+							items={[entry.id]}
+							disabled={this.state.disabled}
+							onConfirm={(): void => {
+								this.onRestoreAll(entry.advisoryId);
+							}}
+						/> : entry.dismissedResource ? <button
 						className="bp5-button bp5-minimal bp5-icon-undo"
 						style={css.dismissButton}
 						type="button"
