@@ -95,7 +95,6 @@ const css = {
 		margin: '0 10px',
 	} as React.CSSProperties,
 	save: {
-		paddingBottom: '10px',
 	} as React.CSSProperties,
 	controlButton: {
 		marginRight: '10px',
