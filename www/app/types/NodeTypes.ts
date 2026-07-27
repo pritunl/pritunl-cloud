@@ -89,6 +89,30 @@ export interface Node {
 	oracle_user?: string;
 	oracle_tenancy?: string;
 	oracle_public_key?: string;
+	metric?: Metric;
+}
+
+export interface Metric {
+	memory?: number;
+	swap?: number;
+	hugepages?: number;
+	load1?: number;
+	load5?: number;
+	load15?: number;
+	disks?: Disk[];
+	mounts?: Mount[];
+	interfaces?: Interface[];
+}
+
+export interface Disk {
+	node?: string;
+}
+
+export interface Mount {
+	mount?: string;
+	used?: number;
+	size?: number;
+	format?: string;
 }
 
 export function GetAllIfaces(node: Node): Interface[] {
