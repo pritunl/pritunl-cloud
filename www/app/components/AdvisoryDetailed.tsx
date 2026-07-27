@@ -921,6 +921,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let typeLabel = advisory.type;
 		if (advisory.type === 'rhel') {
 			typeLabel = 'Red Hat Security Advisory';
+		} else if (advisory.type === 'freebsd') {
+			typeLabel = 'FreeBSD VuXML Security Advisory';
 		}
 
 		let statusClass = 'bp5-tag tab-close ' +
