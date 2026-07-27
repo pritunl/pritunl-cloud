@@ -10,6 +10,7 @@ import PageInputButton from './PageInputButton';
 import PageTextArea from './PageTextArea';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import * as Constants from "../Constants";
 
@@ -440,6 +441,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
               </label>
             </div>
 						<div className="flex tab-close"/>
+						<Relations kind="authority" id={this.props.authority.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
