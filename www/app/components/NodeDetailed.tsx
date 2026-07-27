@@ -58,6 +58,7 @@ interface State {
 	forwardedProtoChecked: boolean;
 	advisories: AdvisoryTypes.Advisory[];
 	metrics: boolean;
+	showSettings: boolean;
 }
 
 const css = {
@@ -164,6 +165,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			forwardedProtoChecked: false,
 			advisories: [],
 			metrics: false,
+			showSettings: false,
 		};
 	}
 
@@ -1920,6 +1922,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Network IPv4 Mode"
 						help="Network mode for public IP addresses. Cannot be changed with instances running."
+						hidden={!this.state.showSettings}
 						value={node.network_mode}
 						onChange={(val): void => {
 							this.onNetworkMode(val);
@@ -1934,6 +1937,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Network IPv6 Mode"
 						help="Network mode for public IPv6 addresses. Cannot be changed with instances running. Default will use IPv4 network mode."
+						hidden={!this.state.showSettings}
 						value={node.network_mode6}
 						onChange={(val): void => {
 							this.onNetworkMode6(val);
@@ -1948,10 +1952,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						className="bp5-label"
 						style={css.label}
 						hidden={
+						  !this.state.showSettings || (
 							node.network_mode !== 'dhcp' &&
 							node.network_mode !== '' &&
 							node.network_mode6 !== 'dhcp' &&
-							node.network_mode6 !== ''
+							node.network_mode6 !== '')
 						}
 					>
 						External Interfaces
@@ -1965,10 +1970,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<PageSelectButton
 						hidden={
+						  !this.state.showSettings || (
 							node.network_mode !== 'dhcp' &&
 							node.network_mode !== '' &&
 							node.network_mode6 !== 'dhcp' &&
-							node.network_mode6 !== ''
+							node.network_mode6 !== '')
 						}
 						label="Add Interface"
 						value={this.state.addExternalIface}
@@ -1987,6 +1993,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						style={css.label}
+						hidden={!this.state.showSettings}
 					>
 						Internal Interfaces
 						<Help
@@ -2000,6 +2007,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<PageSelectButton
 						label="Add Interface"
 						value={this.state.addInternalIface}
+						hidden={!this.state.showSettings}
 						disabled={!internalIfacesSelect.length || this.state.disabled}
 						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
@@ -2014,7 +2022,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</PageSelectButton>
 					<label
 						className="bp5-label"
-						hidden={node.network_mode !== 'static'}
+						hidden={!this.state.showSettings || node.network_mode !== 'static'}
 						style={css.labelWide}
 					>
 						External IPv4 Block Attachments
@@ -2022,7 +2030,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<label
 						className="bp5-label"
-						hidden={node.network_mode6 !== 'static'}
+						hidden={!this.state.showSettings || node.network_mode6 !== 'static'}
 						style={css.labelWide}
 					>
 						External IPv6 Block Attachments
@@ -2030,7 +2038,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<label
 						className="bp5-label"
-						hidden={node.network_mode !== 'cloud'}
+						hidden={!this.state.showSettings || node.network_mode !== 'cloud'}
 						style={css.label}
 					>
 						Oracle Cloud Subnets
@@ -2044,7 +2052,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<PageSelectButton
 						label="Add Subnet"
-						hidden={node.network_mode !== 'cloud'}
+						hidden={!this.state.showSettings || node.network_mode !== 'cloud'}
 						value={this.state.addCloudSubnet}
 						disabled={!availableSubnetsSelect.length || this.state.disabled}
 						buttonClass="bp5-intent-success"
@@ -2186,6 +2194,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="USB Passthrough"
 						help="Enable USB passthrough support for instances."
 						checked={node.usb_passthrough}
@@ -2195,6 +2204,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="HugePages"
 						help="Static hugepages provide a sector of the system memory to be dedicated for hugepages. This memory will be used for instances allowing higher memory performance and preventing the host system from disturbing memory dedicated for virtual instances. This option should always be used on production systems. The hugepages size must be set with the option below or manually with sysctl. Enabling this option while instances are running is likely to crash the system."
 						checked={node.hugepages}
@@ -2210,7 +2220,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						stepSize={1024}
 						majorStepSize={1024}
 						disabled={this.state.disabled}
-						hidden={!node.hugepages}
+						hidden={!this.state.showSettings || !node.hugepages}
 						selectAllOnFocus={true}
 						onChange={(val: number): void => {
 							this.set('hugepages_size', val);
@@ -2228,6 +2238,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="Desktop GUI"
 						help="Enable support for desktop GUI display for instances. Requires Xorg or Wayland session to be running."
 						checked={node.gui}
@@ -2237,6 +2248,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="Desktop GUI Mode"
 						help="Enable support for desktop GUI display for instances. Requires Xorg or Wayland session to be running."
 						checked={node.gui}
@@ -2245,7 +2257,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSelect
-						hidden={!node.gui}
+						hidden={!this.state.showSettings || !node.gui}
 						disabled={this.state.disabled}
 						label="Desktop GUI Mode"
 						help="Desktop GUI display mode. SDL is recommended for better compatibility."
@@ -2259,7 +2271,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={!node.gui}
+						hidden={!this.state.showSettings || !node.gui}
 						label="Desktop GUI User"
 						help="Username of user to open desktop GUI window."
 						type="text"
@@ -2276,7 +2288,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						bars={resourceBars}
 					/>
 					<PageSelect
-						hidden={types.indexOf('hypervisor') === -1}
+						hidden={!this.state.showSettings ||
+							types.indexOf('hypervisor') === -1}
 						disabled={this.state.disabled}
 						label="Hypervisor Mode"
 						help="Hypervisor mode, select KVM if CPU has hardware virtualization support."
@@ -2289,7 +2302,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="kvm">KVM</option>
 					</PageSelect>
 					<PageSelect
-						hidden={types.indexOf('hypervisor') === -1}
+						hidden={!this.state.showSettings ||
+							types.indexOf('hypervisor') === -1}
 						disabled={this.state.disabled}
 						label="Hypervisor VGA Type"
 						help={<div>
@@ -2336,7 +2350,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="virtio_pci_gl_vulkan_prime">Virtio GPU PCI Vulkan Prime</option>
 					</PageSelect>
 					<PageSelect
-						hidden={types.indexOf('hypervisor') === -1 ||
+						hidden={!this.state.showSettings ||
+							types.indexOf('hypervisor') === -1 ||
 							!NodeTypes.RenderModes.has(node.vga)}
 						disabled={this.state.disabled || !hasRenders}
 						label="Hypervisor EGL Render"
@@ -2351,6 +2366,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						style={css.label}
+						hidden={!this.state.showSettings}
 					>
 						Instance Passthrough Disks
 						<Help
@@ -2363,6 +2379,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<PageSelectButton
 						label="Add Disk"
+						hidden={!this.state.showSettings}
 						value={this.state.addDrive}
 						disabled={!availableDrivesSelect.length || this.state.disabled}
 						buttonClass="bp5-intent-success"
@@ -2379,6 +2396,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						style={css.labelShares}
+						hidden={!this.state.showSettings}
 					>
 						Share Paths
 						<Help
@@ -2386,10 +2404,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. Individual subdirectories do not need to be included. An instance can be configured for any path within the shared path. The instance's organization must have a matching role to access the share."
 						/>
 					</label>
-					<div>
+					<div hidden={!this.state.showSettings}>
 						{shares}
 					</div>
-					<label className="bp5-label">
+					<label className="bp5-label" hidden={!this.state.showSettings}>
 						Roles
 						<Help
 							title="Roles"
@@ -2401,6 +2419,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
@@ -2417,7 +2436,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						style={css.label}
-						hidden={node.protocol === 'http'}
+						hidden={!this.state.showSettings || node.protocol === 'http'}
 					>
 						Certificates
 						<Help
@@ -2429,7 +2448,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={node.protocol === 'http'}
+						hidden={!this.state.showSettings || node.protocol === 'http'}
 						label="Add Certificate"
 						value={this.state.addCert}
 						disabled={this.state.disabled || !hasCertificates}
@@ -2446,6 +2465,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</PageSelectButton>
 					<PageInputSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="Forwarded for header"
 						help="Enable when using a load balancer. This header value will be used to get the users IP address. It is important to only enable this when a load balancer is used. If it is enabled without a load balancer users can spoof their IP address by providing a value for the header that will not be overwritten by a load balancer. Additionally the nodes firewall should be configured to only accept requests from the load balancer to prevent requests being sent directly to the node bypassing the load balancer."
 						type="text"
@@ -2477,6 +2497,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageInputSwitch
+						hidden={!this.state.showSettings}
 						label="Forwarded proto header"
 						help="Enable when using a load balancer. This header value will be used to get the users protocol. This will redirect users to https when the forwarded protocol is http."
 						type="text"
@@ -2534,6 +2555,20 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					zones={this.props.zones}
 					blocks={this.props.blocks}
 				/>
+				<button
+					className={"bp5-button bp5-icon-cog " + (this.state.showSettings ?
+						"bp5-intent-danger" : "bp5-intent-primary")}
+					type="button"
+					style={css.controlButton}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							showSettings: !this.state.showSettings,
+						})
+					}}
+				>
+					{this.state.showSettings ? "Collapse" : "Expand"} Settings
+				</button>
 				<button
 					className="bp5-button bp5-intent-success bp5-icon-timeline-line-chart"
 					hidden={this.state.metrics}
