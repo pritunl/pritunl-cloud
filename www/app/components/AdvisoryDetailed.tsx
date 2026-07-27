@@ -1159,7 +1159,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 							className="bp5-icon-standard bp5-icon-cloud"
 							style={css.sectionIcon}
 						/>
-						Nodes
+						Effected Nodes
 						<span style={css.count}>({nodes.length})</span>
 						<button
 							className="bp5-button bp5-icon-disable"
@@ -1220,7 +1220,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 							className="bp5-icon-standard bp5-icon-desktop"
 							style={css.sectionIcon}
 						/>
-						Instances
+						Effected Instances
 						<span style={css.count}>({instances.length})</span>
 						<button
 							className="bp5-button bp5-icon-disable"
