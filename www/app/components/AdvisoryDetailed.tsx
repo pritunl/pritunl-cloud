@@ -10,6 +10,7 @@ import * as MiscUtils from '../utils/MiscUtils';
 import PageInfo from './PageInfo';
 import * as PageInfos from './PageInfo';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import CompletionStore from '../stores/CompletionStore';
 import {scoreLabel} from './Advisory';
 
@@ -1070,6 +1071,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						<div style={css.reference}>{advisory.reference}</div>
 					) : null}
 					<div className="flex tab-close"/>
+					<Relations kind="advisory" id={this.props.advisory.id}/>
 					<button
 						className={"bp5-button bp5-minimal " +
 							(advisory.dismissed ?
