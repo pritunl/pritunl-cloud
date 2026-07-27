@@ -957,15 +957,19 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				label: 'Type',
 				value: typeLabel || '-',
 			},
-			{
+		];
+
+		if (advisory.severity) {
+			fields.push({
 				label: 'Severity',
 				value: MiscUtils.capitalize(advisory.severity) || 'Unknown',
-			},
-			{
-				label: 'Updated',
-				value: MiscUtils.formatDate(advisory.updated) || '-',
-			},
-		];
+			})
+		}
+
+		fields.push({
+			label: 'Updated',
+			value: MiscUtils.formatDate(advisory.updated) || '-',
+		})
 
 		let detailFields: PageInfos.Field[] = [];
 
