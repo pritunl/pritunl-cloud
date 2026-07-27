@@ -1,4 +1,6 @@
 /// <reference path="../References.d.ts"/>
+import * as ChartTypes from '../types/ChartTypes';
+
 export const SYNC = 'node.sync';
 export const SYNC_ZONE = 'node.sync_zone';
 export const TRAVERSE = 'node.traverse';
@@ -208,6 +210,25 @@ export interface NodeDispatch {
 		count?: number;
 	};
 }
+
+export interface SystemChart {
+	cpu_usage?: ChartTypes.Points;
+	mem_usage?: ChartTypes.Points;
+	swap_usage?: ChartTypes.Points;
+	huge_usage?: ChartTypes.Points;
+}
+
+export interface LoadChart {
+	load1?: ChartTypes.Points;
+	load5?: ChartTypes.Points;
+	load15?: ChartTypes.Points;
+}
+
+export type DiskChart = {[key: string]: ChartTypes.Points};
+
+export type DiskIoChart = {[key: string]: ChartTypes.Points};
+
+export type NetworkChart = {[key: string]: ChartTypes.Points};
 
 export let RenderModes: Set<string> = new Set([
 	"virtio_pci",
