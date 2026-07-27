@@ -75,10 +75,6 @@ export interface Node {
 	cpu_units_res?: number;
 	memory_units_res?: number;
 	memory?: number;
-	hugepages_used?: number;
-	load1?: number;
-	load5?: number;
-	load15?: number;
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: Record<string, string>;
