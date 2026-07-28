@@ -16,6 +16,7 @@ import * as PageInfos from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import CompletionStore from '../stores/CompletionStore';
+import Relations from './Relations';
 import * as InstanceActions from '../actions/InstanceActions';
 import InstancesNodeStore from '../stores/InstancesNodeStore';
 import * as InstanceTypes from '../types/InstanceTypes';
@@ -700,6 +701,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 							{statusText}
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="disk" id={this.props.disk.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
