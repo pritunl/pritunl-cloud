@@ -10,6 +10,8 @@ export interface Zone {
 	datacenter?: string;
 	name?: string;
 	comment?: string;
+	dns_servers?: string[];
+	dns_servers6?: string[];
 }
 
 export interface Filter {
