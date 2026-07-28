@@ -30,6 +30,7 @@ export interface Instance {
 	secure_boot?: boolean;
 	tpm?: boolean;
 	dhcp_server?: boolean;
+	reset_firmware?: boolean;
 	cloud_type?: string;
 	cloud_script?: string;
 	delete_protection?: boolean;
