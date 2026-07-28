@@ -175,6 +175,15 @@ export function getChartLabels(resource: string, data: any): Labels {
 				let iface = keys.slice(0, keys.length-1).join('-');
 				let dataType = keys[keys.length-1];
 
+				switch (iface) {
+					case 'int0':
+						iface = "Internal";
+						break;
+					case 'ext0':
+						iface = "External";
+						break;
+				}
+
 				let label = '';
 				switch (dataType) {
 					case 'bs':
