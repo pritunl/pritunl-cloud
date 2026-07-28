@@ -430,7 +430,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 								{
 									label: 'Instance ID',
 									value: inst.id || '-',
-									copy: true,
 								},
 							]}
 						/>
