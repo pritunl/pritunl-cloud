@@ -14,6 +14,7 @@ import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
 import PageSwitch from "./PageSwitch";
@@ -737,6 +738,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
               </label>
             </div>
 						<div className="flex tab-close"/>
+						<Relations kind="balancer" id={this.props.balancer.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
