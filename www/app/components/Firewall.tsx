@@ -119,7 +119,11 @@ export default class Firewall extends React.Component<Props, {}> {
 			let org = CompletionStore.organization(firewall.organization);
 			orgName = org ? org.name : firewall.organization;
 		} else {
-			orgName = 'Node Firewall';
+			if (CompletionStore.lowercase) {
+				orgName = 'node-firewall';
+			} else {
+				orgName = 'Node Firewall';
+			}
 		}
 
 		return <div
