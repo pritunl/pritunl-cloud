@@ -229,6 +229,7 @@ export type NetworkChart = {[key: string]: ChartTypes.Points};
 export let RenderModes: Set<string> = new Set([
 	"virtio_pci",
 	"virtio_vga_gl",
+	"virtio_vga_gl_vulkan",
 	"virtio_gl",
 	"virtio_gl_vulkan",
 	"virtio_pci_gl",
