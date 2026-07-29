@@ -2667,6 +2667,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						this.update('stop');
 					}}
 				/>
+				<ConfirmButton
+					label="Restart"
+					className="bp5-intent-danger bp5-icon-reset"
+					progressClassName="bp5-intent-danger"
+					style={css.controlButton}
+					hidden={this.props.instance.action !== 'start'}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.update('restart');
+					}}
+				/>
 				<button
 					className="bp5-button bp5-intent-success bp5-icon-console"
 					hidden={this.state.vnc || !this.props.instance.vnc}
