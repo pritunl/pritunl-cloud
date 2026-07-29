@@ -122,12 +122,37 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	setDnsServer(name: string, index: number, val: string): void {
+		let zone: ZoneTypes.Zone = this.state.zone ||
+			this.props.zone;
+
+		let dnsServers: string[] = [
+			...((zone as any)[name] || []),
+		];
+
+		while (dnsServers.length < 2) {
+			dnsServers.push('');
+		}
+		dnsServers[index] = val;
+
+		this.set(name, dnsServers);
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
 			disabled: true,
 		});
-		ZoneActions.commit(this.state.zone).then((): void => {
+
+		let zone: ZoneTypes.Zone = {
+			...this.state.zone,
+			dns_servers: (this.state.zone.dns_servers || []).filter(
+				(server) => !!server),
+			dns_servers6: (this.state.zone.dns_servers6 || []).filter(
+				(server) => !!server),
+		};
+
+		ZoneActions.commit(zone).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
@@ -243,10 +268,30 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Zone comment."
 						placeholder="Zone comment"
-						rows={3}
+						rows={6}
 						value={zone.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);
+						}}
+					/>
+					<PageInput
+						label="Primary DNS Server"
+						help="Primary IPv4 DNS server for instances in zone."
+						type="text"
+						placeholder="Enter DNS server"
+						value={zone.dns_servers ? zone.dns_servers[0] : ''}
+						onChange={(val): void => {
+							this.setDnsServer('dns_servers', 0, val);
+						}}
+					/>
+					<PageInput
+						label="Secondary DNS Server"
+						help="Secondary IPv4 DNS server for instances in zone."
+						type="text"
+						placeholder="Enter DNS server"
+						value={zone.dns_servers ? zone.dns_servers[1] : ''}
+						onChange={(val): void => {
+							this.setDnsServer('dns_servers', 1, val);
 						}}
 					/>
 				</div>
@@ -263,6 +308,26 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 									this.props.zone.datacenter || 'None',
 							},
 						]}
+					/>
+					<PageInput
+						label="Primary DNS Server IPv6"
+						help="Primary IPv6 DNS server for instances in zone."
+						type="text"
+						placeholder="Enter DNS server"
+						value={zone.dns_servers6 ? zone.dns_servers6[0] : ''}
+						onChange={(val): void => {
+							this.setDnsServer('dns_servers6', 0, val);
+						}}
+					/>
+					<PageInput
+						label="Secondary DNS Server IPv6"
+						help="Secondary IPv6 DNS server for instances in zone."
+						type="text"
+						placeholder="Enter DNS server"
+						value={zone.dns_servers6 ? zone.dns_servers6[1] : ''}
+						onChange={(val): void => {
+							this.setDnsServer('dns_servers6', 1, val);
+						}}
 					/>
 				</div>
 			</div>
