@@ -18,7 +18,7 @@ interface Props {
 const css = {
 	label: {
 		width: '100%',
-		maxWidth: '280px',
+		maxWidth: '320px',
 	} as React.CSSProperties,
 	textarea: {
 		width: '100%',
