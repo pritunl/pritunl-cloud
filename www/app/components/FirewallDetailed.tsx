@@ -4,6 +4,7 @@ import * as Constants from '../Constants';
 import * as FirewallTypes from '../types/FirewallTypes';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import CompletionStore from '../stores/CompletionStore';
 import FirewallRule from './FirewallRule';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
@@ -375,7 +376,10 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 
 		let organizationsSelect: JSX.Element[] = [];
 		organizationsSelect.push(
-			<option key="null" value="">Node Firewall</option>);
+			<option key="null" value="">
+				{CompletionStore.lowercase ? "node-firewall" : "Node Firewall"}
+			</option>
+		);
 		(this.props.organizations || []).forEach((org, index) => {
 			organizationsSelect.push(
 				<option
