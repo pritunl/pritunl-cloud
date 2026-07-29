@@ -276,7 +276,7 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						label="Primary DNS Server"
-						help="Primary IPv4 DNS server for instances in zone."
+						help="Primary IPv4 DNS server for instances in zone. Applies to all instances within 10 seconds."
 						type="text"
 						placeholder="Enter DNS server"
 						value={zone.dns_servers ? zone.dns_servers[0] : ''}
@@ -286,7 +286,7 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						label="Secondary DNS Server"
-						help="Secondary IPv4 DNS server for instances in zone."
+						help="Secondary IPv4 DNS server for instances in zone. Applies to all instances within 10 seconds."
 						type="text"
 						placeholder="Enter DNS server"
 						value={zone.dns_servers ? zone.dns_servers[1] : ''}
@@ -311,7 +311,7 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						label="Primary DNS Server IPv6"
-						help="Primary IPv6 DNS server for instances in zone."
+						help="Primary IPv6 DNS server for instances in zone. Applies to all instances within 10 seconds."
 						type="text"
 						placeholder="Enter DNS server"
 						value={zone.dns_servers6 ? zone.dns_servers6[0] : ''}
@@ -321,7 +321,7 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						label="Secondary DNS Server IPv6"
-						help="Secondary IPv6 DNS server for instances in zone."
+						help="Secondary IPv6 DNS server for instances in zone. Applies to all instances within 10 seconds."
 						type="text"
 						placeholder="Enter DNS server"
 						value={zone.dns_servers6 ? zone.dns_servers6[1] : ''}
