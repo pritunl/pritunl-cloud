@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as SecretTypes from '../types/SecretTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import CompletionStore from '../stores/CompletionStore';
 import SecretDetailed from './SecretDetailed';
 
 interface Props {
@@ -121,6 +122,18 @@ export default class Secret extends React.Component<Props, {}> {
 				secType = 'Unknown';
 		}
 
+		let orgName = '';
+		if (!MiscUtils.objectIdNil(secret.organization)) {
+			let org = CompletionStore.organization(secret.organization);
+			orgName = org ? org.name : secret.organization;
+		} else {
+			if (CompletionStore.lowercase) {
+				orgName = 'node-secret';
+			} else {
+				orgName = 'Node Secret';
+			}
+		}
+
 		return <div
 			className="bp5-card bp5-row"
 			style={cardStyle}
@@ -156,6 +169,14 @@ export default class Secret extends React.Component<Props, {}> {
 						{secret.name}
 					</div>
 				</div>
+			</div>
+			<div className="bp5-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className={'bp5-icon-standard bp5-text-muted ' + (
+						secret.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
+				/>
+				{orgName}
 			</div>
 			<div className="bp5-cell" style={css.item}>
 				<span
