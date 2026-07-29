@@ -109,8 +109,6 @@ export default class FirewallRule extends React.Component<Props, {}> {
 				<div
 					className="bp5-control-group"
 					style={css.sourceGroup}
-					hidden={rule.protocol === "multicast" ||
-						rule.protocol === "broadcast"}
 					key={i}
 				>
 					<input
