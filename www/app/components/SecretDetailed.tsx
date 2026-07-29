@@ -7,6 +7,7 @@ import * as SecretTypes from '../types/SecretTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as SecretActions from '../actions/SecretActions';
 import * as MiscUtils from '../utils/MiscUtils';
+import CompletionStore from '../stores/CompletionStore';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
@@ -179,8 +180,8 @@ export default class SecretDetailed extends React.Component<Props, State> {
 		let organizationsSelect: JSX.Element[] = [];
 		organizationsSelect.push(
 			<option key="null" value="">
-				Node Secret
-			</option>,
+				{CompletionStore.lowercase ? "node-secret" : "Node Secret"}
+			</option>
 		);
 		if (this.props.organizations.length) {
 			for (let organization of this.props.organizations) {
