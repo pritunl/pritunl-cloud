@@ -30,6 +30,7 @@ import * as GlobalTypes from "../types/GlobalTypes"
 class CompletionStore extends EventEmitter {
 	_userOrg: string;
 	_data: CompletionTypes.Completion = Object.freeze({})
+	_lowercase: boolean;
 	_map: CompletionTypes.CompletionMap = Object.freeze({})
 	_filter: CompletionTypes.Filter = null;
 	_token = Dispatcher.register((this._callback).bind(this))
@@ -56,6 +57,10 @@ class CompletionStore extends EventEmitter {
 
 	get organizations(): OrganizationTypes.OrganizationsRo {
 		return this._data.organizations || [];
+	}
+
+	get lowercase(): boolean {
+		return this._lowercase
 	}
 
 	organization(id: string): OrganizationTypes.OrganizationRo {
@@ -393,6 +398,14 @@ class CompletionStore extends EventEmitter {
 		if (Constants.user && !this._userOrg) {
 			this._userOrg = this._data?.organizations?.[0]?.id
 		}
+
+		let lowercase = true
+		for (const org of this._data?.organizations) {
+			if (org.name.charAt(0) !== org.name.charAt(0).toLowerCase()) {
+				lowercase = false
+			}
+		}
+		this._lowercase = lowercase
 
 		this.emitChange()
 	}
