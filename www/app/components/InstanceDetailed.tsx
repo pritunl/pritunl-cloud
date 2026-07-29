@@ -2732,6 +2732,21 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				>
 					View Metrics
 				</button>
+				<ConfirmButton
+					label="Reset Firmware"
+					className="bp5-icon-sim-card"
+					safe={true}
+					progressClassName="bp5-intent-danger"
+					dialogLabel="Reset Firmware"
+					confirmMsg="Reset instance UEFI variables"
+					style={css.controlButton}
+					hidden={!this.state.showSettings}
+					disabled={this.state.disabled || instance.reset_firmware}
+					items={[instance.name]}
+					onConfirm={(): void => {
+						this.update('reset_firmware');
+					}}
+				/>
 			</PageSave>
 			<div style={css.vncBox}>
 				<div className="layout horizontal">
