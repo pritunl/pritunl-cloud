@@ -12,6 +12,8 @@ export interface Zone {
 	comment?: string;
 	dns_servers?: string[];
 	dns_servers6?: string[];
+	announce_rate?: number;
+	startup_rate?: number;
 }
 
 export interface Filter {
