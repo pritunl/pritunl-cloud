@@ -4,6 +4,7 @@ import * as ZoneTypes from '../types/ZoneTypes';
 import * as ZoneActions from '../actions/ZoneActions';
 import DatacentersStore from '../stores/DatacentersStore';
 import PageInput from './PageInput';
+import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import PageSelect from './PageSelect';
@@ -328,6 +329,34 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 						onChange={(val): void => {
 							this.setDnsServer('dns_servers6', 1, val);
 						}}
+					/>
+					<PageNumInput
+						label="Announce Rate"
+						help="Interval in seconds between announcements of instance addresses in zone. Set to 0 to use the default hypervisor setting."
+						min={0}
+						minorStepSize={1}
+						stepSize={10}
+						majorStepSize={60}
+						disabled={this.state.disabled}
+						selectAllOnFocus={true}
+						onChange={(val: number): void => {
+							this.set('announce_rate', val);
+						}}
+						value={zone.announce_rate}
+					/>
+					<PageNumInput
+						label="Startup Rate"
+						help="Delay in seconds between each instance startup on a host. Set to 0 to use the default hypervisor setting."
+						min={0}
+						minorStepSize={1}
+						stepSize={5}
+						majorStepSize={30}
+						disabled={this.state.disabled}
+						selectAllOnFocus={true}
+						onChange={(val: number): void => {
+							this.set('startup_rate', val);
+						}}
+						value={zone.startup_rate}
 					/>
 				</div>
 			</div>
