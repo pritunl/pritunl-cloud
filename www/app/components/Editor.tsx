@@ -16,6 +16,7 @@ interface Props {
 	width?: string
 	interval?: number
 	autoScroll?: boolean
+	ansi?: boolean
 	style?: React.CSSProperties
 	refresh?: (first: boolean) => Promise<string>
 	onChange?: (value: string) => void
@@ -43,10 +44,132 @@ const css = {
 	} as React.CSSProperties,
 }
 
+interface AnsiResult {
+	text: string
+	decorations: Monaco.editor.IModelDeltaDecoration[]
+}
+
+const ansiRe =
+	/\x1b(?:\[[0-9;?]*[ -\/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)?|[@-Z\\-_])/g
+
+const ansiClassMap: Record<string, string> = {
+	"30": "ansi-black", "31": "ansi-red", "32": "ansi-green",
+	"33": "ansi-yellow", "34": "ansi-blue", "35": "ansi-magenta",
+	"36": "ansi-cyan", "37": "ansi-white",
+	"90": "ansi-bright-black", "91": "ansi-bright-red",
+	"92": "ansi-bright-green", "93": "ansi-bright-yellow",
+	"94": "ansi-bright-blue", "95": "ansi-bright-magenta",
+	"96": "ansi-bright-cyan", "97": "ansi-bright-white",
+}
+
+function parseAnsi(input: string): AnsiResult {
+	input = input
+		.replace(/\r\n/g, "\n")
+		.replace(/\r/g, "\n")
+		.replace(/[\x00-\x08\x0b\x0c\x0e-\x1a\x1c-\x1f\x7f]/g, "")
+
+	let decorations: Monaco.editor.IModelDeltaDecoration[] = []
+	let output = ""
+	let line = 1
+	let column = 1
+	let color = ""
+	let bold = false
+	let spanStartLine = 1
+	let spanStartCol = 1
+	let lastIndex = 0
+
+	const activeClass = (): string => {
+		let classes: string[] = []
+		if (color) {
+			classes.push(color)
+		}
+		if (bold) {
+			classes.push("ansi-bold")
+		}
+		return classes.join(" ")
+	}
+
+	const flush = (endLine: number, endCol: number): void => {
+		const className = activeClass()
+		if (className && (endLine > spanStartLine ||
+				(endLine === spanStartLine && endCol > spanStartCol))) {
+			decorations.push({
+				range: {
+					startLineNumber: spanStartLine,
+					startColumn: spanStartCol,
+					endLineNumber: endLine,
+					endColumn: endCol,
+				},
+				options: {
+					inlineClassName: className,
+				},
+			})
+		}
+	}
+
+	const append = (text: string): void => {
+		output += text
+		for (let i = 0; i < text.length; i++) {
+			if (text[i] === "\n") {
+				line += 1
+				column = 1
+			} else {
+				column += 1
+			}
+		}
+	}
+
+	let match: RegExpExecArray
+	while ((match = ansiRe.exec(input)) !== null) {
+		append(input.slice(lastIndex, match.index))
+		lastIndex = ansiRe.lastIndex
+
+		flush(line, column)
+
+		const seq = match[0]
+		if (seq.startsWith("\x1b[") && seq.endsWith("m")) {
+			const params = seq.slice(2, -1)
+			const codes = params === "" ? ["0"] : params.split(";")
+			for (const codeStr of codes) {
+				const code = parseInt(codeStr, 10)
+				if (isNaN(code)) {
+					continue
+				}
+
+				if (code === 0) {
+					color = ""
+					bold = false
+				} else if (code === 1) {
+					bold = true
+				} else if (code === 22) {
+					bold = false
+				} else if (code === 39) {
+					color = ""
+				} else if ((code >= 30 && code <= 37) ||
+						(code >= 90 && code <= 97)) {
+					color = ansiClassMap[code.toString()]
+				}
+			}
+		}
+
+		spanStartLine = line
+		spanStartCol = column
+	}
+
+	append(input.slice(lastIndex))
+	flush(line, column)
+
+	return {
+		text: output,
+		decorations: decorations,
+	}
+}
+
 export default class Editor extends React.Component<Props, State> {
 	editor: Monaco.editor.IStandaloneCodeEditor
 	monaco: MonacoEditor.Monaco
 	value: string
+	decorations: Monaco.editor.IEditorDecorationsCollection
 	sync: MiscUtils.SyncInterval;
 
 	constructor(props: any, context: any) {
@@ -114,6 +237,10 @@ export default class Editor extends React.Component<Props, State> {
 	}
 
 	update(val: string): void {
+		if (!this.editor) {
+			return
+		}
+
 		let curValue = this.value || this.props.value
 		if (curValue === val) {
 			return
@@ -122,7 +249,19 @@ export default class Editor extends React.Component<Props, State> {
 
 		const model = this.editor.getModel()
 		if (model) {
-			model.setValue(val)
+			if (this.props.ansi) {
+				const result = parseAnsi(val)
+
+				model.setValue(result.text)
+
+				if (this.decorations) {
+					this.decorations.clear()
+				}
+				this.decorations = this.editor.createDecorationsCollection(
+					result.decorations)
+			} else {
+				model.setValue(val)
+			}
 
 			if (this.props.autoScroll) {
 				const lineCount = model.getLineCount()
