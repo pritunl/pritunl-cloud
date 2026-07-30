@@ -278,7 +278,7 @@ export default class UserDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="User comment."
 						placeholder="User comment"
-						rows={3}
+						rows={6}
 						value={user.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

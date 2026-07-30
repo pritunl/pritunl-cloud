@@ -204,7 +204,7 @@ export default class ZoneNew extends React.Component<Props, State> {
 							label="Comment"
 							help="Zone comment."
 							placeholder="Zone comment"
-							rows={3}
+							rows={6}
 							value={zone.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

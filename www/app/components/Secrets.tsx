@@ -326,7 +326,7 @@ export default class Secrets extends React.Component<{}, State> {
 					{newSecretDom}
 					{secretsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={2} style={css.placeholder}/>
+						<td colSpan={3} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>

@@ -2125,7 +2125,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Instance comment."
 						placeholder="Instance comment"
-						rows={3}
+						rows={6}
 						value={instance.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);
@@ -2421,7 +2421,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Startup Script"
 						help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
 						placeholder="Startup script"
-						rows={3}
+						rows={6}
 						hidden={!this.state.showSettings ||
 							!(this.state.startupScript === true || (
 							this.state.startupScript === null && !!instance.cloud_script))}

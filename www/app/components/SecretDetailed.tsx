@@ -319,7 +319,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="bp5-cell"
-			colSpan={2}
+			colSpan={3}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
@@ -381,7 +381,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Secret comment."
 						placeholder="Secret comment"
-						rows={3}
+						rows={6}
 						value={secr.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

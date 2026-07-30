@@ -181,7 +181,7 @@ export default class StorageDetailed extends React.Component<Props, State> {
 							label="Comment"
 							help="Storage comment."
 							placeholder="Storage comment"
-							rows={3}
+							rows={6}
 							value={storage.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

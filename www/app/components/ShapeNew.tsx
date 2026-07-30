@@ -348,7 +348,7 @@ export default class ShapeNew extends React.Component<Props, State> {
 							label="Comment"
 							help="Shape comment."
 							placeholder="Shape comment"
-							rows={3}
+							rows={6}
 							value={shape.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

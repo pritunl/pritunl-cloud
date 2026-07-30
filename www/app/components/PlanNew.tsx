@@ -195,7 +195,7 @@ export default class PlanNew extends React.Component<Props, State> {
 							label="Comment"
 							help="Plan comment."
 							placeholder="Plan comment"
-							rows={3}
+							rows={6}
 							value={plan.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

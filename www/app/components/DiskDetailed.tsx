@@ -730,7 +730,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Disk comment."
 						placeholder="Disk comment"
-						rows={3}
+						rows={6}
 						value={disk.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

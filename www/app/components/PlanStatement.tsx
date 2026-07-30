@@ -43,7 +43,7 @@ export default class PlanStatement extends React.Component<Props, {}> {
 				disabled={this.props.disabled}
 				autoCapitalize="off"
 				spellCheck={false}
-				rows={3}
+				rows={6}
 				value={statement.statement || ''}
 				onChange={(evt): void => {
 					let state = this.clone();

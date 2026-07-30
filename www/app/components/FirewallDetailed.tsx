@@ -495,7 +495,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Firewall comment."
 						placeholder="Firewall comment"
-						rows={3}
+						rows={6}
 						value={firewall.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

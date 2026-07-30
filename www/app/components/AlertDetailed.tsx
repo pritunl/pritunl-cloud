@@ -537,7 +537,7 @@ export default class AlertDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Alert comment."
 						placeholder="Alert comment"
-						rows={3}
+						rows={6}
 						value={alert.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

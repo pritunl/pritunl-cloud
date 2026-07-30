@@ -470,7 +470,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Authority comment."
 						placeholder="Authority comment"
-						rows={3}
+						rows={6}
 						value={authority.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

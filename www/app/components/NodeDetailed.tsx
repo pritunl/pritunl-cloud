@@ -1730,7 +1730,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Node comment."
 						placeholder="Node comment"
-						rows={3}
+						rows={6}
 						value={node.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

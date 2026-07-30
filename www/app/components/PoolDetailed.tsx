@@ -310,7 +310,7 @@ export default class PoolDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Pool comment."
 						placeholder="Pool comment"
-						rows={3}
+						rows={6}
 						value={pool.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

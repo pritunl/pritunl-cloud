@@ -791,7 +791,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="VPC comment."
 						placeholder="VPC comment"
-						rows={3}
+						rows={6}
 						value={vpc.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

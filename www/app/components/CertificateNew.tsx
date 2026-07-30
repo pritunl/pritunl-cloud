@@ -314,7 +314,7 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 							label="Comment"
 							help="Certificate comment."
 							placeholder="Certificate comment"
-							rows={3}
+							rows={6}
 							value={cert.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

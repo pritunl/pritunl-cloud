@@ -416,7 +416,7 @@ export default class PolicyDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Policy comment."
 						placeholder="Policy comment"
-						rows={3}
+						rows={6}
 						value={policy.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

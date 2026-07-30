@@ -330,7 +330,7 @@ export default class ImageDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Image comment."
 						placeholder="Image comment"
-						rows={3}
+						rows={6}
 						value={image.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

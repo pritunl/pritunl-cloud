@@ -225,7 +225,7 @@ export default class DomainNew extends React.Component<Props, State> {
 							label="Comment"
 							help="Domain comment."
 							placeholder="Domain comment"
-							rows={3}
+							rows={6}
 							value={domain.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

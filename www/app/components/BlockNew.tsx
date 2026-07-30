@@ -425,7 +425,7 @@ export default class BlockDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Block comment."
 						placeholder="Block comment"
-						rows={3}
+						rows={6}
 						value={block.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);

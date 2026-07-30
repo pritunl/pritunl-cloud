@@ -537,7 +537,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 							label="Comment"
 							help="Load balancer comment."
 							placeholder="Load balancer comment"
-							rows={3}
+							rows={6}
 							value={balancer.comment}
 							onChange={(val: string): void => {
 								this.set('comment', val);

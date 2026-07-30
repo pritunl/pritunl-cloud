@@ -525,7 +525,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 						label="Comment"
 						help="Datacenter comment."
 						placeholder="Datacenter comment"
-						rows={3}
+						rows={6}
 						value={datacenter.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);
