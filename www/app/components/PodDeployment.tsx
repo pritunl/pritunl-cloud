@@ -414,6 +414,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 				autoScroll={true}
 				readOnly={true}
 				fontSize={11}
+				ansi={true}
 				refresh={async (first: boolean): Promise<string> => {
 					try {
 						let logs = await PodActions.log(
