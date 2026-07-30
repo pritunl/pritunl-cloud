@@ -62,7 +62,7 @@ export enum CompletionItemInsertTextRule {
 export function handleBeforeMount(
 		monaco: MonacoEditor.Monaco): void {
 
-	MonacoYaml.configureMonacoYaml(monaco, {
+	MonacoYaml.configureMonacoYaml(monaco as unknown as typeof Monaco, {
 		enableSchemaRequest: false,
 		schemas: [
 			{
