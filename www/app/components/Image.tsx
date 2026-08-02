@@ -56,6 +56,7 @@ const css = {
 		alignItems: 'center',
 	} as React.CSSProperties,
 	icon: {
+		flexShrink: 0,
 		marginRight: '3px',
 	} as React.CSSProperties,
 	bars: {
@@ -73,6 +74,7 @@ const css = {
 	} as React.CSSProperties,
 	logo: {
 		display: "inline-block",
+		flexShrink: 0,
 		backgroundRepeat: "no-repeat",
 		backgroundSize: "contain",
 		backgroundPosition: "center",
