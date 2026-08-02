@@ -230,19 +230,23 @@ export default class Image extends React.Component<Props, {}> {
 				</div>
 			</div>
 			<div className={'bp5-cell ' + orgClass} style={css.item}>
-				<span
-					style={css.icon}
-					className={'bp5-icon-standard ' + orgIcon}
-				/>
-				{orgName}
+				<div style={css.cellInner}>
+					<span
+						style={css.icon}
+						className={'bp5-icon-standard ' + orgIcon}
+					/>
+					{orgName}
+				</div>
 			</div>
 			<div className="bp5-cell" style={css.item}>
-				<span
-					style={css.icon}
-					hidden={!image.key}
-					className={'bp5-icon-standard bp5-text-muted ' + diskIcon}
-				/>
-				{image.key}
+				<div style={css.cellInner}>
+					<span
+						style={css.icon}
+						hidden={!image.key}
+						className={'bp5-icon-standard bp5-text-muted ' + diskIcon}
+					/>
+					{image.key}
+				</div>
 			</div>
 		</div>;
 	}
