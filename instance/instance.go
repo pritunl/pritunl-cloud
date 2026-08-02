@@ -770,84 +770,58 @@ func (i *Instance) Json(short bool) {
 			switch i.State {
 			case vm.Starting:
 				i.Status = "Starting"
-				break
 			case vm.Running:
 				i.Status = "Running"
-				break
 			case vm.Stopped:
 				i.Status = "Starting"
-				break
 			case vm.Failed:
 				i.Status = "Starting"
-				break
 			case vm.Updating:
 				i.Status = "Updating"
-				break
 			case vm.Provisioning:
 				i.Status = "Provisioning"
-				break
 			case "":
 				i.Status = "Provisioning"
-				break
 			}
 		}
-		break
 	case Cleanup:
 		switch i.State {
 		case vm.Starting:
 			i.Status = "Stopping"
-			break
 		case vm.Running:
 			i.Status = "Stopping"
-			break
 		case vm.Stopped:
 			i.Status = "Stopping"
-			break
 		case vm.Failed:
 			i.Status = "Stopping"
-			break
 		case vm.Updating:
 			i.Status = "Updating"
-			break
 		case vm.Provisioning:
 			i.Status = "Stopping"
-			break
 		case "":
 			i.Status = "Stopping"
-			break
 		}
-		break
 	case Stop:
 		switch i.State {
 		case vm.Starting:
 			i.Status = "Stopping"
-			break
 		case vm.Running:
 			i.Status = "Stopping"
-			break
 		case vm.Stopped:
 			i.Status = "Stopped"
-			break
 		case vm.Failed:
 			i.Status = "Failed"
-			break
 		case vm.Updating:
 			i.Status = "Updating"
-			break
 		case vm.Provisioning:
 			i.Status = "Stopped"
-			break
 		case "":
 			i.Status = "Stopped"
-			break
 		}
-		break
 	case Restart:
 		i.Status = "Restarting"
-		break
 	case Destroy:
 		i.Status = "Destroying"
-		break
 	}
 
 	if !i.IsActive() && i.Guest != nil {
