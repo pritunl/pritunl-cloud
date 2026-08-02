@@ -51,6 +51,10 @@ const css = {
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
+	cellInner: {
+		display: 'flex',
+		alignItems: 'center',
+	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
 	} as React.CSSProperties,
