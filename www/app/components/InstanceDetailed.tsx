@@ -112,7 +112,12 @@ const css = {
 		maxWidth: '280px',
 	} as React.CSSProperties,
 	status: {
-		margin: '6px 0 0 1px',
+		display: 'flex',
+		alignItems: 'center',
+		margin: '0 0 0 1px',
+	} as React.CSSProperties,
+	statusText: {
+		marginTop: '2px',
 	} as React.CSSProperties,
 	icon: {
 		flexShrink: 0,
@@ -2087,7 +2092,9 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								hidden={!instance.status}
 								className="bp5-icon-standard bp5-icon-power"
 							/>
-							{instance.status}
+							<div style={css.statusText}>
+								{instance.status}
+							</div>
 						</div>
 						<div className="flex tab-close"/>
 						<AdvisoryDialog
