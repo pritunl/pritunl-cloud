@@ -58,19 +58,21 @@ const css = {
 		alignItems: 'center',
 	} as React.CSSProperties,
 	icon: {
+		flexShrink: 0,
 		marginRight: '3px',
 	} as React.CSSProperties,
 	statusIcon: {
-		margin: '1px 8px 0 -2px',
+		flexShrink: 0,
+		margin: '0 8px 0 -2px',
 	} as React.CSSProperties,
 	updateIcon: {
-		marginTop: '1px',
+		flexShrink: 0,
 		marginRight: '5px',
 	} as React.CSSProperties,
 	ip: {
 		verticalAlign: 'top',
 		display: 'table-cell',
-		padding: '8px',
+		padding: '9px',
 		width: '150px',
 	} as React.CSSProperties,
 	bars: {
