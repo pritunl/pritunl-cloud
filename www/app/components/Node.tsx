@@ -56,6 +56,7 @@ const css = {
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
 	updateIcon: {
+		flexShrink: 0,
 		marginRight: '5px',
 	} as React.CSSProperties,
 	bars: {
