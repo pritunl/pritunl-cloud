@@ -228,6 +228,27 @@ export default class Main extends React.Component<{}, State> {
 						Load Balancers
 					</RouterLink>
 					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-key"
+						style={css.link}
+						to="/secrets"
+					>
+						Secrets
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-office"
+						style={css.link}
+						to="/authorities"
+					>
+						Authorities
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-warning-sign"
+						style={css.link}
+						to="/advisories"
+					>
+						Advisories
+					</RouterLink>
+					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-control"
 						style={css.link}
 						hidden={Constants.user}
@@ -267,13 +288,6 @@ export default class Main extends React.Component<{}, State> {
 						Plans
 					</RouterLink>
 					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-warning-sign"
-						style={css.link}
-						to="/advisories"
-					>
-						Advisories
-					</RouterLink>
-					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-people"
 						style={css.link}
 						hidden={Constants.user}
@@ -303,20 +317,6 @@ export default class Main extends React.Component<{}, State> {
 						to="/certificates"
 					>
 						Certificates
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-key"
-						style={css.link}
-						to="/secrets"
-					>
-						Secrets
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-office"
-						style={css.link}
-						to="/authorities"
-					>
-						Authorities
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-database"
