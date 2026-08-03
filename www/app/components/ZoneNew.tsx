@@ -265,7 +265,7 @@ export default class ZoneNew extends React.Component<Props, State> {
 					<div style={css.group}>
 						<PageInput
 							label="Primary DNS Server IPv6"
-							help="Primary IPv6 DNS server for instances in zone. Applies to all instances within 10 seconds."
+							help="Primary IPv6 DNS server for instances in zone. Applies to all instances within 10 seconds. Leave blank to use default."
 							type="text"
 							placeholder="Enter DNS server"
 							value={zone.dns_servers6 ? zone.dns_servers6[0] : ''}
@@ -275,7 +275,7 @@ export default class ZoneNew extends React.Component<Props, State> {
 						/>
 						<PageInput
 							label="Secondary DNS Server IPv6"
-							help="Secondary IPv6 DNS server for instances in zone. Applies to all instances within 10 seconds."
+							help="Secondary IPv6 DNS server for instances in zone. Applies to all instances within 10 seconds. Leave blank to use default."
 							type="text"
 							placeholder="Enter DNS server"
 							value={zone.dns_servers6 ? zone.dns_servers6[1] : ''}
