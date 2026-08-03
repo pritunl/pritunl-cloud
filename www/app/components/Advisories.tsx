@@ -278,7 +278,7 @@ export default class Advisories extends React.Component<{}, State> {
 			}
 		}
 
-		let sizeRow = <div style={{display: "table-row"}}>
+		let sizeRow = <div style={{display: "table-row", visibility: "collapse"}}>
 			<div style={{display: "table-cell", width: "230px"}}></div>
 			<div style={{display: "table-cell", width: "auto"}}></div>
 			<div style={{display: "table-cell", width: "auto"}}></div>
