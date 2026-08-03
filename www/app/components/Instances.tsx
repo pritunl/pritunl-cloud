@@ -387,7 +387,7 @@ export default class Instances extends React.Component<{}, State> {
 			}
 		}
 
-		let sizeRow = <div style={{"display": "table-row"}}>
+		let sizeRow = <div style={{display: "table-row"}}>
 			<div style={{display: "table-cell", width: "auto"}}></div>
 			<div style={{display: "table-cell", width: nodeSize + "px"}}></div>
 			<div style={{display: "table-cell", width: zoneSize + "px"}}></div>
