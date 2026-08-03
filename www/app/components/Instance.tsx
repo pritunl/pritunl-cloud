@@ -53,6 +53,10 @@ const css = {
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
+	cellInner: {
+		display: 'flex',
+		alignItems: 'center',
+	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
 	} as React.CSSProperties,
@@ -255,42 +259,50 @@ export default class Instance extends React.Component<Props, {}> {
 				</div>
 			</div>
 			<div className="bp5-cell" style={css.item}>
-				<span
-					style={css.icon}
-					hidden={!nodeName}
-					className={
-						"bp5-icon-standard bp5-text-muted " +
-						(!!instance.deployment ?
-							"bp5-icon-server" :
-							"bp5-icon-layers"
-						)
-					}
-				/>
-				{nodeName}
+				<div style={css.cellInner}>
+					<span
+						style={css.icon}
+						hidden={!nodeName}
+						className={
+							"bp5-icon-standard bp5-text-muted " +
+							(!!instance.deployment ?
+								"bp5-icon-server" :
+								"bp5-icon-layers"
+							)
+						}
+					/>
+					{nodeName}
+				</div>
 			</div>
 			<div className="bp5-cell" style={css.item}>
-				<span
-					style={css.icon}
-					hidden={!zoneName}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-layout-circle"
-				/>
-				{zoneName}
+				<div style={css.cellInner}>
+					<span
+						style={css.icon}
+						hidden={!zoneName}
+						className="bp5-icon-standard bp5-text-muted bp5-icon-layout-circle"
+					/>
+					{zoneName}
+				</div>
 			</div>
 			<div className="bp5-cell" style={css.ip}>
-				<span
-					style={css.icon}
-					hidden={!publicIp}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-ip-address"
-				/>
-				{publicIp}
+				<div style={css.cellInner}>
+					<span
+						style={css.icon}
+						hidden={!publicIp}
+						className="bp5-icon-standard bp5-text-muted bp5-icon-ip-address"
+					/>
+					{publicIp}
+				</div>
 			</div>
 			<div className="bp5-cell" style={css.ip}>
-				<span
-					style={css.icon}
-					hidden={!privateIp}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-ip-address"
-				/>
-				{privateIp}
+				<div style={css.cellInner}>
+					<span
+						style={css.icon}
+						hidden={!privateIp}
+						className="bp5-icon-standard bp5-text-muted bp5-icon-ip-address"
+					/>
+					{privateIp}
+				</div>
 			</div>
 			<div className="bp5-cell" style={css.bars}>
 				<div
