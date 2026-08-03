@@ -115,6 +115,7 @@ const css = {
 		margin: '6px 0 0 1px',
 	} as React.CSSProperties,
 	icon: {
+		flexShrink: 0,
 		marginRight: '3px',
 	} as React.CSSProperties,
 	inputGroup: {
