@@ -230,7 +230,7 @@ export default class Nodes extends React.Component<{}, State> {
 			filterClass += 'bp5-active';
 		}
 
-		let sizeRow = <div style={{"display": "table-row"}}>
+		let sizeRow = <div style={{display: "table-row"}}>
 			<div style={{display: "table-cell", width: "auto"}}></div>
 			<div style={{display: "table-cell", width: "auto"}}></div>
 			<div style={{display: "table-cell", width: "auto"}}></div>
