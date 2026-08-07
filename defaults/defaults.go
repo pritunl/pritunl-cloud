@@ -623,7 +623,7 @@ func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 			"error": err,
 		}).Warn("defaults: Failed to load cloudinit network config")
 		err = nil
-	} else {
+	} else if cloudConf != nil {
 		for _, iface := range cloudConf.CombinedCloudConfig.Network.Config {
 			for _, addrInfo := range iface.Subnets {
 				addr := utils.ParseAddress(addrInfo.Address)
