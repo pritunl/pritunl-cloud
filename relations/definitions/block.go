@@ -18,8 +18,23 @@ var Block = relations.Query{
 		Key:   "name",
 		Label: "Name",
 	}, {
+		Key:   "gateway",
+		Label: "Gateway IPv4",
+	}, {
+		Key:   "gateway6",
+		Label: "Gateway IPv6",
+	}, {
+		Key:   "netmask",
+		Label: "Netmask",
+	}, {
 		Key:   "subnets",
-		Label: "Subnets",
+		Label: "Subnets IPv4",
+	}, {
+		Key:   "subnets6",
+		Label: "Subnets IPv6",
+	}, {
+		Key:   "excludes",
+		Label: "Excludes",
 	}},
 	Relations: []relations.Relation{{
 		Key:          "blocks_ip",
