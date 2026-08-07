@@ -1,7 +1,6 @@
 package task
 
 import (
-	"math/rand"
 	"sync"
 	"time"
 
@@ -34,17 +33,6 @@ var (
 type failTimeData struct {
 	timestamp time.Time
 	logged    bool
-}
-
-func test() {
-	test := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-
-	for _, val := range test {
-		go func() {
-			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-			print(val)
-		}()
-	}
 }
 
 func imdsSyncHandler(db *database.Database) (err error) {
