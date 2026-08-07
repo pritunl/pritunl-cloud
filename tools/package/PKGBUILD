@@ -20,6 +20,7 @@ depends:yum=(
     "ipset"
     "ipvsadm"
     "xorriso"
+    "kernel-modules-extra"
 )
 depends:apt=(
     "iptables"
