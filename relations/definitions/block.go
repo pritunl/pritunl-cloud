@@ -24,6 +24,9 @@ var Block = relations.Query{
 		Key:   "gateway6",
 		Label: "Gateway IPv6",
 	}, {
+		Key:   "vlan",
+		Label: "VLAN",
+	}, {
 		Key:   "netmask",
 		Label: "Netmask",
 	}, {
