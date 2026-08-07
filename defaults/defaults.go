@@ -672,6 +672,8 @@ func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 				}
 			}
 		}
+	} else {
+		logrus.Info("defaults: Skipping cloudinit network config")
 	}
 
 	if internalIface != "" {
