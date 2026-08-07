@@ -2,6 +2,7 @@ package cloudinit
 
 import (
 	"encoding/json"
+	"os/exec"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -45,6 +46,12 @@ type MergedSystemConfig struct {
 }
 
 func GetCloudConfig() (data *CloudConfig, err error) {
+	cloudInitPath, err := exec.LookPath("cloud-init")
+	if err != nil || cloudInitPath == "" {
+		err = nil
+		return
+	}
+
 	ret, err := commander.Exec(&commander.Opt{
 		Name: "cloud-init",
 		Args: []string{
