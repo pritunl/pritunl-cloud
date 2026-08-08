@@ -401,7 +401,7 @@ func Connect() (err error) {
 	opts := options.Client().ApplyURI(config.Config.MongoUri)
 	opts.SetRetryReads(true)
 	opts.SetRetryWrites(true)
-	opts.SetTimeout(60 * time.Second)
+	opts.SetTimeout(90 * time.Second)
 	opts.SetWriteConcern(writeconcern.Majority())
 	opts.SetReadConcern(readconcern.Local())
 
