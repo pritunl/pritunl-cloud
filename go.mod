@@ -1,6 +1,6 @@
 module github.com/pritunl/pritunl-cloud
 
-go 1.26.0
+go 1.26.5
 
 require (
 	github.com/ProtonMail/go-crypto v1.4.1
