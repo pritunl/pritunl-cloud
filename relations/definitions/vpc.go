@@ -145,6 +145,12 @@ var Vpc = relations.Query{
 		}, {
 			Key:   "public_ips",
 			Label: "Public IPv4",
+		}, {
+			Key:   "private_ips6",
+			Label: "Private IPv6",
+		}, {
+			Key:   "public_ips6",
+			Label: "Public IPv6",
 		}},
 	}},
 }
