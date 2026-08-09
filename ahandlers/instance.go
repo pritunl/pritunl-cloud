@@ -720,6 +720,33 @@ func instancesGet(c *gin.Context) {
 			query["network_namespace"] = networkNamespace
 		}
 
+		address := strings.TrimSpace(c.Query("address"))
+		if address != "" {
+			address = strings.SplitN(address, "/", 2)[0]
+			addressQuery := &bson.M{
+				"$regex": fmt.Sprintf("^%s(/\\d+)?$",
+					regexp.QuoteMeta(address)),
+				"$options": "i",
+			}
+			query["$and"] = []*bson.M{
+				&bson.M{
+					"$or": []*bson.M{
+						&bson.M{"public_ips": addressQuery},
+						&bson.M{"public_ips6": addressQuery},
+						&bson.M{"private_ips": addressQuery},
+						&bson.M{"private_ips6": addressQuery},
+						&bson.M{"gateway_ips": addressQuery},
+						&bson.M{"gateway_ips6": addressQuery},
+						&bson.M{"cloud_private_ips": addressQuery},
+						&bson.M{"cloud_public_ips": addressQuery},
+						&bson.M{"cloud_public_ips6": addressQuery},
+						&bson.M{"host_ips": addressQuery},
+						&bson.M{"node_port_ips": addressQuery},
+					},
+				},
+			}
+		}
+
 		nodeId, ok := utils.ParseObjectId(c.Query("node"))
 		if ok {
 			query["node"] = nodeId
