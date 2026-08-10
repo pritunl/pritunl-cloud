@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -47,6 +48,10 @@ func imdsSyncHandler(db *database.Database) (err error) {
 	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {
 		if conf.Instance == nil || conf.Instance.NetworkNamespace == "" {
+			continue
+		}
+
+		if conf.Instance.State != vm.Running {
 			continue
 		}
 
