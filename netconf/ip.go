@@ -193,7 +193,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 	if n.NetworkMode6 == node.Static {
 		if n.SpaceExternalIfaceMod6 != "" {
 			_, err = utils.ExecCombinedOutputLogged(
-				[]string{"File exists"},
+				[]string{"File exists", "already assigned"},
 				"ip", "netns", "exec", n.Namespace,
 				"ip", "addr",
 				"add", n.ExternalAddrCidr6,
@@ -218,7 +218,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			}
 		} else {
 			_, err = utils.ExecCombinedOutputLogged(
-				[]string{"File exists"},
+				[]string{"File exists", "already assigned"},
 				"ip", "netns", "exec", n.Namespace,
 				"ip", "addr",
 				"add", n.ExternalAddrCidr6,
