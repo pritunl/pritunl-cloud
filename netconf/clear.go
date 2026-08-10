@@ -24,13 +24,18 @@ func (n *NetConf) Clear(db *database.Database) (err error) {
 	clearIface("", n.SystemInternalIface) // bridged
 	clearIface("", n.SystemHostIface)     // bridged
 	clearIface("", n.SystemNodePortIface) // bridged
+
 	clearIface("", n.SpaceExternalIface)
-	clearIface("", n.SpaceExternalIfaceMod)
-	clearIface("", n.SpaceExternalIfaceMod6)
 	clearIface("", n.SpaceInternalIface)
 	clearIface("", n.SpaceHostIface)
 	clearIface("", n.SpaceNodePortIface)
 
+	clearIface(n.Namespace, n.SpaceExternalIface)
+	clearIface(n.Namespace, n.SpaceExternalIfaceMod)
+	clearIface(n.Namespace, n.SpaceExternalIfaceMod6)
+	clearIface(n.Namespace, n.SpaceInternalIface)
+	clearIface(n.Namespace, n.SpaceHostIface)
+	clearIface(n.Namespace, n.SpaceNodePortIface)
 	clearIface(n.Namespace, n.SpaceBridgeIface)
 	clearIface(n.Namespace, n.SpaceImdsIface)
 
