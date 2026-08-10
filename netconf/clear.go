@@ -69,7 +69,7 @@ func clearIface(namespace, iface string) {
 	}
 
 	if namespace != "" {
-		commander.Exec(&commander.Opt{
+		_, e := commander.Exec(&commander.Opt{
 			Name: "ip",
 			Args: []string{
 				"netns", "exec", namespace,
@@ -78,7 +78,9 @@ func clearIface(namespace, iface string) {
 			PipeOut: true,
 			PipeErr: true,
 		})
-		time.Sleep(200 * time.Millisecond)
+		if e == nil {
+			time.Sleep(200 * time.Millisecond)
+		}
 		commander.Exec(&commander.Opt{
 			Name: "ip",
 			Args: []string{
@@ -98,7 +100,7 @@ func clearIface(namespace, iface string) {
 			PipeErr: true,
 		})
 	} else {
-		commander.Exec(&commander.Opt{
+		_, e := commander.Exec(&commander.Opt{
 			Name: "ip",
 			Args: []string{
 				"link", "set", iface, "nomaster",
@@ -106,7 +108,9 @@ func clearIface(namespace, iface string) {
 			PipeOut: true,
 			PipeErr: true,
 		})
-		time.Sleep(200 * time.Millisecond)
+		if e == nil {
+			time.Sleep(200 * time.Millisecond)
+		}
 		commander.Exec(&commander.Opt{
 			Name: "ip",
 			Args: []string{
