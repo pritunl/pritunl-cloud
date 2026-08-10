@@ -200,6 +200,24 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 			/>
 			<SearchInput
 				style={css.shortInput}
+				placeholder="IP Address"
+				value={this.props.filter.address}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.address = val;
+					} else {
+						delete filter.address;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.shortInput}
 				placeholder="Network Namespace"
 				value={this.props.filter.network_namespace}
 				onChange={(val: string): void => {
