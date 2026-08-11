@@ -18,7 +18,7 @@ const css = {
 
 export default class PlanEditor extends React.Component<Props, {}> {
 	onChange = (val: string): void => {
-		let curStatements = this.props.statements
+		let curStatements = this.props.statements || []
 		let newStatements: PlanTypes.Statement[] = []
 		let lines = val.split("\n")
 
