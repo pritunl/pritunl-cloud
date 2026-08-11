@@ -10,6 +10,8 @@ import * as PlanTypes from "../types/PlanTypes";
 import * as Constants from "../Constants";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
+import PlanEditor from "./PlanEditor";
+import Help from "./Help";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -58,6 +60,10 @@ const css = {
 		minWidth: '280px',
 		margin: '0 10px',
 	} as React.CSSProperties,
+		wideGroup: {
+			minWidth: '280px',
+			margin: '0 10px',
+		} as React.CSSProperties,
 	save: {
 		paddingBottom: '10px',
 	} as React.CSSProperties,
@@ -215,6 +221,34 @@ export default class PlanNew extends React.Component<Props, State> {
 						>
 							{organizationsSelect}
 						</PageSelect>
+					</div>
+				</div>
+				<div className="layout horizontal wrap">
+					<div className="flex" style={css.wideGroup}>
+						<label style={css.itemsLabel}>
+							Statements
+							<Help
+								title="Statements"
+								content="Plan statements."
+							/>
+						</label>
+						<PlanEditor
+							disabled={this.state.disabled}
+							statements={plan.statements}
+							onChange={(statements) => {
+								let plan: PlanTypes.Plan = {
+									...this.state.plan,
+								};
+
+								plan.statements = statements;
+
+								this.setState({
+									...this.state,
+									changed: true,
+									plan: plan,
+								});
+							}}
+						/>
 					</div>
 				</div>
 				<PageCreate
