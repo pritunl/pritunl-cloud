@@ -54,9 +54,6 @@ func (h *IptablesRule) Add() (err error) {
 	if err != nil {
 		return
 	}
-	if err != nil {
-		return
-	}
 
 	return
 }
