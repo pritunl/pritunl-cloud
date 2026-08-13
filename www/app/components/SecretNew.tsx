@@ -57,6 +57,9 @@ const css = {
 	itemsAdd: {
 		margin: '8px 0 15px 0',
 	} as React.CSSProperties,
+		editor: {
+			marginBottom: '15px',
+		} as React.CSSProperties,
 	group: {
 		flex: 1,
 		minWidth: '280px',
@@ -361,7 +364,7 @@ export default class SecretNew extends React.Component<Props, State> {
 								this.set('region', val);
 							}}
 						/>
-						<div>
+						<div style={css.editor}>
 							{editor}
 						</div>
 					</div>
