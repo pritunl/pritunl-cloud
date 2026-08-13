@@ -721,7 +721,7 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		}
 
 		if dsk.LvSize == dsk.Size {
-			err = utils.Exec("", "lvcreate", "-l", "100%",
+			err = utils.Exec("", "lvcreate", "-l", "100%FREE",
 				"-n", lvName, vgName)
 			if err != nil {
 				return
@@ -1142,7 +1142,7 @@ func writeFsLvm(db *database.Database, dsk *disk.Disk,
 		}
 
 		if dsk.LvSize == dsk.Size {
-			err = utils.Exec("", "lvcreate", "-l", "100%",
+			err = utils.Exec("", "lvcreate", "-l", "100%FREE",
 				"-n", lvName, vgName)
 			if err != nil {
 				return
