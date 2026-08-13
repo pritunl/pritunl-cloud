@@ -91,6 +91,7 @@ export interface Filter {
 	comment?: string;
 	state?: string;
 	role?: string;
+	address?: string;
 	network_namespace?: string;
 	organization?: string;
 	node?: string;
