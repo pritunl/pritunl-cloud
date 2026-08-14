@@ -24,6 +24,7 @@ type Deployment struct {
 	State        string                    `bson:"state" json:"state"`
 	Action       string                    `bson:"action" json:"action"`
 	Status       string                    `bson:"status" json:"status"`
+	SyncDomains  bool                      `bson:"sync_domains" json:"sync_domains"`
 	Datacenter   bson.ObjectID             `bson:"datacenter" json:"datacenter"`
 	Zone         bson.ObjectID             `bson:"zone" json:"zone"`
 	Node         bson.ObjectID             `bson:"node" json:"node"`
