@@ -941,6 +941,26 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 	deply *deployment.Deployment, spc *spec.Spec) (err error) {
 
+	if deply.SyncDomains {
+		logrus.WithFields(logrus.Fields{
+			"deployment_id": deply.Id.Hex(),
+		}).Info("deploy: Removing domain records for deployment")
+
+		err = deployment.RemoveDomains(db, deply.Id)
+		if err != nil {
+			return
+		}
+
+		deply.SyncDomains = false
+		deply.DomainData = nil
+		err = deply.CommitFields(db, set.NewSet("sync_domains", "domain_data"))
+		if err != nil {
+			return
+		}
+
+		event.PublishDispatch(db, "pod.change")
+	}
+
 	if spc.Domain != nil && deply.InstanceData != nil {
 		newRecs := map[bson.ObjectID][]*domain.Record{}
 
