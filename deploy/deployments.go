@@ -941,7 +941,7 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 	deply *deployment.Deployment, spc *spec.Spec) (err error) {
 
-	if deply.SyncDomains {
+	if spc.Domain == nil && deply.SyncDomains {
 		logrus.WithFields(logrus.Fields{
 			"deployment_id": deply.Id.Hex(),
 		}).Info("deploy: Removing domain records for deployment")
