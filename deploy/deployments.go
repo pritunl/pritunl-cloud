@@ -703,8 +703,7 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 						logrus.WithFields(logrus.Fields{
 							"deployment_id": deply.Id.Hex(),
 							"error":         err,
-						}).Error(
-							"deploy: Failed to remove deployment domains")
+						}).Error("deploy: Failed to remove deployment domains")
 						return
 					}
 
