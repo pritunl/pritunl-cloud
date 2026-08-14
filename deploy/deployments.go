@@ -544,6 +544,8 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 				return
 			}
 
+			event.PublishDispatch(db, "pod.change")
+
 			return
 		}
 
