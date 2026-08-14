@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -931,7 +932,7 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 	}()
 }
 
-func (d *Deployments) domain(db *database.Database,
+func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 	deply *deployment.Deployment, spc *spec.Spec) (err error) {
 
 	if spc.Domain != nil && deply.InstanceData != nil {
@@ -1183,9 +1184,10 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 		if deply.State == deployment.Deployed &&
 			deply.Kind == deployment.Instance {
 
+			unt := d.stat.Unit(deply.Unit)
 			spec := d.stat.Spec(deply.Spec)
-			if spec != nil && spec.Domain != nil {
-				err = d.domain(db, deply, spec)
+			if unt != nil && spec != nil {
+				err = d.domain(db, unt, deply, spec)
 				if err != nil {
 					return
 				}
