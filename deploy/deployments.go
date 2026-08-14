@@ -900,7 +900,7 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 			return
 		}
 
-		if deply.State != deployment.Deployed {
+		if deply.State != deployment.Deployed || deply.Action != "" {
 			return
 		}
 
