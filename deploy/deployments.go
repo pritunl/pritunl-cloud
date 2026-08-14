@@ -698,9 +698,21 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 						"mount_path": mount.Path,
 					}).Error("deploy: Failed to reserve disk for mount")
 
+					err = deployment.RemoveDomains(db, deply.Id)
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"deployment_id": deply.Id.Hex(),
+							"error":         err,
+						}).Error(
+							"deploy: Failed to remove deployment domains")
+						return
+					}
+
 					deply.State = deployment.Archived
 					deply.Action = ""
-					err = deply.CommitFields(db, set.NewSet("state", "action"))
+					deply.DomainData = nil
+					err = deply.CommitFields(db, set.NewSet(
+						"state", "action", "domain_data"))
 					if err != nil {
 						logrus.WithFields(logrus.Fields{
 							"deployment_id": deply.Id.Hex(),
