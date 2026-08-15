@@ -73,4 +73,5 @@ type DomainYamlRecord struct {
 	Name   string `yaml:"name"`
 	Domain string `yaml:"domain"`
 	Type   string `yaml:"type"`
+	Select string `yaml:"select"`
 }
