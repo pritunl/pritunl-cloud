@@ -1196,6 +1196,23 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 				d.domainCommit(deply, changedDomn, domnNewRecs)
 			}
 		}
+
+		if deply.SyncDomains {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+			}).Info("deploy: Cleaning domain records for deployment")
+
+			err = deployment.CleanDomains(db, deply.Id, activeDomnIds)
+			if err != nil {
+				return
+			}
+
+			deply.SyncDomains = false
+			err = deply.CommitFields(db, set.NewSet("sync_domains"))
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	return
