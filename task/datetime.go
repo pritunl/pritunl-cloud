@@ -8,15 +8,14 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	ntpServer      = "time.cloudflare.com:123"
 	ntpTimeout     = 10 * time.Second
 	ntpAttempts    = 3
 	ntpEpochOffset = 2208988800
-	maxTimeSkew    = 5 * time.Second
 )
 
 var timeSync = &Task{
@@ -37,8 +36,8 @@ func ntpTimestamp(sec, frac uint32) time.Time {
 	)
 }
 
-func ntpOffset() (offset time.Duration, err error) {
-	conn, err := net.DialTimeout("udp", ntpServer, ntpTimeout)
+func ntpOffset(server string) (offset time.Duration, err error) {
+	conn, err := net.DialTimeout("udp", server, ntpTimeout)
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "task: Failed to connect to ntp server"),
@@ -108,10 +107,12 @@ func ntpOffset() (offset time.Duration, err error) {
 }
 
 func timeSyncHandler(db *database.Database) (err error) {
-	var offset time.Duration
+	ntpServer := settings.System.NtpServer
+	maxSkew := time.Duration(settings.System.NtpMaxSkew) * time.Second
 
+	var offset time.Duration
 	for i := 0; i < ntpAttempts; i++ {
-		offset, err = ntpOffset()
+		offset, err = ntpOffset(ntpServer)
 		if err == nil {
 			break
 		}
@@ -125,7 +126,7 @@ func timeSyncHandler(db *database.Database) (err error) {
 		skew = -skew
 	}
 
-	if skew > maxTimeSkew {
+	if skew > maxSkew {
 		logrus.WithFields(logrus.Fields{
 			"time_offset": offset.Seconds(),
 			"ntp_server":  ntpServer,
