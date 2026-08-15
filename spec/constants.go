@@ -25,8 +25,8 @@ const (
 	CloudPublic6 = "cloud_public6"
 	CloudPrivate = "cloud_private"
 
-	Primary   = "primary"
-	Secondary = "secondary"
+	Active  = "active"
+	Standby = "standy"
 
 	Systemd = "systemd"
 	File    = "file"
