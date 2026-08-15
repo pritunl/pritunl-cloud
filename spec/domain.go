@@ -60,6 +60,7 @@ type Record struct {
 	Name   string        `bson:"name" json:"name"`
 	Domain bson.ObjectID `bson:"domain" json:"domain"`
 	Type   string        `bson:"type" json:"type"`
+	Select string        `bson:"select" json:"select"`
 }
 
 type DomainYaml struct {
