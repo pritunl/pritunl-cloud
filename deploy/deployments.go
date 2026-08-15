@@ -335,17 +335,12 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 		}
 		deply.Journals = jrnls
 
-		fields := set.NewSet("action", "spec", "new_spec", "journals")
-
 		deply.Action = ""
 		deply.Spec = newSpec.Id
 		deply.NewSpec = bson.NilObjectID
-		if curSpec.Domain != nil && newSpec.Domain == nil {
-			deply.SyncDomains = true
-			fields.Add("sync_domains")
-		}
-
-		err = deply.CommitFields(db, fields)
+		deply.SyncDomains = true
+		err = deply.CommitFields(db, set.NewSet("action", "spec",
+			"new_spec", "journals", "sync_domains"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"deployment_id": deply.Id.Hex(),
