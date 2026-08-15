@@ -22,6 +22,7 @@ type system struct {
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
 	PlannerBatchSize     int    `bson:"planner_batch_size" default:"10"`
 	NoMigrateRefresh     bool   `bson:"no_migrate_refresh"`
+	NtpServer            string `bson:"ntp_server" default:"time.cloudflare.com:123"`
 	OracleApiRetryRate   int    `bson:"oracle_api_retry_rate" default:"1"`
 	OracleApiRetryCount  int    `bson:"oracle_api_retry_count" default:"120"`
 	TwilioAccount        string `bson:"twilio_account"`
