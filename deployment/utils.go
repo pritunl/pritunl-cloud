@@ -301,6 +301,71 @@ func RemoveDomains(db *database.Database, deplyId bson.ObjectID) (
 	return
 }
 
+func CleanDomains(db *database.Database, deplyId bson.ObjectID,
+	activeDomnIds set.Set) (err error) {
+
+	recs, err := domain.GetRecordAll(db, &bson.M{
+		"deployment": deplyId,
+	})
+	if err != nil {
+		return
+	}
+
+	domnIdsSet := set.NewSet()
+	for _, rec := range recs {
+		if activeDomnIds.Contains(rec.Domain) {
+			continue
+		}
+		domnIdsSet.Add(rec.Domain)
+	}
+
+	domnIds := []bson.ObjectID{}
+	for domnIdInf := range domnIdsSet.Iter() {
+		domnIds = append(domnIds, domnIdInf.(bson.ObjectID))
+	}
+
+	if len(domnIds) == 0 {
+		return
+	}
+
+	domns, err := domain.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": domnIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	for _, domn := range domns {
+		err = domn.LoadRecords(db, false)
+		if err != nil {
+			return
+		}
+
+		domn.PreCommit()
+
+		changed := false
+		for _, rec := range domn.Records {
+			if rec.Deployment == deplyId {
+				changed = true
+				rec.Operation = domain.DELETE
+			}
+		}
+
+		if changed {
+			err = domn.CommitRecords(db)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	event.PublishDispatch(db, "domain.change")
+
+	return
+}
+
 func Remove(db *database.Database, deplyId bson.ObjectID) (err error) {
 	coll := db.Deployments()
 
