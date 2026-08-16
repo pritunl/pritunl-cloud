@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -175,7 +176,18 @@ func domainDelete(c *gin.Context) {
 		return
 	}
 
-	err := domain.RemoveOrg(db, userOrg, domainId)
+	errData, err := relations.CanDelete(db, "domain", domainId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = domain.RemoveOrg(db, userOrg, domainId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -199,6 +211,19 @@ func domainsDelete(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	for _, domnId := range data {
+		errData, err := relations.CanDelete(db, "domain", domnId)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
 	}
 
 	err = domain.RemoveMultiOrg(db, userOrg, data)
