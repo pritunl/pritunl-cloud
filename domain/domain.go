@@ -122,6 +122,7 @@ func (d *Domain) Validate(db *database.Database) (
 	newRecords := []*Record{}
 	for _, record := range d.Records {
 		record.Domain = d.Id
+		record.Organization = d.Organization
 
 		if record.Operation == DELETE && record.Id.IsZero() {
 			continue
