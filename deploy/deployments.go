@@ -978,12 +978,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.Public:
 				for _, val := range deply.InstanceData.PublicIps {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.A,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.A,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1002,12 +1003,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.Public6:
 				for _, val := range deply.InstanceData.PublicIps6 {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.AAAA,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.AAAA,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1026,12 +1028,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.Host:
 				for _, val := range deply.InstanceData.HostIps {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.A,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.A,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1050,12 +1053,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.Private:
 				for _, val := range deply.InstanceData.PrivateIps {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.A,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.A,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1074,12 +1078,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.Private6:
 				for _, val := range deply.InstanceData.PrivateIps6 {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.AAAA,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.AAAA,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1098,12 +1103,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.CloudPublic:
 				for _, val := range deply.InstanceData.CloudPublicIps {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.A,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.A,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1122,12 +1128,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.CloudPublic6:
 				for _, val := range deply.InstanceData.CloudPublicIps6 {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.AAAA,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.AAAA,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1146,12 +1153,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			case spec.CloudPrivate:
 				for _, val := range deply.InstanceData.CloudPrivateIps {
 					rec := &domain.Record{
-						Domain:     specRec.Domain,
-						SubDomain:  specRec.Name,
-						Deployment: deply.Id,
-						Type:       domain.A,
-						Value:      val,
-						Select:     specRec.Select,
+						Domain:       specRec.Domain,
+						Organization: domn.Organization,
+						SubDomain:    specRec.Name,
+						Deployment:   deply.Id,
+						Type:         domain.A,
+						Value:        val,
+						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
