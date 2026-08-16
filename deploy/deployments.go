@@ -1,6 +1,8 @@
 package deploy
 
 import (
+	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -1185,16 +1187,45 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 			}
 		}
 
+		domnDataRecs := []*deployment.RecordData{}
 		for domnId, domnNewRecs := range newRecs {
 			domn := d.stat.SpecDomain(domnId)
 			if domn == nil {
 				continue
 			}
 
+			for _, rec := range domnNewRecs {
+				domnDataRecs = append(domnDataRecs, &deployment.RecordData{
+					Domain: rec.SubDomain + "." + domn.RootDomain,
+					Value:  rec.Value,
+				})
+			}
+
 			changedDomn := domn.MergeRecords(deply.Id, domnNewRecs)
 			if changedDomn != nil {
-				d.domainCommit(deply, changedDomn, domnNewRecs)
+				d.domainCommit(deply, changedDomn)
 			}
+		}
+
+		sort.Slice(domnDataRecs, func(i, j int) bool {
+			if domnDataRecs[i].Domain != domnDataRecs[j].Domain {
+				return domnDataRecs[i].Domain < domnDataRecs[j].Domain
+			}
+			return domnDataRecs[i].Value < domnDataRecs[j].Value
+		})
+
+		domnData := &deployment.DomainData{
+			Records: domnDataRecs,
+		}
+
+		if deply.DomainData.Diff(domnData) {
+			deply.DomainData = domnData
+			err = deply.CommitFields(db, set.NewSet("domain_data"))
+			if err != nil {
+				return
+			}
+
+			event.PublishDispatch(db, "pod.change")
 		}
 
 		if deply.SyncDomains {
