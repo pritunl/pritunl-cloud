@@ -967,12 +967,21 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 
 	if spc.Domain != nil && deply.InstanceData != nil {
 		newRecs := map[bson.ObjectID][]*domain.Record{}
+		activeDomnIds := set.NewSet()
 
 		for _, specRec := range spc.Domain.Records {
+			if specRec.Select == spec.Active && !unt.Active.IsZero() &&
+				unt.Active != deply.Id {
+
+				continue
+			}
+
 			domn := d.stat.SpecDomain(specRec.Domain)
 			if domn == nil {
 				continue
 			}
+
+			activeDomnIds.Add(domn.Id)
 
 			switch specRec.Type {
 			case spec.Public:
