@@ -54,22 +54,23 @@ type DomainData struct {
 	Records []*RecordData `bson:"records" json:"records"`
 }
 
-func (d *DomainData) Diff(other *DomainData) bool {
-	recs := []*RecordData{}
+func (d *DomainData) Diff(newData *DomainData) bool {
+	curRecs := []*RecordData{}
 	if d != nil {
-		recs = d.Records
-	}
-	otherRecs := []*RecordData{}
-	if other != nil {
-		otherRecs = other.Records
+		curRecs = d.Records
 	}
 
-	if len(recs) != len(otherRecs) {
+	newRecs := []*RecordData{}
+	if newData != nil {
+		newRecs = newData.Records
+	}
+
+	if len(curRecs) != len(newRecs) {
 		return true
 	}
 
-	for i, rec := range recs {
-		otherRec := otherRecs[i]
+	for i, rec := range curRecs {
+		otherRec := newRecs[i]
 		if rec.Domain != otherRec.Domain ||
 			rec.Value != otherRec.Value {
 
