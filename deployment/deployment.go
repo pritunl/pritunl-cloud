@@ -57,7 +57,6 @@ type DomainData struct {
 type RecordData struct {
 	Domain string `bson:"domain" json:"domain"`
 	Value  string `bson:"value" json:"value"`
-	Select string `bson:"select" json:"select"`
 }
 
 type ImageData struct {
