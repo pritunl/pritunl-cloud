@@ -72,7 +72,6 @@ func domainPut(c *gin.Context) {
 	domn.Type = data.Type
 	domn.Secret = data.Secret
 	domn.RootDomain = data.RootDomain
-	domn.Records = data.Records
 
 	fields := set.NewSet(
 		"name",
@@ -100,9 +99,14 @@ func domainPut(c *gin.Context) {
 		return
 	}
 
-	err = domn.CommitRecords(db)
+	errData, err = domn.SyncRecords(db, data.Records)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
