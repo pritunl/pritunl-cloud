@@ -871,7 +871,7 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 }
 
 func (d *Deployments) domainCommit(deply *deployment.Deployment,
-	domn *domain.Domain, newRecs []*domain.Record) {
+	domn *domain.Domain) {
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		deply.Id.Hex(), 3*time.Minute)
@@ -905,29 +905,12 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 			"domain_id": domn.Id.Hex(),
 		}).Info("deploy: Committing domain records")
 
-		recs := []*deployment.RecordData{}
-		for _, rec := range newRecs {
-			recs = append(recs, &deployment.RecordData{
-				Domain: rec.SubDomain + "." + domn.RootDomain,
-				Value:  rec.Value,
-			})
-		}
-		domnData := &deployment.DomainData{
-			Records: recs,
-		}
-
 		err = domn.CommitRecords(db)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"domain_id": domn.Id.Hex(),
 				"error":     err,
 			}).Error("deploy: Failed to commit domain records")
-			return
-		}
-
-		deply.DomainData = domnData
-		err = deply.CommitFields(db, set.NewSet("domain_data"))
-		if err != nil {
 			return
 		}
 
