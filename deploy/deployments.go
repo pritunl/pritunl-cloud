@@ -1279,7 +1279,7 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	for _, deply := range activeDeployments {
 		if deply.Action == deployment.Migrate {
 			d.migrate(deply)
-			break
+			continue
 		}
 
 		if deply.State == deployment.Deployed &&
