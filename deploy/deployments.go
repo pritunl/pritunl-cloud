@@ -1,7 +1,6 @@
 package deploy
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -970,18 +969,21 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 		activeDomnIds := set.NewSet()
 
 		for _, specRec := range spc.Domain.Records {
-			if specRec.Select == spec.Active && !unt.Active.IsZero() &&
-				unt.Active != deply.Id {
-
-				continue
-			}
-
 			domn := d.stat.SpecDomain(specRec.Domain)
 			if domn == nil {
 				continue
 			}
 
 			activeDomnIds.Add(domn.Id)
+
+			if specRec.Select == spec.Active && !unt.Active.IsZero() &&
+				unt.Active != deply.Id {
+
+				if newRecs[domn.Id] == nil {
+					newRecs[domn.Id] = []*domain.Record{}
+				}
+				continue
+			}
 
 			switch specRec.Type {
 			case spec.Public:
