@@ -55,6 +55,14 @@ func (r *Record) Copy() *Record {
 func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	if r.Organization.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "organization_required",
+			Message: "Missing required organization",
+		}
+		return
+	}
+
 	r.SubDomain = utils.FilterDomain(r.SubDomain)
 	if r.SubDomain == "" {
 		errData = &errortypes.ErrorData{
