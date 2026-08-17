@@ -128,6 +128,7 @@ type InstanceYaml struct {
 	Zone                string                 `yaml:"zone"`
 	Node                string                 `yaml:"node,omitempty"`
 	Shape               string                 `yaml:"shape,omitempty"`
+	Failover            string                 `yaml:"failover"`
 	Vpc                 string                 `yaml:"vpc"`
 	Subnet              string                 `yaml:"subnet"`
 	Roles               []string               `yaml:"roles"`
