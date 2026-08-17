@@ -414,7 +414,17 @@ func Unlock(db *database.Database, domnId,
 }
 
 func Remove(db *database.Database, domnId bson.ObjectID) (err error) {
-	coll := db.Domains()
+	coll := db.DomainsRecords()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"domain": domnId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Domains()
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": domnId,
@@ -435,7 +445,18 @@ func Remove(db *database.Database, domnId bson.ObjectID) (err error) {
 func RemoveOrg(db *database.Database, orgId, domnId bson.ObjectID) (
 	err error) {
 
-	coll := db.Domains()
+	coll := db.DomainsRecords()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"domain":       domnId,
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Domains()
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id":          domnId,
@@ -455,7 +476,19 @@ func RemoveOrg(db *database.Database, orgId, domnId bson.ObjectID) (
 }
 
 func RemoveMulti(db *database.Database, domnIds []bson.ObjectID) (err error) {
-	coll := db.Domains()
+	coll := db.DomainsRecords()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"domain": &bson.M{
+			"$in": domnIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Domains()
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
@@ -473,7 +506,20 @@ func RemoveMulti(db *database.Database, domnIds []bson.ObjectID) (err error) {
 func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 	domnIds []bson.ObjectID) (err error) {
 
-	coll := db.Domains()
+	coll := db.DomainsRecords()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"domain": &bson.M{
+			"$in": domnIds,
+		},
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Domains()
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
