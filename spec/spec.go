@@ -265,6 +265,19 @@ func (s *Spec) parseInstance(db *database.Database,
 		return
 	}
 
+	switch dataYaml.Failover {
+	case "":
+		break
+	case Active:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "unit_failover_invalid",
+			Message: "Unit failover invalid",
+		}
+		return
+	}
+
 	resources := &finder.Resources{
 		Organization: orgId,
 	}
