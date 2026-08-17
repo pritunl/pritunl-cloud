@@ -35,6 +35,7 @@ type Spec struct {
 	Timestamp    time.Time     `bson:"timestamp" json:"timestamp"`
 	Name         string        `bson:"name" json:"name"`
 	Kind         string        `bson:"kind" json:"kind"`
+	Failover     string        `bson:"failover" json:"failover"`
 	Count        int           `bson:"count" json:"count"`
 	Hash         string        `bson:"hash" json:"hash"`
 	Data         string        `bson:"data" json:"data"`
