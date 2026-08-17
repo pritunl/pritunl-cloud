@@ -596,6 +596,7 @@ func (s *Spec) parseInstance(db *database.Database,
 
 	s.Name = dataYaml.Name
 	s.Kind = dataYaml.Kind
+	s.Failover = dataYaml.Failover
 	s.Count = dataYaml.Count
 	s.Instance = data
 
