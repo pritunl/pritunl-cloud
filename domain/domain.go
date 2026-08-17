@@ -148,6 +148,55 @@ func (d *Domain) PreCommit() {
 	d.OrigRecords = d.Records
 }
 
+func (d *Domain) SyncRecords(db *database.Database,
+	records []*Record) (errData *errortypes.ErrorData, err error) {
+
+	recordMap := map[bson.ObjectID]*Record{}
+	for _, rec := range d.OrigRecords {
+		recordMap[rec.Id] = rec
+	}
+
+	newRecords := []*Record{}
+	for _, newRec := range records {
+		finalRec := recordMap[newRec.Id]
+		if finalRec != nil {
+			finalRec.SubDomain = newRec.SubDomain
+			finalRec.Type = newRec.Type
+			finalRec.Value = newRec.Value
+			finalRec.Operation = newRec.Operation
+		} else {
+			finalRec = &Record{
+				Domain:       d.Id,
+				Organization: d.Organization,
+				SubDomain:    newRec.SubDomain,
+				Type:         newRec.Type,
+				Value:        newRec.Value,
+				Operation:    newRec.Operation,
+			}
+		}
+
+		errData, err = finalRec.Validate(db)
+		if err != nil {
+			return
+		}
+
+		if errData != nil {
+			return
+		}
+
+		newRecords = append(newRecords, finalRec)
+	}
+
+	d.Records = newRecords
+
+	err = d.CommitRecords(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (d *Domain) CommitRecords(db *database.Database) (err error) {
 	err = d.commitRecords(db, true)
 	if err != nil {
