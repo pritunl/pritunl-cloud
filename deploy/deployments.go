@@ -993,7 +993,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.A,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1018,7 +1017,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.AAAA,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1043,7 +1041,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.A,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1068,7 +1065,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.A,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1093,7 +1089,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.AAAA,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1118,7 +1113,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.A,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1143,7 +1137,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.AAAA,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
@@ -1168,7 +1161,6 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Deployment:   deply.Id,
 						Type:         domain.A,
 						Value:        val,
-						Select:       specRec.Select,
 					}
 
 					errData, e := rec.Validate(db)
