@@ -62,6 +62,7 @@ func domainPut(c *gin.Context) {
 
 	err = domn.LoadRecords(db, true)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
