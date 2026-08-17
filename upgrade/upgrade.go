@@ -43,5 +43,10 @@ func Upgrade() (err error) {
 		return
 	}
 
+	err = domainRecordUpgrade(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
