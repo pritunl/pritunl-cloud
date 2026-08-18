@@ -439,7 +439,7 @@ func (d *Deployments) destroy(deply *deployment.Deployment) {
 
 				err := instance.Delete(db, inst.Id)
 				if err != nil {
-					if _, ok := err.(*database.NotFoundError); !ok {
+					if _, ok := err.(*database.NotFoundError); ok {
 						err = nil
 					} else {
 						logrus.WithFields(logrus.Fields{
@@ -511,6 +511,11 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 
 					err = dsk.Unreserve(db, inst.Id, deply.Id)
 					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"deployment_id": deply.Id.Hex(),
+							"disk_id":       dsk.Id.Hex(),
+							"error":         err,
+						}).Error("deploy: Failed to unreserve disk")
 						return
 					}
 				}
@@ -641,9 +646,20 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 						if e != nil {
 							err = e
 
+							logrus.WithFields(logrus.Fields{
+								"deployment_id": deply.Id.Hex(),
+								"disk_id":       dskId.Hex(),
+								"error":         err,
+							}).Error("deploy: Failed to get disk for mount")
+
 							for _, dsk := range reservedDisks {
 								err = dsk.Unreserve(db, inst.Id, deply.Id)
 								if err != nil {
+									logrus.WithFields(logrus.Fields{
+										"deployment_id": deply.Id.Hex(),
+										"disk_id":       dsk.Id.Hex(),
+										"error":         err,
+									}).Error("deploy: Failed to unreserve disk")
 									return
 								}
 							}
@@ -658,9 +674,20 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 						diskReserved, err = dsk.Reserve(
 							db, inst.Id, index, deply.Id)
 						if err != nil {
+							logrus.WithFields(logrus.Fields{
+								"deployment_id": deply.Id.Hex(),
+								"disk_id":       dsk.Id.Hex(),
+								"error":         err,
+							}).Error("deploy: Failed to reserve disk")
+
 							for _, dsk := range reservedDisks {
 								err = dsk.Unreserve(db, inst.Id, deply.Id)
 								if err != nil {
+									logrus.WithFields(logrus.Fields{
+										"deployment_id": deply.Id.Hex(),
+										"disk_id":       dsk.Id.Hex(),
+										"error":         err,
+									}).Error("deploy: Failed to unreserve disk")
 									return
 								}
 							}
@@ -686,6 +713,11 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 					for _, dsk := range reservedDisks {
 						err = dsk.Unreserve(db, inst.Id, deply.Id)
 						if err != nil {
+							logrus.WithFields(logrus.Fields{
+								"deployment_id": deply.Id.Hex(),
+								"disk_id":       dsk.Id.Hex(),
+								"error":         err,
+							}).Error("deploy: Failed to unreserve disk")
 							return
 						}
 					}
@@ -836,31 +868,44 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 				if _, ok := e.(*database.NotFoundError); ok {
 					logrus.WithFields(logrus.Fields{
 						"instance_id": inst.Id.Hex(),
-						"error":       err,
+						"error":       e,
 					}).Error("deploy: Failed to find instance disk for image")
 
 					deply.SetImageState(deployment.Failed)
 					err = deply.CommitFields(db, set.NewSet("image_data.state"))
 					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"deployment_id": deply.Id.Hex(),
+							"error":         err,
+						}).Error("deploy: Failed to commit deployment")
 						return
 					}
-
-					dsk = nil
-					err = nil
 				} else {
-					return
+					logrus.WithFields(logrus.Fields{
+						"instance_id": inst.Id.Hex(),
+						"error":       e,
+					}).Error("deploy: Failed to get instance disk for image")
 				}
+				return
 			}
 
 			dsk.Action = disk.Snapshot
 			err = dsk.CommitFields(db, set.NewSet("action"))
 			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to commit disk")
 				return
 			}
 
 			deply.SetImageState(deployment.Snapshot)
 			err = deply.CommitFields(db, set.NewSet("image_data.state"))
 			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to commit deployment")
 				return
 			}
 		}
@@ -892,6 +937,11 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 		if err != nil {
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = nil
+			} else {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to get deployment")
 			}
 			return
 		}
@@ -924,6 +974,10 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 				newDeply = nil
 				err = nil
 			} else {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to get deployment")
 				return
 			}
 		}
@@ -935,6 +989,10 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 
 			err = deployment.RemoveDomains(db, deply.Id)
 			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to remove deployment domains")
 				return
 			}
 		}
