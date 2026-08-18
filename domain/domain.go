@@ -544,7 +544,6 @@ func (d *Domain) MergeRecords(deployId bson.ObjectID,
 						domainRec.Value == value {
 
 						newDomn.Records[i].Operation = DELETE
-						break
 					}
 				}
 			}
