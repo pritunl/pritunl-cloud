@@ -46,6 +46,30 @@ func Refresh(db *database.Database, domnId bson.ObjectID) {
 		}).Error("domain: Domain refresh failed")
 		return
 	}
+}
+
+func Clean(db *database.Database, domnId bson.ObjectID) (err error) {
+	coll := db.Domains()
+	domn := &Domain{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id": domnId,
+	}).Decode(domn)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if domn.Locked() {
+		return
+	}
+
+	err = domn.LoadRecords(db, false)
+	if err != nil {
+		return
+	}
+
+	coll = db.DomainsRecords()
 
 	deleteTtl := time.Duration(settings.System.DomainDeleteTtl) * time.Second
 	now := time.Now()
