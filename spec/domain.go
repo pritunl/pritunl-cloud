@@ -40,9 +40,9 @@ func (d *Domain) Validate() (errData *errortypes.ErrorData, err error) {
 		switch rec.Select {
 		case "":
 			break
-		case Active:
+		case Primary:
 			break
-		case Standby:
+		case Secondary:
 			break
 		default:
 			errData = &errortypes.ErrorData{

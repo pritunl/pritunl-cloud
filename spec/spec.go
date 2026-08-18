@@ -268,7 +268,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	switch dataYaml.Failover {
 	case "":
 		break
-	case Active:
+	case Primary:
 		break
 	default:
 		errData = &errortypes.ErrorData{
