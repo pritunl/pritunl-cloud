@@ -1034,8 +1034,8 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 
 			activeDomnIds.Add(domn.Id)
 
-			if specRec.Select == spec.Active && !unt.Active.IsZero() &&
-				unt.Active != deply.Id {
+			if specRec.Select == spec.Primary && !unt.Primary.IsZero() &&
+				unt.Primary != deply.Id {
 
 				if newRecs[domn.Id] == nil {
 					newRecs[domn.Id] = []*domain.Record{}
