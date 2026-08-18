@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/sirupsen/logrus"
 )
 
 var domains = &Task{
@@ -23,12 +24,19 @@ var domains = &Task{
 }
 
 func domainsHandler(db *database.Database) (err error) {
+	now := time.Now()
+
 	refreshTtl := time.Duration(
 		settings.System.DomainRefreshTtl) * time.Second
+	deleteTtl := time.Duration(
+		settings.System.DomainDeleteTtl) * time.Second
+
+	ttl := max(refreshTtl, deleteTtl) + 80*time.Second
+	refreshCutoff := now.Add(-refreshTtl)
 
 	domns, err := domain.GetAll(db, &bson.M{
 		"last_update": &bson.M{
-			"$gte": time.Now().Add(-refreshTtl),
+			"$gte": now.Add(-ttl),
 		},
 	})
 	if err != nil {
@@ -36,7 +44,18 @@ func domainsHandler(db *database.Database) (err error) {
 	}
 
 	for _, domn := range domns {
-		domain.Refresh(db, domn.Id)
+		if !domn.LastUpdate.Before(refreshCutoff) {
+			domain.Refresh(db, domn.Id)
+		}
+
+		err = domain.Clean(db, domn.Id)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"domain": domn.Id.Hex(),
+				"error":  err,
+			}).Error("domain: Domain clean failed")
+			err = nil
+		}
 	}
 
 	return
