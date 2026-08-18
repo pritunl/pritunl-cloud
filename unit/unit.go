@@ -26,6 +26,7 @@ type Unit struct {
 	SpecTimestamp time.Time        `bson:"spec_timestamp" json:"-"`
 	LastSpec      bson.ObjectID    `bson:"last_spec" json:"last_spec"`
 	DeploySpec    bson.ObjectID    `bson:"deploy_spec" json:"deploy_spec"`
+	Active        bson.ObjectID    `bson:"active" json:"active"`
 	Hash          string           `bson:"hash" json:"hash"`
 	Journals      map[string]int32 `bson:"journals" json:"-"`
 	JournalsIndex int32            `bson:"journals_index" json:"-"`
