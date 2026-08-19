@@ -2,6 +2,7 @@ package state
 
 import (
 	"sync"
+	"time"
 
 	"github.com/pritunl/pritunl-cloud/imds/types"
 )
@@ -13,10 +14,28 @@ var Global = &Store{
 }
 
 type Store struct {
-	State    *types.State
-	output   chan *types.Entry
-	journals map[string]chan *types.Entry
-	lock     sync.RWMutex
+	State       *types.State
+	output      chan *types.Entry
+	journals    map[string]chan *types.Entry
+	setPrimary  bool
+	primaryTime time.Time
+	lock        sync.RWMutex
+}
+
+func (s *Store) SetPrimary() {
+	s.lock.Lock()
+	s.setPrimary = true
+	s.primaryTime = time.Now()
+	s.lock.Unlock()
+}
+
+func (s *Store) GetSetPrimary() (val bool, timestamp time.Time) {
+	s.lock.Lock()
+	val = s.setPrimary
+	timestamp = s.primaryTime
+	s.lock.Unlock()
+
+	return
 }
 
 func (s *Store) AppendOutput(entry *types.Entry) {
