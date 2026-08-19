@@ -132,6 +132,7 @@ func RegisterVirt(engine *gin.Engine) {
 	virtGroup.GET("/certificate", certificatesGet)
 	virtGroup.GET("/secret", secretsGet)
 	virtGroup.PUT("/sync", syncPut)
+	virtGroup.PUT("/primary", primaryPut)
 
 	dhcpGroup.PUT("/dhcp", dhcpPut)
 }
