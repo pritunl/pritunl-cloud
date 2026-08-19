@@ -10,10 +10,10 @@ import (
 type Pod struct {
 	Id    bson.ObjectID `json:"id"`
 	Name  string        `json:"name"`
-	Units []*Unit       `json:"units"`
+	Units []*PodUnit    `json:"units"`
 }
 
-type Unit struct {
+type PodUnit struct {
 	Id                       bson.ObjectID `json:"id"`
 	Name                     string        `json:"name"`
 	Kind                     string        `json:"kind"`
@@ -51,9 +51,9 @@ func NewPods(pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
 			continue
 		}
 
-		units := []*Unit{}
+		units := []*PodUnit{}
 		for _, pdUnit := range podUnitsMap[pd.Id] {
-			unit := &Unit{
+			unit := &PodUnit{
 				Id:                       pdUnit.Id,
 				Name:                     pdUnit.Name,
 				Kind:                     pdUnit.Kind,
