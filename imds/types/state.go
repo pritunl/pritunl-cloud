@@ -9,18 +9,20 @@ import (
 )
 
 type State struct {
-	Hash        uint32              `json:"hash"`
-	Status      string              `json:"status"`
-	DhcpIface   string              `json:"dhcp_iface"`
-	DhcpIface6  string              `json:"dhcp_iface6"`
-	DhcpIp      *net.IPNet          `json:"dhcp_ip"`
-	DhcpIp6     *net.IPNet          `json:"dhcp_ip6"`
-	DhcpGateway net.IP              `json:"dhcp_gateway"`
-	Updates     []*telemetry.Update `json:"updates"`
-	Metrics     []*metric.Sample    `json:"metrics,omitempty"`
-	Timestamp   time.Time           `json:"timestamp"`
-	Output      []*Entry            `json:"output,omitempty"`
-	Journals    map[string][]*Entry `json:"journals,omitempty"`
+	Hash             uint32              `json:"hash"`
+	Status           string              `json:"status"`
+	DhcpIface        string              `json:"dhcp_iface"`
+	DhcpIface6       string              `json:"dhcp_iface6"`
+	DhcpIp           *net.IPNet          `json:"dhcp_ip"`
+	DhcpIp6          *net.IPNet          `json:"dhcp_ip6"`
+	DhcpGateway      net.IP              `json:"dhcp_gateway"`
+	Updates          []*telemetry.Update `json:"updates"`
+	Metrics          []*metric.Sample    `json:"metrics,omitempty"`
+	Timestamp        time.Time           `json:"timestamp"`
+	Output           []*Entry            `json:"output,omitempty"`
+	Journals         map[string][]*Entry `json:"journals,omitempty"`
+	Primary          bool                `json:"primary,omitempty"`
+	PrimaryTimestamp time.Time           `json:"primary_timestamp,omitempty"`
 }
 
 func (s *State) Final() bool {
