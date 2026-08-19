@@ -94,6 +94,7 @@ func hostSyncPut(c *gin.Context) {
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
 	ste.Metrics = telemetry.Metrics.GetAll()
+	ste.Primary, ste.PrimaryTimestamp = state.Global.GetSetPrimary()
 
 	updates, ok := telemetry.Updates.Get()
 	if ok {
