@@ -13,6 +13,8 @@ type Config struct {
 	ClientIps      []string       `json:"client_ips"`
 	Node           *Node          `json:"node"`
 	Instance       *Instance      `json:"instance"`
+	Deployment     *Deployment    `json:"deployment"`
+	Unit           *Unit          `json:"unit"`
 	Vpc            *Vpc           `json:"vpc"`
 	Subnet         *Subnet        `json:"subnet"`
 	Certificates   []*Certificate `json:"certificates"`
