@@ -16,7 +16,9 @@ import (
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/iproute"
@@ -26,6 +28,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/telemetry"
+	"github.com/pritunl/pritunl-cloud/unit"
 	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/errors"
 	"github.com/sirupsen/logrus"
@@ -288,6 +291,47 @@ func Sync(db *database.Database, namespace string,
 					if err != nil {
 						return
 					}
+				}
+			}
+		}
+
+		if ste.Primary && !deplyId.IsZero() && conf.Unit != nil &&
+			ste.PrimaryTimestamp.After(conf.Unit.PrimaryTimestamp) {
+
+			deply, e := deployment.Get(db, deplyId)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance":   instId.Hex(),
+					"deployment": deplyId.Hex(),
+					"error":      e,
+				}).Error("imds: Failed to get deployment for set primary")
+			} else if deply.Unit.IsZero() ||
+				(!conf.Unit.Id.IsZero() && deply.Unit != conf.Unit.Id) ||
+				deply.State != deployment.Deployed ||
+				deply.Action != "" {
+
+				logrus.WithFields(logrus.Fields{
+					"instance":   instId.Hex(),
+					"deployment": deplyId.Hex(),
+					"unit":       deply.Unit.Hex(),
+					"state":      deply.State,
+					"action":     deply.Action,
+				}).Warn("imds: Deployment invalid for set primary")
+			} else {
+				updated, e := unit.SetPrimary(db, deply.Unit,
+					deplyId, ste.PrimaryTimestamp)
+				if e != nil {
+					err = e
+					return
+				}
+
+				if updated {
+					logrus.WithFields(logrus.Fields{
+						"deployment": deplyId.Hex(),
+						"unit":       deply.Unit.Hex(),
+					}).Info("imds: Set unit primary deployment")
+
+					event.PublishDispatch(db, "pod.change")
 				}
 			}
 		}
