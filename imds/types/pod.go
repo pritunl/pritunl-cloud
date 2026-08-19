@@ -18,6 +18,7 @@ type PodUnit struct {
 	Name                     string        `json:"name"`
 	Kind                     string        `json:"kind"`
 	Count                    int           `json:"count"`
+	Primary                  bson.ObjectID `json:"primary"`
 	PublicIps                []string      `json:"public_ips"`
 	PublicIps6               []string      `json:"public_ips6"`
 	HealthyPublicIps         []string      `json:"healthy_public_ips"`
@@ -58,6 +59,7 @@ func NewPods(pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
 				Name:                     pdUnit.Name,
 				Kind:                     pdUnit.Kind,
 				Count:                    pdUnit.Count,
+				Primary:                  pdUnit.Primary,
 				PublicIps:                []string{},
 				PublicIps6:               []string{},
 				HealthyPublicIps:         []string{},
