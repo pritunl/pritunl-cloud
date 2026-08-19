@@ -105,7 +105,7 @@ func (p *Pod) Print(indent string) {
 	}
 }
 
-func (u *Unit) Print(indent string) {
+func (u *PodUnit) Print(indent string) {
 	fmt.Printf("%sId: %s\n", indent, u.Id.Hex())
 	fmt.Printf("%sName: %s\n", indent, u.Name)
 	fmt.Printf("%sKind: %s\n", indent, u.Kind)
