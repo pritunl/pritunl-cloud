@@ -493,31 +493,41 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 func (d *Domain) MergeRecords(deployId bson.ObjectID,
 	newRecs []*Record) (newDomn *Domain) {
 
-	recMap := map[string]map[string]map[string]*Record{}
+	comboKeys := map[string]bool{}
+	primaryKeys := map[string]bool{}
+	for _, newRec := range newRecs {
+		combo := newRec.SubDomain + ":" + newRec.Type
+		comboKeys[combo] = true
+		if newRec.Select == Primary {
+			primaryKeys[combo+":"+newRec.Select] = true
+		}
+	}
+
+	recMap := map[string]map[string]*Record{}
 
 	for _, rec := range d.Records {
 		if rec.Deployment != deployId || rec.IsDeleted() {
 			continue
 		}
 
-		if recMap[rec.SubDomain] == nil {
-			recMap[rec.SubDomain] = map[string]map[string]*Record{}
+		combo := rec.SubDomain + ":" + rec.Type
+		if rec.Select != "" && !comboKeys[combo] {
+			continue
 		}
-		if recMap[rec.SubDomain][rec.Type] == nil {
-			recMap[rec.SubDomain][rec.Type] = map[string]*Record{}
+
+		if recMap[combo] == nil {
+			recMap[combo] = map[string]*Record{}
 		}
-		recMap[rec.SubDomain][rec.Type][rec.Value] = rec
+		recMap[combo][rec.Value] = rec
 	}
 
 	for _, newRec := range newRecs {
-		if recMap[newRec.SubDomain] == nil {
-			recMap[newRec.SubDomain] = map[string]map[string]*Record{}
-		}
-		if recMap[newRec.SubDomain][newRec.Type] == nil {
-			recMap[newRec.SubDomain][newRec.Type] = map[string]*Record{}
+		combo := newRec.SubDomain + ":" + newRec.Type
+		if recMap[combo] == nil {
+			recMap[combo] = map[string]*Record{}
 		}
 
-		rec := recMap[newRec.SubDomain][newRec.Type][newRec.Value]
+		rec := recMap[combo][newRec.Value]
 		if rec == nil {
 			if newDomn == nil {
 				newDomn = d.Copy()
@@ -526,25 +536,76 @@ func (d *Domain) MergeRecords(deployId bson.ObjectID,
 			newRec.Operation = INSERT
 			newDomn.Records = append(newDomn.Records, newRec)
 		} else {
-			delete(recMap[newRec.SubDomain][newRec.Type], newRec.Value)
-		}
-	}
-
-	for subDomain, typeMap := range recMap {
-		for typeName, valueMap := range typeMap {
-			for value := range valueMap {
+			if rec.Select != newRec.Select {
 				if newDomn == nil {
 					newDomn = d.Copy()
 					newDomn.PreCommit()
 				}
 
 				for i, domainRec := range newDomn.Records {
-					if domainRec.SubDomain == subDomain &&
-						domainRec.Type == typeName &&
-						domainRec.Value == value {
-
-						newDomn.Records[i].Operation = DELETE
+					if domainRec.Id == rec.Id {
+						newDomn.Records[i].Select = newRec.Select
+						newDomn.Records[i].Operation = UPDATE
 					}
+				}
+			}
+			delete(recMap[combo], newRec.Value)
+		}
+	}
+
+	for _, valueMap := range recMap {
+		for _, staleRec := range valueMap {
+			if newDomn == nil {
+				newDomn = d.Copy()
+				newDomn.PreCommit()
+			}
+
+			for i, domainRec := range newDomn.Records {
+				if domainRec.Deployment == deployId &&
+					domainRec.SubDomain == staleRec.SubDomain &&
+					domainRec.Type == staleRec.Type &&
+					domainRec.Select == staleRec.Select &&
+					domainRec.Value == staleRec.Value {
+
+					newDomn.Records[i].Operation = DELETE
+				}
+			}
+		}
+	}
+
+	if len(primaryKeys) > 0 {
+		evict := false
+		for _, rec := range d.Records {
+			if rec.Deployment.IsZero() || rec.Deployment == deployId ||
+				rec.IsDeleted() {
+
+				continue
+			}
+
+			if primaryKeys[rec.SubDomain+":"+rec.Type+":"+rec.Select] {
+				evict = true
+				break
+			}
+		}
+
+		if evict {
+			if newDomn == nil {
+				newDomn = d.Copy()
+				newDomn.PreCommit()
+			}
+
+			for i, domainRec := range newDomn.Records {
+				if domainRec.Deployment.IsZero() ||
+					domainRec.Deployment == deployId ||
+					domainRec.IsDeleted() {
+
+					continue
+				}
+
+				if primaryKeys[domainRec.SubDomain+":"+
+					domainRec.Type+":"+domainRec.Select] {
+
+					newDomn.Records[i].Operation = DELETE
 				}
 			}
 		}
