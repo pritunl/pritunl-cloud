@@ -299,3 +299,34 @@ func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 
 	return
 }
+
+func SetPrimary(db *database.Database, unitId, deplyId bson.ObjectID,
+	timestamp time.Time) (updated bool, err error) {
+
+	coll := db.Units()
+
+	resp, err := coll.UpdateOne(db, &bson.M{
+		"_id": unitId,
+		"$or": []*bson.M{
+			{"primary_timestamp": &bson.M{
+				"$lt": timestamp,
+			}},
+			{"primary_timestamp": nil},
+		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"primary":           deplyId,
+			"primary_timestamp": timestamp,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if resp.ModifiedCount > 0 {
+		updated = true
+	}
+
+	return
+}
