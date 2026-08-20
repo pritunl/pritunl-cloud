@@ -22,6 +22,7 @@ type Record struct {
 	Organization    bson.ObjectID `bson:"organization" json:"organization"`
 	Resource        bson.ObjectID `bson:"resource" json:"resource"`
 	Deployment      bson.ObjectID `bson:"deployment" json:"deployment"`
+	Primary         bson.ObjectID `bson:"-" json:"primary"`
 	Timestamp       time.Time     `bson:"timestamp" json:"timestamp"`
 	DeleteTimestamp time.Time     `bson:"delete_timestamp" json:"delete_timestamp"`
 	SubDomain       string        `bson:"sub_domain" json:"sub_domain"`
