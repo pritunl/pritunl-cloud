@@ -651,8 +651,9 @@ func (s *Spec) parseDomain(db *database.Database,
 		}
 
 		record := &Record{
-			Name: utils.FilterName(recordYaml.Name),
-			Type: recordYaml.Type,
+			Name:   utils.FilterName(recordYaml.Name),
+			Type:   recordYaml.Type,
+			Select: recordYaml.Select,
 		}
 
 		kind, e := resources.Find(db, recordYaml.Domain)
