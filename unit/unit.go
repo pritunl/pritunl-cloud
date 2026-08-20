@@ -14,24 +14,25 @@ import (
 )
 
 type Unit struct {
-	Id            bson.ObjectID    `bson:"_id,omitempty" json:"id"`
-	Pod           bson.ObjectID    `bson:"pod" json:"pod"`
-	Organization  bson.ObjectID    `bson:"organization" json:"organization"`
-	Name          string           `bson:"name" json:"name"`
-	Kind          string           `bson:"kind" json:"kind"`
-	Count         int              `bson:"count" json:"count"`
-	Deployments   []bson.ObjectID  `bson:"deployments" json:"deployments"`
-	Spec          string           `bson:"spec" json:"spec"`
-	SpecIndex     int              `bson:"spec_index" json:"spec_index"`
-	SpecTimestamp time.Time        `bson:"spec_timestamp" json:"-"`
-	LastSpec      bson.ObjectID    `bson:"last_spec" json:"last_spec"`
-	DeploySpec    bson.ObjectID    `bson:"deploy_spec" json:"deploy_spec"`
-	Primary       bson.ObjectID    `bson:"primary" json:"primary"`
-	Hash          string           `bson:"hash" json:"hash"`
-	Journals      map[string]int32 `bson:"journals" json:"-"`
-	JournalsIndex int32            `bson:"journals_index" json:"-"`
-	journalsLock  sync.Mutex       `bson:"-" json:"-"`
-	newUnit       bool             `bson:"-" json:"-"`
+	Id               bson.ObjectID    `bson:"_id,omitempty" json:"id"`
+	Pod              bson.ObjectID    `bson:"pod" json:"pod"`
+	Organization     bson.ObjectID    `bson:"organization" json:"organization"`
+	Name             string           `bson:"name" json:"name"`
+	Kind             string           `bson:"kind" json:"kind"`
+	Count            int              `bson:"count" json:"count"`
+	Deployments      []bson.ObjectID  `bson:"deployments" json:"deployments"`
+	Spec             string           `bson:"spec" json:"spec"`
+	SpecIndex        int              `bson:"spec_index" json:"spec_index"`
+	SpecTimestamp    time.Time        `bson:"spec_timestamp" json:"-"`
+	LastSpec         bson.ObjectID    `bson:"last_spec" json:"last_spec"`
+	DeploySpec       bson.ObjectID    `bson:"deploy_spec" json:"deploy_spec"`
+	Primary          bson.ObjectID    `bson:"primary" json:"primary"`
+	PrimaryTimestamp time.Time        `bson:"primary_timestamp" json:"primary_timestamp"`
+	Hash             string           `bson:"hash" json:"hash"`
+	Journals         map[string]int32 `bson:"journals" json:"-"`
+	JournalsIndex    int32            `bson:"journals_index" json:"-"`
+	journalsLock     sync.Mutex       `bson:"-" json:"-"`
+	newUnit          bool             `bson:"-" json:"-"`
 }
 
 type Completion struct {
@@ -74,6 +75,8 @@ func (u *Unit) Refresh(db *database.Database) (err error) {
 	u.SpecTimestamp = unt.SpecTimestamp
 	u.LastSpec = unt.LastSpec
 	u.DeploySpec = unt.DeploySpec
+	u.Primary = unt.Primary
+	u.PrimaryTimestamp = unt.PrimaryTimestamp
 	u.Hash = unt.Hash
 	u.Journals = unt.Journals
 	u.JournalsIndex = unt.JournalsIndex
