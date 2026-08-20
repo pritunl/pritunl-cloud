@@ -1034,13 +1034,12 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 
 			activeDomnIds.Add(domn.Id)
 
-			if specRec.Select == spec.Primary && !unt.Primary.IsZero() &&
-				unt.Primary != deply.Id {
-
-				if newRecs[domn.Id] == nil {
-					newRecs[domn.Id] = []*domain.Record{}
+			var primaryRecord bson.ObjectID
+			if specRec.Select == spec.Primary && !unt.Primary.IsZero() {
+				if unt.Primary != deply.Id {
+					continue
 				}
-				continue
+				primaryRecord = unt.Primary
 			}
 
 			switch specRec.Type {
@@ -1051,6 +1050,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.A,
 						Value:        val,
 					}
@@ -1075,6 +1075,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.AAAA,
 						Value:        val,
 					}
@@ -1099,6 +1100,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.A,
 						Value:        val,
 					}
@@ -1123,6 +1125,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.A,
 						Value:        val,
 					}
@@ -1147,6 +1150,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.AAAA,
 						Value:        val,
 					}
@@ -1171,6 +1175,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.A,
 						Value:        val,
 					}
@@ -1195,6 +1200,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.AAAA,
 						Value:        val,
 					}
@@ -1219,6 +1225,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 						Organization: domn.Organization,
 						SubDomain:    specRec.Name,
 						Deployment:   deply.Id,
+						Primary:      primaryRecord,
 						Type:         domain.A,
 						Value:        val,
 					}
