@@ -16,6 +16,8 @@ const (
 	INSERT = "insert"
 	UPDATE = "update"
 	DELETE = "delete"
+
+	Primary = "primary"
 )
 
 var (
