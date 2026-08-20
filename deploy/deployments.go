@@ -1034,12 +1034,13 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 
 			activeDomnIds.Add(domn.Id)
 
-			var primaryRecord bson.ObjectID
-			if specRec.Select == spec.Primary && !unt.Primary.IsZero() {
-				if unt.Primary != deply.Id {
-					continue
+			if specRec.Select == spec.Primary && !unt.Primary.IsZero() &&
+				unt.Primary != deply.Id {
+
+				if newRecs[domn.Id] == nil {
+					newRecs[domn.Id] = []*domain.Record{}
 				}
-				primaryRecord = unt.Primary
+				continue
 			}
 
 			switch specRec.Type {
