@@ -27,6 +27,20 @@ func (c *Config) Print() {
 		fmt.Println("\nInstance: <nil>")
 	}
 
+	if c.Deployment != nil {
+		fmt.Println("\nDeployment:")
+		c.Deployment.Print("  ")
+	} else {
+		fmt.Println("\nDeployment: <nil>")
+	}
+
+	if c.Unit != nil {
+		fmt.Println("\nUnit:")
+		c.Unit.Print("  ")
+	} else {
+		fmt.Println("\nUnit: <nil>")
+	}
+
 	if c.Vpc != nil {
 		fmt.Println("\nVpc:")
 		c.Vpc.Print("  ")
@@ -110,6 +124,7 @@ func (u *PodUnit) Print(indent string) {
 	fmt.Printf("%sName: %s\n", indent, u.Name)
 	fmt.Printf("%sKind: %s\n", indent, u.Kind)
 	fmt.Printf("%sCount: %d\n", indent, u.Count)
+	fmt.Printf("%sPrimary: %s\n", indent, u.Primary.Hex())
 
 	fmt.Printf("%sPublicIps: %v\n", indent, u.PublicIps)
 	fmt.Printf("%sPublicIps6: %v\n", indent, u.PublicIps6)
@@ -215,6 +230,32 @@ func (i *Instance) Print(indent string) {
 	fmt.Printf("%sSpice: %t\n", indent, i.Spice)
 	fmt.Printf("%sGui: %t\n", indent, i.Gui)
 	fmt.Printf("%sDeployment: %s\n", indent, i.Deployment.Hex())
+}
+
+func (d *Deployment) Print(indent string) {
+	fmt.Printf("%sId: %s\n", indent, d.Id.Hex())
+	fmt.Printf("%sPod: %s\n", indent, d.Pod.Hex())
+	fmt.Printf("%sUnit: %s\n", indent, d.Unit.Hex())
+	fmt.Printf("%sOrganization: %s\n", indent, d.Organization.Hex())
+	fmt.Printf("%sTimestamp: %s\n", indent, d.Timestamp)
+	fmt.Printf("%sTags: %v\n", indent, d.Tags)
+	fmt.Printf("%sSpec: %s\n", indent, d.Spec.Hex())
+	fmt.Printf("%sKind: %s\n", indent, d.Kind)
+	fmt.Printf("%sState: %s\n", indent, d.State)
+	fmt.Printf("%sAction: %s\n", indent, d.Action)
+	fmt.Printf("%sStatus: %s\n", indent, d.Status)
+	fmt.Printf("%sFailover: %s\n", indent, d.Failover)
+}
+
+func (u *Unit) Print(indent string) {
+	fmt.Printf("%sId: %s\n", indent, u.Id.Hex())
+	fmt.Printf("%sPod: %s\n", indent, u.Pod.Hex())
+	fmt.Printf("%sOrganization: %s\n", indent, u.Organization.Hex())
+	fmt.Printf("%sName: %s\n", indent, u.Name)
+	fmt.Printf("%sKind: %s\n", indent, u.Kind)
+	fmt.Printf("%sCount: %d\n", indent, u.Count)
+	fmt.Printf("%sPrimary: %s\n", indent, u.Primary.Hex())
+	fmt.Printf("%sPrimaryTimestamp: %s\n", indent, u.PrimaryTimestamp)
 }
 
 func (v *Vpc) Print(indent string) {
