@@ -7,7 +7,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/journal"
 )
 
 func Get(db *database.Database, deplyId bson.ObjectID) (
@@ -368,11 +367,6 @@ func CleanDomains(db *database.Database, deplyId bson.ObjectID,
 
 func Remove(db *database.Database, deplyId bson.ObjectID) (err error) {
 	coll := db.Deployments()
-
-	err = journal.RemoveAll(db, deplyId)
-	if err != nil {
-		return
-	}
 
 	err = RemoveDomains(db, deplyId)
 	if err != nil {
