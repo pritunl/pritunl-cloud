@@ -130,6 +130,19 @@ func (r *Record) Validate(db *database.Database) (
 		return
 	}
 
+	switch r.Select {
+	case "":
+		break
+	case Primary:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "unknown_domain_record_select",
+			Message: "Unknown domain record select",
+		}
+		return
+	}
+
 	return
 }
 
