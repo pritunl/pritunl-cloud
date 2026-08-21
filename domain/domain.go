@@ -299,17 +299,11 @@ func (d *Domain) commitRecords(db *database.Database,
 	}
 	d.Records = newRecords
 
-	batches := map[string]map[string]*Record{}
+	batches := map[string][]*Record{}
 
 	for _, record := range d.Records {
 		batchKey := record.SubDomain + ":" + record.Type
-		if batches[batchKey] == nil {
-			batches[batchKey] = map[string]*Record{}
-		}
-		curRecord := batches[batchKey][record.Value]
-		if curRecord == nil || record.Priority() > curRecord.Priority() {
-			batches[batchKey][record.Value] = record
-		}
+		batches[batchKey] = append(batches[batchKey], record)
 	}
 
 	if setTtl {
@@ -336,14 +330,9 @@ func (d *Domain) commitRecords(db *database.Database,
 }
 
 func (d *Domain) syncBatches(db *database.Database, secr *secret.Secret,
-	batches map[string]map[string]*Record) (err error) {
+	batches map[string][]*Record) (err error) {
 
-	for _, recordMap := range batches {
-		records := make([]*Record, 0, len(recordMap))
-		for _, record := range recordMap {
-			records = append(records, record)
-		}
-
+	for _, records := range batches {
 		err = d.UpdateRecords(db, secr, records)
 		if err != nil {
 			return
@@ -354,7 +343,7 @@ func (d *Domain) syncBatches(db *database.Database, secr *secret.Secret,
 }
 
 func (d *Domain) asyncBatches(db *database.Database, secr *secret.Secret,
-	batches map[string]map[string]*Record) (err error) {
+	batches map[string][]*Record) (err error) {
 
 	waiters := &sync.WaitGroup{}
 	waiters.Add(len(batches))
@@ -365,12 +354,7 @@ func (d *Domain) asyncBatches(db *database.Database, secr *secret.Secret,
 	)
 	errs := make(chan error, len(batches))
 
-	for _, recordMap := range batches {
-		records := make([]*Record, 0, len(recordMap))
-		for _, record := range recordMap {
-			records = append(records, record)
-		}
-
+	for _, records := range batches {
 		go func() {
 			semaphore <- struct{}{}
 			defer func() {
@@ -399,9 +383,11 @@ func (d *Domain) asyncBatches(db *database.Database, secr *secret.Secret,
 func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 	records []*Record) (err error) {
 
-	ops := []*dns.Operation{}
 	subDomain := ""
 	dnsType := ""
+
+	valueRecords := map[string][]*Record{}
+	valueOrder := []string{}
 
 	for _, rec := range records {
 		if subDomain == "" {
@@ -422,23 +408,43 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 			return
 		}
 
-		switch rec.Operation {
-		case INSERT, UPDATE:
+		if valueRecords[rec.Value] == nil {
+			valueOrder = append(valueOrder, rec.Value)
+		}
+		valueRecords[rec.Value] = append(valueRecords[rec.Value], rec)
+	}
+
+	ops := []*dns.Operation{}
+	for _, value := range valueOrder {
+		upsert := false
+		retain := false
+
+		for _, rec := range valueRecords[value] {
+			switch rec.Operation {
+			case INSERT, UPDATE:
+				upsert = true
+				break
+			case DELETE:
+				break
+			default:
+				retain = true
+			}
+		}
+
+		if upsert {
 			ops = append(ops, &dns.Operation{
 				Operation: dns.UPSERT,
-				Value:     rec.Value,
+				Value:     value,
 			})
-			break
-		case DELETE:
-			ops = append(ops, &dns.Operation{
-				Operation: dns.DELETE,
-				Value:     rec.Value,
-			})
-			break
-		default:
+		} else if retain {
 			ops = append(ops, &dns.Operation{
 				Operation: dns.RETAIN,
-				Value:     rec.Value,
+				Value:     value,
+			})
+		} else {
+			ops = append(ops, &dns.Operation{
+				Operation: dns.DELETE,
+				Value:     value,
 			})
 		}
 	}
