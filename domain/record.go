@@ -218,6 +218,7 @@ func (r *Record) Insert(db *database.Database) (err error) {
 		"sub_domain": r.SubDomain,
 		"type":       r.Type,
 		"value":      r.Value,
+		"deployment": r.Deployment,
 	}, &bson.M{
 		"$set": r,
 	}, opts).Decode(&newRec)
