@@ -357,27 +357,27 @@ func (d *Database) Geo() (coll *Collection) {
 }
 
 func (d *Database) MetricsSystem() (coll *Collection) {
-	coll = d.GetCollection("metrics_system")
+	coll = d.getCollectionWeak("metrics_system")
 	return
 }
 
 func (d *Database) MetricsLoad() (coll *Collection) {
-	coll = d.GetCollection("metrics_load")
+	coll = d.getCollectionWeak("metrics_load")
 	return
 }
 
 func (d *Database) MetricsDisk() (coll *Collection) {
-	coll = d.GetCollection("metrics_disk")
+	coll = d.getCollectionWeak("metrics_disk")
 	return
 }
 
 func (d *Database) MetricsDiskIo() (coll *Collection) {
-	coll = d.GetCollection("metrics_diskio")
+	coll = d.getCollectionWeak("metrics_diskio")
 	return
 }
 
 func (d *Database) MetricsNetwork() (coll *Collection) {
-	coll = d.GetCollection("metrics_network")
+	coll = d.getCollectionWeak("metrics_network")
 	return
 }
 
