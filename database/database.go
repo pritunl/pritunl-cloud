@@ -939,6 +939,7 @@ func addIndexes() (err error) {
 			{"sub_domain", 1},
 			{"type", 1},
 			{"value", 1},
+			{"deployment", 1},
 		},
 		Unique: true,
 	}
