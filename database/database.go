@@ -1447,119 +1447,129 @@ func addIndexes() (err error) {
 		return
 	}
 
-	index = &Index{
-		Collection: db.MetricsSystem(),
-		Keys: &bson.D{
-			{"t", 1},
-			{"r", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-	index = &Index{
-		Collection: db.MetricsSystem(),
-		Keys: &bson.D{
-			{"t", 1},
-		},
-		Expire: 2160 * time.Hour,
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-
-	index = &Index{
-		Collection: db.MetricsLoad(),
-		Keys: &bson.D{
-			{"t", 1},
-			{"r", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-	index = &Index{
-		Collection: db.MetricsLoad(),
-		Keys: &bson.D{
-			{"t", 1},
-		},
-		Expire: 2160 * time.Hour,
-	}
-	err = index.Create()
-	if err != nil {
-		return
+	if !IsTimeSeries("metrics_system") {
+		index = &Index{
+			Collection: db.MetricsSystem(),
+			Keys: &bson.D{
+				{"r", 1},
+				{"t", 1},
+			},
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
+		index = &Index{
+			Collection: db.MetricsSystem(),
+			Keys: &bson.D{
+				{"t", 1},
+			},
+			Expire: 2160 * time.Hour,
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
 	}
 
-	index = &Index{
-		Collection: db.MetricsDisk(),
-		Keys: &bson.D{
-			{"t", 1},
-			{"r", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-	index = &Index{
-		Collection: db.MetricsDisk(),
-		Keys: &bson.D{
-			{"t", 1},
-		},
-		Expire: 2160 * time.Hour,
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-
-	index = &Index{
-		Collection: db.MetricsDiskIo(),
-		Keys: &bson.D{
-			{"t", 1},
-			{"r", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-	index = &Index{
-		Collection: db.MetricsDiskIo(),
-		Keys: &bson.D{
-			{"t", 1},
-		},
-		Expire: 2160 * time.Hour,
-	}
-	err = index.Create()
-	if err != nil {
-		return
+	if !IsTimeSeries("metrics_load") {
+		index = &Index{
+			Collection: db.MetricsLoad(),
+			Keys: &bson.D{
+				{"r", 1},
+				{"t", 1},
+			},
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
+		index = &Index{
+			Collection: db.MetricsLoad(),
+			Keys: &bson.D{
+				{"t", 1},
+			},
+			Expire: 2160 * time.Hour,
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
 	}
 
-	index = &Index{
-		Collection: db.MetricsNetwork(),
-		Keys: &bson.D{
-			{"t", 1},
-			{"r", 1},
-		},
+	if !IsTimeSeries("metrics_disk") {
+		index = &Index{
+			Collection: db.MetricsDisk(),
+			Keys: &bson.D{
+				{"r", 1},
+				{"t", 1},
+			},
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
+		index = &Index{
+			Collection: db.MetricsDisk(),
+			Keys: &bson.D{
+				{"t", 1},
+			},
+			Expire: 2160 * time.Hour,
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
 	}
-	err = index.Create()
-	if err != nil {
-		return
+
+	if !IsTimeSeries("metrics_diskio") {
+		index = &Index{
+			Collection: db.MetricsDiskIo(),
+			Keys: &bson.D{
+				{"r", 1},
+				{"t", 1},
+			},
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
+		index = &Index{
+			Collection: db.MetricsDiskIo(),
+			Keys: &bson.D{
+				{"t", 1},
+			},
+			Expire: 2160 * time.Hour,
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
 	}
-	index = &Index{
-		Collection: db.MetricsNetwork(),
-		Keys: &bson.D{
-			{"t", 1},
-		},
-		Expire: 2160 * time.Hour,
-	}
-	err = index.Create()
-	if err != nil {
-		return
+
+	if !IsTimeSeries("metrics_network") {
+		index = &Index{
+			Collection: db.MetricsNetwork(),
+			Keys: &bson.D{
+				{"r", 1},
+				{"t", 1},
+			},
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
+		index = &Index{
+			Collection: db.MetricsNetwork(),
+			Keys: &bson.D{
+				{"t", 1},
+			},
+			Expire: 2160 * time.Hour,
+		}
+		err = index.Create()
+		if err != nil {
+			return
+		}
 	}
 
 	return
@@ -1579,10 +1589,12 @@ func addCollections() (err error) {
 
 	eventsExists := false
 	isCapped := false
+	collTypes := map[string]string{}
 
 	for cursor.Next(db) {
 		item := &struct {
 			Name    string `bson:"name"`
+			Type    string `bson:"type"`
 			Options bson.M `bson:"options"`
 		}{}
 		err = cursor.Decode(item)
@@ -1591,6 +1603,8 @@ func addCollections() (err error) {
 			return
 		}
 
+		collTypes[item.Name] = item.Type
+
 		if item.Name == "events" {
 			eventsExists = true
 			if options, ok := item.Options["capped"]; ok {
@@ -1598,7 +1612,6 @@ func addCollections() (err error) {
 					isCapped = true
 				}
 			}
-			break
 		}
 	}
 
@@ -1635,6 +1648,11 @@ func addCollections() (err error) {
 			err = ParseError(err)
 			return
 		}
+	}
+
+	err = addTimeSeriesCollections(db, collTypes)
+	if err != nil {
+		return
 	}
 
 	return
