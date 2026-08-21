@@ -7,7 +7,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
-	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -468,11 +467,6 @@ func Remove(db *database.Database, instId bson.ObjectID) (err error) {
 	}
 
 	err = vpc.RemoveInstanceIps(db, instId)
-	if err != nil {
-		return
-	}
-
-	err = journal.RemoveAll(db, instId)
 	if err != nil {
 		return
 	}
