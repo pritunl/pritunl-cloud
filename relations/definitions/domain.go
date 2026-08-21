@@ -43,6 +43,18 @@ var Domain = relations.Query{
 			Key:   "value",
 			Label: "Value",
 		}, {
+			Key:   "select",
+			Label: "Select",
+			Format: func(vals ...any) any {
+				val := vals[0].(string)
+
+				if val != "" {
+					return val
+				}
+
+				return "-"
+			},
+		}, {
 			Key:   "timestamp",
 			Label: "Age",
 			Format: func(vals ...any) any {
