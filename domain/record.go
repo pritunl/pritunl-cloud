@@ -20,7 +20,6 @@ type Record struct {
 	Id              bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	Domain          bson.ObjectID `bson:"domain" json:"domain"`
 	Organization    bson.ObjectID `bson:"organization" json:"organization"`
-	Resource        bson.ObjectID `bson:"resource" json:"resource"`
 	Deployment      bson.ObjectID `bson:"deployment" json:"deployment"`
 	Select          string        `bson:"select" json:"select"`
 	Timestamp       time.Time     `bson:"timestamp" json:"timestamp"`
