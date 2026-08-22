@@ -24,7 +24,6 @@ type shapeData struct {
 	Comment          string        `json:"comment"`
 	Type             string        `json:"type"`
 	DeleteProtection bool          `json:"delete_protection"`
-	Datacenter       bson.ObjectID `json:"datacenter"`
 	Roles            []string      `json:"roles"`
 	Flexible         bool          `json:"flexible"`
 	DiskType         string        `json:"disk_type"`
@@ -68,7 +67,6 @@ func shapePut(c *gin.Context) {
 	shpe.Type = data.Type
 	shpe.Comment = data.Comment
 	shpe.DeleteProtection = data.DeleteProtection
-	shpe.Datacenter = data.Datacenter
 	shpe.Roles = data.Roles
 	shpe.Flexible = data.Flexible
 	shpe.DiskType = data.DiskType
@@ -81,7 +79,6 @@ func shapePut(c *gin.Context) {
 		"type",
 		"comment",
 		"delete_protection",
-		"datacenter",
 		"roles",
 		"flexible",
 		"disk_type",
@@ -132,7 +129,6 @@ func shapePost(c *gin.Context) {
 		Name:             data.Name,
 		Comment:          data.Comment,
 		DeleteProtection: data.DeleteProtection,
-		Datacenter:       data.Datacenter,
 		Roles:            data.Roles,
 		Flexible:         data.Flexible,
 		DiskType:         data.DiskType,
