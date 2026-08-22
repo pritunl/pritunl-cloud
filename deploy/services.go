@@ -262,7 +262,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 	inst := &instance.Instance{
 		Organization:        unt.Organization,
-		Zone:                spc.Instance.Zone,
+		Zone:                node.Self.Zone,
 		Vpc:                 spc.Instance.Vpc,
 		Subnet:              spc.Instance.Subnet,
 		Shape:               spc.Instance.Shape,
