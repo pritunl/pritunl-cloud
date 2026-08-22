@@ -117,7 +117,6 @@ func completionGet(c *gin.Context) {
 			data.Shapes = append(data.Shapes, &shape.Completion{
 				Id:         item.Id,
 				Name:       item.Name,
-				Datacenter: item.Datacenter,
 				Flexible:   item.Flexible,
 				Memory:     item.Memory,
 				Processors: item.Processors,
