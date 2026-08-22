@@ -472,7 +472,6 @@ func GetCompletion(db *database.Database, orgId bson.ObjectID,
 			&bson.M{
 				"_id":        1,
 				"name":       1,
-				"datacenter": 1,
 				"flexible":   1,
 				"memory":     1,
 				"processors": 1,
