@@ -273,7 +273,7 @@ func (i *Instance) Validate(db *database.Database) (
 			i.Memory = shpe.Memory
 		}
 
-		nde, e := shpe.FindNode(db, i.Processors, i.Memory)
+		nde, e := shpe.FindNode(db, i.Zone, i.Processors, i.Memory)
 		if e != nil {
 			err = e
 			return
