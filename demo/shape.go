@@ -13,7 +13,6 @@ var Shapes = []*shape.Shape{
 		Comment:          "",
 		Type:             "instance",
 		DeleteProtection: false,
-		Datacenter:       utils.ObjectIdHex("689733b7a7a35eae0dbaea1b"),
 		Roles: []string{
 			"shape-m2",
 		},
@@ -30,7 +29,6 @@ var Shapes = []*shape.Shape{
 		Comment:          "",
 		Type:             "instance",
 		DeleteProtection: false,
-		Datacenter:       utils.ObjectIdHex("689733b7a7a35eae0dbaea1b"),
 		Roles: []string{
 			"shape-m2",
 		},
@@ -47,7 +45,6 @@ var Shapes = []*shape.Shape{
 		Comment:          "",
 		Type:             "instance",
 		DeleteProtection: false,
-		Datacenter:       utils.ObjectIdHex("689733b7a7a35eae0dbaea1b"),
 		Roles: []string{
 			"shape-m2",
 		},
