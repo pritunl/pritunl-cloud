@@ -160,10 +160,25 @@ func (d *Domain) SyncRecords(db *database.Database,
 	for _, newRec := range records {
 		finalRec := recordMap[newRec.Id]
 		if finalRec != nil {
-			finalRec.SubDomain = newRec.SubDomain
-			finalRec.Type = newRec.Type
-			finalRec.Value = newRec.Value
-			finalRec.Operation = newRec.Operation
+			if !finalRec.Deployment.IsZero() {
+				if newRec.Operation == DELETE {
+					finalRec.Operation = DELETE
+				} else if newRec.SubDomain != finalRec.SubDomain ||
+					newRec.Type != finalRec.Type ||
+					newRec.Value != finalRec.Value {
+
+					errData = &errortypes.ErrorData{
+						Error:   "record_deployment_locked",
+						Message: "Cannot modify record managed by deployment",
+					}
+					return
+				}
+			} else {
+				finalRec.SubDomain = newRec.SubDomain
+				finalRec.Type = newRec.Type
+				finalRec.Value = newRec.Value
+				finalRec.Operation = newRec.Operation
+			}
 		} else {
 			finalRec = &Record{
 				Domain:       d.Id,
@@ -479,6 +494,12 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 				return
 			}
 			break
+		case UPDATE:
+			err = rec.Commit(db)
+			if err != nil {
+				return
+			}
+			break
 		case DELETE:
 			err = rec.Remove(db)
 			if err != nil {
@@ -486,7 +507,7 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 			}
 			break
 		default:
-			err = rec.Commit(db)
+			err = rec.CommitFields(db, set.NewSet("timestamp"))
 			if err != nil {
 				return
 			}
