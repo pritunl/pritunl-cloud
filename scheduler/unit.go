@@ -81,6 +81,8 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 			logrus.WithFields(logrus.Fields{
 				"unit":                u.unit.Id.Hex(),
 				"shape":               u.spec.Instance.Shape.Hex(),
+				"datacenter":          u.spec.Instance.Datacenter.Hex(),
+				"zone":                u.spec.Instance.Zone.Hex(),
 				"offline_count":       offlineCount,
 				"missing_mount_count": noMountCount,
 			}).Error("scheduler: Failed to find nodes to schedule")
