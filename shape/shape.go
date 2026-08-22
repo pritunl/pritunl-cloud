@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type Shape struct {
@@ -19,7 +18,6 @@ type Shape struct {
 	Comment          string        `bson:"comment" json:"comment"`
 	Type             string        `bson:"type" json:"type"`
 	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
-	Datacenter       bson.ObjectID `bson:"datacenter" json:"datacenter"`
 	Roles            []string      `bson:"roles" json:"roles"`
 	Flexible         bool          `bson:"flexible" json:"flexible"`
 	DiskType         string        `bson:"disk_type" json:"disk_type"`
@@ -32,7 +30,6 @@ type Shape struct {
 type Completion struct {
 	Id         bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name       string        `bson:"name" json:"name"`
-	Datacenter bson.ObjectID `bson:"datacenter" json:"datacenter"`
 	Flexible   bool          `bson:"flexible" json:"flexible"`
 	Memory     int           `bson:"memory" json:"memory"`
 	Processors int           `bson:"processors" json:"processors"`
