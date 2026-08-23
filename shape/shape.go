@@ -65,7 +65,11 @@ func (s *Shape) Validate(db *database.Database) (
 		s.DiskType = Qcow2
 		break
 	case Lvm:
-		break
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_disk_type",
+			Message: "Disk LVM type not implemented",
+		}
+		return
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_disk_type",
