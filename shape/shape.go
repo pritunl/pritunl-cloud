@@ -74,31 +74,13 @@ func (s *Shape) Validate(db *database.Database) (
 		return
 	}
 
-	if s.Datacenter.IsZero() {
-		errData = &errortypes.ErrorData{
-			Error:   "missing_datacenter",
-			Message: "Shape datacenter required",
-		}
-		return
-	}
-
 	return
 }
 
-func (s *Shape) FindNode(db *database.Database, processors, memory int) (
-	nde *node.Node, err error) {
+func (s *Shape) FindNode(db *database.Database, zneId bson.ObjectID,
+	processors, memory int) (nde *node.Node, err error) {
 
-	zones, err := zone.GetAllDatacenter(db, s.Datacenter)
-	if err != nil {
-		return
-	}
-
-	zoneIds := []bson.ObjectID{}
-	for _, zne := range zones {
-		zoneIds = append(zoneIds, zne.Id)
-	}
-
-	ndes, err := node.GetAllShape(db, zoneIds, s.Roles)
+	ndes, err := node.GetAllShape(db, []bson.ObjectID{zneId}, s.Roles)
 	if err != nil {
 		return
 	}
