@@ -800,7 +800,6 @@ func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 
 	shpe := &shape.Shape{
 		Name:       "m2-small",
-		Datacenter: node.Self.Datacenter,
 		Memory:     2048,
 		Processors: 1,
 		Flexible:   true,
