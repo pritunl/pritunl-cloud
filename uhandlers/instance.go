@@ -218,6 +218,14 @@ func instancePut(c *gin.Context) {
 
 	errData, err := inst.Validate(db)
 	if err != nil {
+		if _, ok := err.(*errortypes.NotFoundError); ok {
+			errData := &errortypes.ErrorData{
+				Error:   "node_not_found",
+				Message: "Failed to find available node",
+			}
+			c.JSON(400, errData)
+			return
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -438,6 +446,14 @@ func instancePost(c *gin.Context) {
 
 		errData, err := inst.Validate(db)
 		if err != nil {
+			if _, ok := err.(*errortypes.NotFoundError); ok {
+				errData := &errortypes.ErrorData{
+					Error:   "node_not_found",
+					Message: "Failed to find available node",
+				}
+				c.JSON(400, errData)
+				return
+			}
 			utils.AbortWithError(c, 500, err)
 			return
 		}
