@@ -125,6 +125,7 @@ type InstanceYaml struct {
 	Kind                string                 `yaml:"kind"`
 	Count               int                    `yaml:"count"`
 	Plan                string                 `yaml:"plan"`
+	Datacenter          string                 `yaml:"datacenter"`
 	Zone                string                 `yaml:"zone"`
 	Node                string                 `yaml:"node,omitempty"`
 	Shape               string                 `yaml:"shape,omitempty"`
