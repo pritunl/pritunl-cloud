@@ -58,6 +58,33 @@ config:
         gateway: {{.Gateway6}}
 `
 
+const netConfigBridgeTmpl = `version: 1
+config:
+  - type: physical
+    name: {{.Iface}}
+    mac_address: {{.Mac}}{{.Mtu}}
+  - type: bridge
+    name: br0
+    bridge_interfaces:
+      - {{.Iface}}
+    mac_address: {{.Mac}}{{.Mtu}}
+    params:
+      bridge_stp: false
+      bridge_fd: 0
+      bridge_maxwait: 0
+    subnets:
+      - type: static
+        address: {{.Address}}
+        netmask: {{.Netmask}}
+        gateway: {{.Gateway}}
+        dns_nameservers:
+          - {{.Dns1}}
+          - {{.Dns2}}
+      - type: static6
+        address: {{.AddressCidr6}}
+        gateway: {{.Gateway6}}
+`
+
 const netConfigLegacyTmpl = `version: 1
 config:
   - type: physical
@@ -204,6 +231,8 @@ var (
 		"cloud_bsd").Parse(cloudBsdConfigTmpl))
 	netConfig = template.Must(template.New(
 		"net").Parse(netConfigTmpl))
+	netConfigBridge = template.Must(template.New(
+		"net_bridge").Parse(netConfigBridgeTmpl))
 	netConfigLegacy = template.Must(template.New(
 		"net").Parse(netConfigLegacyTmpl))
 	netConfig2 = template.Must(template.New(
