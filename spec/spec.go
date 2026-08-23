@@ -53,19 +53,31 @@ func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
 		return
 	}
 
+	if s.Instance.Shape.IsZero() {
+		err = &errortypes.ParseError{
+			errors.New("spec: Missing instance shape"),
+		}
+		return
+	}
+
 	shpe, err := shape.Get(db, s.Instance.Shape)
 	if err != nil {
 		return
 	}
 
-	zones, err := zone.GetAllDatacenter(db, shpe.Datacenter)
-	if err != nil {
-		return
-	}
-
 	zoneIds := []bson.ObjectID{}
-	for _, zne := range zones {
-		zoneIds = append(zoneIds, zne.Id)
+	if !s.Instance.Zone.IsZero() {
+		zoneIds = append(zoneIds, s.Instance.Zone)
+	} else {
+		zones, e := zone.GetAllDatacenter(db, s.Instance.Datacenter)
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, zne := range zones {
+			zoneIds = append(zoneIds, zne.Id)
+		}
 	}
 
 	allNdes, err := node.GetAllShape(db, zoneIds, shpe.Roles)
@@ -293,22 +305,45 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
+	if dataYaml.Datacenter != "" {
+		kind, e := resources.Find(db, dataYaml.Datacenter)
+		if e != nil {
+			err = e
+			return
+		}
+		if kind == finder.DatacenterKind && resources.Datacenter != nil {
+			data.Datacenter = resources.Datacenter.Id
+		}
+	}
+
 	if dataYaml.Zone != "" {
 		kind, e := resources.Find(db, dataYaml.Zone)
 		if e != nil {
 			err = e
 			return
 		}
-		if kind == finder.ZoneKind && resources.Zone != nil {
+		if kind == finder.ZoneKind && resources.Zone != nil &&
+			resources.Datacenter != nil {
+
+			if !data.Datacenter.IsZero() &&
+				data.Datacenter != resources.Datacenter.Id {
+
+				errData = &errortypes.ErrorData{
+					Error:   "unit_datacenter_zone_invalid",
+					Message: "Unit zone is not in provided datacenter",
+				}
+				return
+			}
+
 			data.Datacenter = resources.Datacenter.Id
 			data.Zone = resources.Zone.Id
 		}
 	}
 
-	if data.Zone.IsZero() {
+	if data.Datacenter.IsZero() {
 		errData = &errortypes.ErrorData{
-			Error:   "unit_zone_missing",
-			Message: "Unit zone is missing",
+			Error:   "unit_datacenter_missing",
+			Message: "Unit datacenter or zone is missing",
 		}
 		return
 	}
@@ -320,6 +355,30 @@ func (s *Spec) parseInstance(db *database.Database,
 			return
 		}
 		if kind == finder.NodeKind && resources.Node != nil {
+			if !data.Zone.IsZero() {
+				if resources.Node.Zone != data.Zone {
+					errData = &errortypes.ErrorData{
+						Error:   "unit_node_zone_invalid",
+						Message: "Unit node is not in provided zone",
+					}
+					return
+				}
+			} else {
+				ndeDc, e := resources.Node.GetDatacenter(db)
+				if e != nil {
+					err = e
+					return
+				}
+
+				if ndeDc != data.Datacenter {
+					errData = &errortypes.ErrorData{
+						Error:   "unit_node_datacenter_invalid",
+						Message: "Unit node is not in provided datacenter",
+					}
+					return
+				}
+			}
+
 			data.Node = resources.Node.Id
 		}
 	}
