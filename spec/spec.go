@@ -998,7 +998,12 @@ func (s *Spec) CanMigrate(db *database.Database,
 		return
 	}
 
-	if s.Instance.Zone != spc.Instance.Zone {
+	deplyZone := deply.Zone
+	if inst != nil && !inst.Zone.IsZero() {
+		deplyZone = inst.Zone
+	}
+
+	if !spc.Instance.Zone.IsZero() && deplyZone != spc.Instance.Zone {
 		errData = &errortypes.ErrorData{
 			Error:   "instance_zone_conflict",
 			Message: "Cannot migrate to different instance zone",
@@ -1008,7 +1013,7 @@ func (s *Spec) CanMigrate(db *database.Database,
 
 	if s.Instance.Node != spc.Instance.Node &&
 		!spc.Instance.Node.IsZero() &&
-		inst.Node != spc.Instance.Node {
+		(inst == nil || inst.Node != spc.Instance.Node) {
 
 		errData = &errortypes.ErrorData{
 			Error:   "instance_node_coflict",
