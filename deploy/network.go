@@ -5,6 +5,7 @@ import (
 
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/bridges"
+	"github.com/pritunl/pritunl-cloud/fdb"
 	"github.com/pritunl/pritunl-cloud/hnetwork"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/iproute"
@@ -37,6 +38,11 @@ func (d *Network) Deploy() (err error) {
 	}
 
 	err = vxlan.ApplyState(d.stat)
+	if err != nil {
+		return
+	}
+
+	err = fdb.ApplyState(d.stat)
 	if err != nil {
 		return
 	}
