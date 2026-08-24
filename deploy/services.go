@@ -260,11 +260,18 @@ func (s *Pods) DeploySpec(db *database.Database,
 		return
 	}
 
+	instVpc := spc.Instance.Vpc
+	instSubnet := spc.Instance.Subnet
+	if schd.Realm != nil {
+		instVpc = schd.Realm.Vpc
+		instSubnet = schd.Realm.Subnet
+	}
+
 	inst := &instance.Instance{
 		Organization:        unt.Organization,
 		Zone:                node.Self.Zone,
-		Vpc:                 spc.Instance.Vpc,
-		Subnet:              spc.Instance.Subnet,
+		Vpc:                 instVpc,
+		Subnet:              instSubnet,
 		Shape:               spc.Instance.Shape,
 		Node:                node.Self.Id,
 		Image:               spc.Instance.Image,
