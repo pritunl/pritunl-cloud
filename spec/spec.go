@@ -45,7 +45,7 @@ type Spec struct {
 	Journal      *Journal      `bson:"journal,omitempty" json:"-"`
 }
 
-func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
+func (s *Spec) GetAllNodes(db *database.Database, rlm *Realm) (ndes Nodes,
 	offlineCount, noMountCount int, err error) {
 
 	org, err := organization.Get(db, s.Organization)
@@ -65,11 +65,18 @@ func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
 		return
 	}
 
+	dcId := s.Instance.Datacenter
+	zneId := s.Instance.Zone
+	if rlm != nil {
+		dcId = rlm.Datacenter
+		zneId = rlm.Zone
+	}
+
 	zoneIds := []bson.ObjectID{}
-	if !s.Instance.Zone.IsZero() {
-		zoneIds = append(zoneIds, s.Instance.Zone)
+	if !zneId.IsZero() {
+		zoneIds = append(zoneIds, zneId)
 	} else {
-		zones, e := zone.GetAllDatacenter(db, s.Instance.Datacenter)
+		zones, e := zone.GetAllDatacenter(db, dcId)
 		if e != nil {
 			err = e
 			return
@@ -305,6 +312,112 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
+	hasRealms := len(dataYaml.Realms) > 0
+	if hasRealms {
+		if dataYaml.Datacenter != "" || dataYaml.Zone != "" ||
+			dataYaml.Node != "" || dataYaml.Vpc != "" ||
+			dataYaml.Subnet != "" {
+
+			errData = &errortypes.ErrorData{
+				Error: "unit_realm_conflict",
+				Message: "Unit datacenter, zone, node, vpc and " +
+					"subnet cannot be set with realms",
+			}
+			return
+		}
+
+		for _, rlmYaml := range dataYaml.Realms {
+			rlmRes := &finder.Resources{
+				Organization: orgId,
+			}
+			rlm := &Realm{}
+
+			if rlmYaml.Datacenter != "" {
+				kind, e := rlmRes.Find(db, rlmYaml.Datacenter)
+				if e != nil {
+					err = e
+					return
+				}
+				if kind == finder.DatacenterKind && rlmRes.Datacenter != nil {
+					rlm.Datacenter = rlmRes.Datacenter.Id
+				}
+			}
+
+			if rlmYaml.Zone != "" {
+				kind, e := rlmRes.Find(db, rlmYaml.Zone)
+				if e != nil {
+					err = e
+					return
+				}
+				if kind == finder.ZoneKind && rlmRes.Zone != nil &&
+					rlmRes.Datacenter != nil {
+
+					if !rlm.Datacenter.IsZero() &&
+						rlm.Datacenter != rlmRes.Datacenter.Id {
+
+						errData = &errortypes.ErrorData{
+							Error: "unit_datacenter_zone_invalid",
+							Message: "Unit realm zone is not in " +
+								"provided datacenter",
+						}
+						return
+					}
+
+					rlm.Datacenter = rlmRes.Datacenter.Id
+					rlm.Zone = rlmRes.Zone.Id
+				}
+			}
+
+			if rlm.Datacenter.IsZero() {
+				errData = &errortypes.ErrorData{
+					Error:   "unit_realm_datacenter_missing",
+					Message: "Unit realm datacenter or zone is missing",
+				}
+				return
+			}
+
+			if rlmYaml.Vpc != "" {
+				kind, e := rlmRes.Find(db, rlmYaml.Vpc)
+				if e != nil {
+					err = e
+					return
+				}
+				if kind == finder.VpcKind && rlmRes.Vpc != nil {
+					rlm.Vpc = rlmRes.Vpc.Id
+				}
+			}
+
+			if rlm.Vpc.IsZero() {
+				errData = &errortypes.ErrorData{
+					Error:   "unit_realm_vpc_missing",
+					Message: "Unit realm VPC is missing",
+				}
+				return
+			}
+
+			if rlmYaml.Subnet != "" {
+				kind, e := rlmRes.Find(db, rlmYaml.Subnet)
+				if e != nil {
+					err = e
+					return
+				}
+				if kind == finder.SubnetKind && rlmRes.Subnet != nil {
+					rlm.Subnet = rlmRes.Subnet.Id
+				}
+			}
+
+			if rlm.Subnet.IsZero() {
+				errData = &errortypes.ErrorData{
+					Error:   "unit_realm_subnet_missing",
+					Message: "Unit realm subnet is missing",
+				}
+				return
+			}
+
+			data.Realms = append(data.Realms, rlm)
+		}
+	}
+
 	if dataYaml.Datacenter != "" {
 		kind, e := resources.Find(db, dataYaml.Datacenter)
 		if e != nil {
@@ -340,7 +453,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
-	if data.Datacenter.IsZero() {
+	if !hasRealms && data.Datacenter.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_datacenter_missing",
 			Message: "Unit datacenter or zone is missing",
@@ -413,7 +526,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
-	if data.Vpc.IsZero() {
+	if !hasRealms && data.Vpc.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_vpc_missing",
 			Message: "Unit VPC is missing",
@@ -432,7 +545,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
-	if data.Subnet.IsZero() {
+	if !hasRealms && data.Subnet.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_subnet_missing",
 			Message: "Unit subnet is missing",
@@ -990,44 +1103,92 @@ func (s *Spec) CanMigrate(db *database.Database,
 		return
 	}
 
-	if s.Instance.Datacenter != spc.Instance.Datacenter {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_datacenter_conflict",
-			Message: "Cannot migrate to different instance datacenter",
-		}
-		return
-	}
-
 	deplyZone := deply.Zone
-	if inst != nil && !inst.Zone.IsZero() {
-		deplyZone = inst.Zone
+	deplyVpc := s.Instance.Vpc
+	deplySubnet := s.Instance.Subnet
+	if inst != nil {
+		if !inst.Zone.IsZero() {
+			deplyZone = inst.Zone
+		}
+		if !inst.Vpc.IsZero() {
+			deplyVpc = inst.Vpc
+		}
+		if !inst.Subnet.IsZero() {
+			deplySubnet = inst.Subnet
+		}
 	}
 
-	if !spc.Instance.Zone.IsZero() && deplyZone != spc.Instance.Zone {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_zone_conflict",
-			Message: "Cannot migrate to different instance zone",
+	deplyDc := deply.Datacenter
+	if deplyDc.IsZero() && !deplyZone.IsZero() {
+		zne, e := zone.Get(db, deplyZone)
+		if e != nil {
+			err = e
+			return
 		}
-		return
+		deplyDc = zne.Datacenter
 	}
 
-	if s.Instance.Node != spc.Instance.Node &&
-		!spc.Instance.Node.IsZero() &&
-		(inst == nil || inst.Node != spc.Instance.Node) {
+	if len(spc.Instance.Realms) > 0 {
+		matched := false
+		for _, rlm := range spc.Instance.Realms {
+			if !rlm.Contains(deplyDc, deplyZone) {
+				continue
+			}
 
-		errData = &errortypes.ErrorData{
-			Error:   "instance_node_coflict",
-			Message: "Cannot migrate to different instance node",
-		}
-		return
-	}
+			if !deplyVpc.IsZero() && rlm.Vpc != deplyVpc {
+				continue
+			}
 
-	if s.Instance.Subnet != spc.Instance.Subnet {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_subnet_coflict",
-			Message: "Cannot migrate to different instance subnet",
+			if !deplySubnet.IsZero() && rlm.Subnet != deplySubnet {
+				continue
+			}
+
+			matched = true
+			break
 		}
-		return
+
+		if !matched {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_realm_conflict",
+				Message: "Cannot migrate deployment outside of realms",
+			}
+			return
+		}
+	} else {
+		if spc.Instance.Datacenter != deplyDc {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_datacenter_conflict",
+				Message: "Cannot migrate to different instance datacenter",
+			}
+			return
+		}
+
+		if !spc.Instance.Zone.IsZero() && deplyZone != spc.Instance.Zone {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_zone_conflict",
+				Message: "Cannot migrate to different instance zone",
+			}
+			return
+		}
+
+		if s.Instance.Node != spc.Instance.Node &&
+			!spc.Instance.Node.IsZero() &&
+			(inst == nil || inst.Node != spc.Instance.Node) {
+
+			errData = &errortypes.ErrorData{
+				Error:   "instance_node_coflict",
+				Message: "Cannot migrate to different instance node",
+			}
+			return
+		}
+
+		if deplySubnet != spc.Instance.Subnet {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_subnet_coflict",
+				Message: "Cannot migrate to different instance subnet",
+			}
+			return
+		}
 	}
 
 	curMountPaths := set.NewSet()
