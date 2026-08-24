@@ -8,12 +8,13 @@ import (
 
 type Instance struct {
 	Plan                bson.ObjectID   `bson:"plan,omitempty" json:"plan"`                           // clear
-	Datacenter          bson.ObjectID   `bson:"datacenter" json:"datacenter"`                         // hard
-	Zone                bson.ObjectID   `bson:"zone" json:"zone"`                                     // hard
+	Datacenter          bson.ObjectID   `bson:"datacenter,omitempty" json:"datacenter"`               // hard
+	Zone                bson.ObjectID   `bson:"zone,omitempty" json:"zone"`                           // hard
 	Node                bson.ObjectID   `bson:"node,omitempty" json:"node"`                           // hard
 	Shape               bson.ObjectID   `bson:"shape,omitempty" json:"shape"`                         // hard
-	Vpc                 bson.ObjectID   `bson:"vpc" json:"vpc"`                                       // hard
-	Subnet              bson.ObjectID   `bson:"subnet" json:"subnet"`                                 // hard
+	Vpc                 bson.ObjectID   `bson:"vpc,omitempty" json:"vpc"`                             // hard
+	Subnet              bson.ObjectID   `bson:"subnet,omitempty" json:"subnet"`                       // hard
+	Realms              []*Realm        `bson:"realms,omitempty" json:"realms"`                       // hard
 	Roles               []string        `bson:"roles" json:"roles"`                                   // soft
 	Processors          int             `bson:"processors" json:"processors"`                         // soft
 	Memory              int             `bson:"memory" json:"memory"`                                 // soft
@@ -36,6 +37,20 @@ type Instance struct {
 	Certificates        []bson.ObjectID `bson:"certificates" json:"certificates"`                     // soft
 	Secrets             []bson.ObjectID `bson:"secrets" json:"secrets"`                               // soft
 	Pods                []bson.ObjectID `bson:"pods" json:"pods"`                                     // soft
+}
+
+type Realm struct {
+	Datacenter bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Zone       bson.ObjectID `bson:"zone,omitempty" json:"zone"`
+	Vpc        bson.ObjectID `bson:"vpc" json:"vpc"`
+	Subnet     bson.ObjectID `bson:"subnet" json:"subnet"`
+}
+
+func (r *Realm) Contains(dcId, zneId bson.ObjectID) bool {
+	if !r.Zone.IsZero() {
+		return r.Zone == zneId
+	}
+	return r.Datacenter == dcId
 }
 
 type NodePort struct {
@@ -132,6 +147,7 @@ type InstanceYaml struct {
 	Failover            string                 `yaml:"failover"`
 	Vpc                 string                 `yaml:"vpc"`
 	Subnet              string                 `yaml:"subnet"`
+	Realms              []InstanceRealmYaml    `yaml:"realms"`
 	Roles               []string               `yaml:"roles"`
 	Processors          int                    `yaml:"processors"`
 	Memory              int                    `yaml:"memory"`
@@ -154,6 +170,13 @@ type InstanceYaml struct {
 	Secrets             []string               `yaml:"secrets"`
 	Pods                []string               `yaml:"pods"`
 	DiskSize            int                    `yaml:"diskSize"`
+}
+
+type InstanceRealmYaml struct {
+	Datacenter string `yaml:"datacenter,omitempty"`
+	Zone       string `yaml:"zone,omitempty"`
+	Vpc        string `yaml:"vpc"`
+	Subnet     string `yaml:"subnet"`
 }
 
 type InstanceMountYaml struct {
