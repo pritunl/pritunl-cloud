@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/spec"
 )
 
 type Scheduler struct {
@@ -21,6 +22,7 @@ type Scheduler struct {
 	Modified      time.Time             `bson:"modified" json:"modified"`
 	Count         int                   `bson:"count" json:"count"`
 	Spec          bson.ObjectID         `bson:"spec" json:"spec"`
+	Realm         *spec.Realm           `bson:"realm,omitempty" json:"realm"`
 	OverrideCount int                   `bson:"override_count" json:"override_count"`
 	Consumed      int                   `bson:"consumed" json:"consumed"`
 	Tickets       TicketsStore          `bson:"tickets" json:"tickets"`
