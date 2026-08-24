@@ -70,6 +70,32 @@ func (n *NetConf) bridgeMaster(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) bridgeLearningOff(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"bridge", "link",
+		"set", "dev", n.BridgeInternalIface,
+		"learning", "off",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"set", "dev", n.BridgeInternalIface,
+		"type", "bridge_slave", "fdb_flush",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (n *NetConf) bridgeRoute(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
@@ -227,6 +253,11 @@ func (n *NetConf) Bridge(db *database.Database) (err error) {
 	}
 
 	err = n.bridgeMaster(db)
+	if err != nil {
+		return
+	}
+
+	err = n.bridgeLearningOff(db)
 	if err != nil {
 		return
 	}
