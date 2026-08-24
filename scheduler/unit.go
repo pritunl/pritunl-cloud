@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"math/rand"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -62,6 +63,13 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		Failures:      map[bson.ObjectID]int{},
 	}
 
+	var rlm *spec.Realm
+	if len(u.spec.Instance.Realms) > 0 {
+		rlm = u.spec.Instance.Realms[rand.Intn(
+			len(u.spec.Instance.Realms))]
+		schd.Realm = rlm
+	}
+
 	if !u.spec.Instance.Node.IsZero() {
 		nde, e := node.Get(db, u.spec.Instance.Node)
 		if e != nil {
@@ -70,7 +78,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		}
 		u.nodes = []*node.Node{nde}
 	} else {
-		ndes, offlineCount, noMountCount, e := u.spec.GetAllNodes(db)
+		ndes, offlineCount, noMountCount, e := u.spec.GetAllNodes(db, rlm)
 		if e != nil {
 			err = e
 			return
@@ -78,11 +86,18 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		u.nodes = ndes
 
 		if len(u.nodes) == 0 {
+			dcId := u.spec.Instance.Datacenter
+			zneId := u.spec.Instance.Zone
+			if rlm != nil {
+				dcId = rlm.Datacenter
+				zneId = rlm.Zone
+			}
+
 			logrus.WithFields(logrus.Fields{
 				"unit":                u.unit.Id.Hex(),
 				"shape":               u.spec.Instance.Shape.Hex(),
-				"datacenter":          u.spec.Instance.Datacenter.Hex(),
-				"zone":                u.spec.Instance.Zone.Hex(),
+				"datacenter":          dcId.Hex(),
+				"zone":                zneId.Hex(),
 				"offline_count":       offlineCount,
 				"missing_mount_count": noMountCount,
 			}).Error("scheduler: Failed to find nodes to schedule")
