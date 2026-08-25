@@ -239,6 +239,50 @@ func (d *Domain) CommitRecordsSilent(db *database.Database) (err error) {
 	return
 }
 
+func (d *Domain) refreshRecords(db *database.Database) (err error) {
+	curRecs, err := GetRecordAll(db, &bson.M{
+		"domain": d.Id,
+	})
+	if err != nil {
+		return
+	}
+
+	curMap := map[bson.ObjectID]*Record{}
+	for _, curRec := range curRecs {
+		curMap[curRec.Id] = curRec
+	}
+
+	handled := map[bson.ObjectID]bool{}
+	newRecords := make([]*Record, 0, len(curRecs))
+
+	for _, rec := range d.Records {
+		if rec.Operation == "" && !rec.Id.IsZero() {
+			curRec := curMap[rec.Id]
+			if curRec != nil {
+				handled[rec.Id] = true
+				newRecords = append(newRecords, curRec)
+			}
+			continue
+		}
+
+		if !rec.Id.IsZero() {
+			handled[rec.Id] = true
+		}
+		newRecords = append(newRecords, rec)
+	}
+
+	for _, curRec := range curRecs {
+		if !handled[curRec.Id] {
+			newRecords = append(newRecords, curRec)
+		}
+	}
+
+	d.Records = newRecords
+	d.OrigRecords = curRecs
+
+	return
+}
+
 func (d *Domain) commitRecords(db *database.Database,
 	setTtl, weak bool) (err error) {
 
@@ -271,7 +315,7 @@ func (d *Domain) commitRecords(db *database.Database,
 	defer func() {
 		cancel()
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
 
 		e := Unlock(db, d.Id, lockId)
 		if e != nil {
@@ -301,6 +345,11 @@ func (d *Domain) commitRecords(db *database.Database,
 			}
 		}
 	}()
+
+	err = d.refreshRecords(db)
+	if err != nil {
+		return
+	}
 
 	var secr *secret.Secret
 	if d.Type != Local {
