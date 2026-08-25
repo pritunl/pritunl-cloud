@@ -37,7 +37,9 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		return
 	}
 
-	if u.spec.Instance.Shape.IsZero() && u.spec.Instance.Node.IsZero() {
+	if u.spec.Instance.Shape.IsZero() && u.spec.Instance.Node.IsZero() &&
+		len(u.spec.Instance.Realms) == 0 {
+
 		err = &errortypes.ParseError{
 			errors.New("scheduler: Missing shape or node"),
 		}
@@ -70,8 +72,13 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		schd.Realm = rlm
 	}
 
-	if !u.spec.Instance.Node.IsZero() {
-		nde, e := node.Get(db, u.spec.Instance.Node)
+	ndeId := u.spec.Instance.Node
+	if rlm != nil && !rlm.Node.IsZero() {
+		ndeId = rlm.Node
+	}
+
+	if !ndeId.IsZero() {
+		nde, e := node.Get(db, ndeId)
 		if e != nil {
 			err = e
 			return
