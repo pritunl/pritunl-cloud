@@ -42,6 +42,7 @@ type Instance struct {
 type Realm struct {
 	Datacenter bson.ObjectID `bson:"datacenter" json:"datacenter"`
 	Zone       bson.ObjectID `bson:"zone,omitempty" json:"zone"`
+	Node       bson.ObjectID `bson:"node,omitempty" json:"node"`
 	Vpc        bson.ObjectID `bson:"vpc" json:"vpc"`
 	Subnet     bson.ObjectID `bson:"subnet" json:"subnet"`
 }
@@ -175,6 +176,7 @@ type InstanceYaml struct {
 type InstanceRealmYaml struct {
 	Datacenter string `yaml:"datacenter,omitempty"`
 	Zone       string `yaml:"zone,omitempty"`
+	Node       string `yaml:"node,omitempty"`
 	Vpc        string `yaml:"vpc"`
 	Subnet     string `yaml:"subnet"`
 }
