@@ -128,6 +128,7 @@ type Instance struct {
 	Info                *Info               `bson:"info,omitempty" json:"info"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
 
+	curName             string                              `bson:"-" json:"-"`
 	curVpc              bson.ObjectID                       `bson:"-" json:"-"`
 	curSubnet           bson.ObjectID                       `bson:"-" json:"-"`
 	curDeleteProtection bool                                `bson:"-" json:"-"`
@@ -864,6 +865,7 @@ func (i *Instance) IsIpv6Only() bool {
 }
 
 func (i *Instance) PreCommit() {
+	i.curName = i.Name
 	i.curVpc = i.Vpc
 	i.curSubnet = i.Subnet
 	i.curDeleteProtection = i.DeleteProtection
@@ -1025,6 +1027,25 @@ func (i *Instance) PostCommit(db *database.Database) (
 		err = vpc.RemoveInstanceIp(db, i.Id, i.curVpc)
 		if err != nil {
 			return
+		}
+	}
+
+	if i.curName != "" && i.curName != i.Name {
+		dsk, e := disk.GetInstanceIndex(db, i.Id, "0")
+		if e != nil {
+			if _, ok := e.(*database.NotFoundError); !ok {
+				err = e
+				return
+			}
+		} else if dsk.Name == i.curName {
+			dsk.Name = i.Name
+
+			err = dsk.CommitFields(db, set.NewSet("name"))
+			if err != nil {
+				return
+			}
+
+			dskChange = true
 		}
 	}
 
