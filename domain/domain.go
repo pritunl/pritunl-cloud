@@ -528,6 +528,17 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 
 	domain := subDomain + "." + d.RootDomain
 
+	opsList := make([]string, 0, len(ops))
+	for _, op := range ops {
+		opsList = append(opsList, op.Operation+":"+op.Value)
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"domain":     domain,
+		"type":       dnsType,
+		"operations": opsList,
+	}).Info("domain: Updating domain records")
+
 	if d.Type != Local {
 		svc, e := d.GetDnsService(db)
 		if e != nil {
