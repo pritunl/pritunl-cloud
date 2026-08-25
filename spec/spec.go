@@ -376,6 +376,43 @@ func (s *Spec) parseInstance(db *database.Database,
 				return
 			}
 
+			if rlmYaml.Node != "" {
+				kind, e := rlmRes.Find(db, rlmYaml.Node)
+				if e != nil {
+					err = e
+					return
+				}
+				if kind == finder.NodeKind && rlmRes.Node != nil {
+					if !rlm.Zone.IsZero() {
+						if rlmRes.Node.Zone != rlm.Zone {
+							errData = &errortypes.ErrorData{
+								Error: "unit_node_zone_invalid",
+								Message: "Unit realm node is not in " +
+									"provided zone",
+							}
+							return
+						}
+					} else {
+						ndeDc, e := rlmRes.Node.GetDatacenter(db)
+						if e != nil {
+							err = e
+							return
+						}
+
+						if ndeDc != rlm.Datacenter {
+							errData = &errortypes.ErrorData{
+								Error: "unit_node_datacenter_invalid",
+								Message: "Unit realm node is not in " +
+									"provided datacenter",
+							}
+							return
+						}
+					}
+
+					rlm.Node = rlmRes.Node.Id
+				}
+			}
+
 			if rlmYaml.Vpc != "" {
 				kind, e := rlmRes.Find(db, rlmYaml.Vpc)
 				if e != nil {
@@ -507,7 +544,19 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
-	if data.Node.IsZero() && data.Shape.IsZero() {
+	if hasRealms {
+		if data.Shape.IsZero() {
+			for _, rlm := range data.Realms {
+				if rlm.Node.IsZero() {
+					errData = &errortypes.ErrorData{
+						Error:   "unit_node_missing",
+						Message: "Unit realm node or shape is missing",
+					}
+					return
+				}
+			}
+		}
+	} else if data.Node.IsZero() && data.Shape.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_node_missing",
 			Message: "Unit node or shape is missing",
@@ -1104,11 +1153,15 @@ func (s *Spec) CanMigrate(db *database.Database,
 	}
 
 	deplyZone := deply.Zone
+	deplyNode := deply.Node
 	deplyVpc := s.Instance.Vpc
 	deplySubnet := s.Instance.Subnet
 	if inst != nil {
 		if !inst.Zone.IsZero() {
 			deplyZone = inst.Zone
+		}
+		if !inst.Node.IsZero() {
+			deplyNode = inst.Node
 		}
 		if !inst.Vpc.IsZero() {
 			deplyVpc = inst.Vpc
@@ -1132,6 +1185,10 @@ func (s *Spec) CanMigrate(db *database.Database,
 		matched := false
 		for _, rlm := range spc.Instance.Realms {
 			if !rlm.Contains(deplyDc, deplyZone) {
+				continue
+			}
+
+			if !rlm.Node.IsZero() && rlm.Node != deplyNode {
 				continue
 			}
 
