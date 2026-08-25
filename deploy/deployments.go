@@ -1262,7 +1262,8 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 				})
 			}
 
-			changedDomn := domn.MergeRecords(deply.Id, domnNewRecs)
+			changedDomn := domn.MergeRecords(
+				deply.Id, domnNewRecs, unt.Primary == deply.Id)
 			if changedDomn != nil {
 				d.domainCommit(deply, changedDomn)
 			}
