@@ -212,8 +212,17 @@ func (d *Domain) SyncRecords(db *database.Database,
 	return
 }
 
+func (d *Domain) CommitRecordsWeak(db *database.Database) (err error) {
+	err = d.commitRecords(db, true, true)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (d *Domain) CommitRecords(db *database.Database) (err error) {
-	err = d.commitRecords(db, true)
+	err = d.commitRecords(db, true, false)
 	if err != nil {
 		return
 	}
@@ -222,7 +231,7 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 }
 
 func (d *Domain) CommitRecordsSilent(db *database.Database) (err error) {
-	err = d.commitRecords(db, false)
+	err = d.commitRecords(db, false, false)
 	if err != nil {
 		return
 	}
@@ -231,11 +240,15 @@ func (d *Domain) CommitRecordsSilent(db *database.Database) (err error) {
 }
 
 func (d *Domain) commitRecords(db *database.Database,
-	setTtl bool) (err error) {
+	setTtl, weak bool) (err error) {
 
 	acquired := false
+	attempts := 100
+	if weak {
+		attempts = 50
+	}
 	var lockId bson.ObjectID
-	for i := 0; i < 100; i++ {
+	for i := 0; i < attempts; i++ {
 		lockId, acquired, err = Lock(db, d.Id)
 		if err != nil {
 			return
