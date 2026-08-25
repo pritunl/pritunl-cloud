@@ -138,6 +138,12 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 				inst.CloudType = newSpec.Instance.CloudType
 			}
 		}
+		if curSpec.Instance.CloudInterface != newSpec.Instance.CloudInterface {
+			if newSpec.Instance.CloudInterface != "" {
+				instFields.Add("cloud_interface")
+				inst.CloudInterface = newSpec.Instance.CloudInterface
+			}
+		}
 		if curSpec.Instance.Tpm != newSpec.Instance.Tpm {
 			instFields.Add("tpm")
 			inst.Tpm = newSpec.Instance.Tpm
