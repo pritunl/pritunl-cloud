@@ -951,7 +951,8 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"domain_id": domn.Id.Hex(),
+			"deployment_id": deply.Id.Hex(),
+			"domain_id":     domn.Id.Hex(),
 		}).Info("deploy: Committing domain records")
 
 		err = domn.CommitRecordsWeak(db)
