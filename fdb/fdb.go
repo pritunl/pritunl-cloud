@@ -2,12 +2,18 @@ package fdb
 
 import (
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	curRecords  set.Set
+	lastRefresh time.Time
 )
 
 type Record struct {
@@ -85,9 +91,35 @@ func ApplyState(stat *state.State) (err error) {
 		})
 	}
 
-	curRecords, err := getRecords()
-	if err != nil {
-		return
+	if curRecords == nil {
+		records, e := getRecords()
+		if e != nil {
+			err = e
+			return
+		}
+
+		curRecords = records
+		lastRefresh = time.Now()
+	} else if time.Since(lastRefresh) > refreshTtl {
+		records, e := getRecords()
+		if e != nil {
+			err = e
+			return
+		}
+
+		driftAdd := records.Copy()
+		driftAdd.Subtract(curRecords)
+		driftRem := curRecords.Copy()
+		driftRem.Subtract(records)
+		if driftAdd.Len() > 0 || driftRem.Len() > 0 {
+			logrus.WithFields(logrus.Fields{
+				"added":   driftAdd.Len(),
+				"removed": driftRem.Len(),
+			}).Warning("fdb: Unexpected fdb table change")
+		}
+
+		curRecords = records
+		lastRefresh = time.Now()
 	}
 
 	remRecords := curRecords.Copy()
@@ -113,6 +145,8 @@ func ApplyState(stat *state.State) (err error) {
 		if err != nil {
 			return
 		}
+
+		curRecords.Remove(recrd)
 	}
 
 	addRecords := newRecords.Copy()
@@ -125,7 +159,7 @@ func ApplyState(stat *state.State) (err error) {
 	for recordInf := range addRecords.Iter() {
 		recrd := recordInf.(Record)
 
-		_, err = utils.ExecCombinedOutputLogged(
+		output, e := utils.ExecCombinedOutputLogged(
 			[]string{
 				"Cannot find device",
 			},
@@ -134,9 +168,16 @@ func ApplyState(stat *state.State) (err error) {
 			"dev", recrd.Iface,
 			"master", "static", "sticky",
 		)
-		if err != nil {
+		if e != nil {
+			err = e
 			return
 		}
+
+		if strings.Contains(output, "Cannot find device") {
+			continue
+		}
+
+		curRecords.Add(recrd)
 	}
 
 	return
