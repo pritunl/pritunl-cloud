@@ -1314,6 +1314,10 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	inactiveDeployments := d.stat.DeploymentsInactive()
 
 	for _, deply := range inactiveDeployments {
+		if deply.Node != node.Self.Id {
+			continue
+		}
+
 		switch deply.Action {
 		case deployment.Migrate:
 			d.migrate(deply)
@@ -1337,6 +1341,10 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, deply := range activeDeployments {
+		if deply.Node != node.Self.Id {
+			continue
+		}
+
 		if deply.Action == deployment.Migrate {
 			d.migrate(deply)
 			continue
