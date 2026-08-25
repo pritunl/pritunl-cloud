@@ -580,14 +580,14 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 }
 
 func (d *Domain) MergeRecords(deployId bson.ObjectID,
-	newRecs []*Record) (newDomn *Domain) {
+	newRecs []*Record, replaceSelect bool) (newDomn *Domain) {
 
 	comboKeys := map[string]bool{}
 	primaryKeys := map[string]bool{}
 	for _, newRec := range newRecs {
 		combo := newRec.SubDomain + ":" + newRec.Type
 		comboKeys[combo] = true
-		if newRec.Select == Primary {
+		if newRec.Select == Primary && replaceSelect {
 			primaryKeys[combo+":"+newRec.Select] = true
 		}
 	}
