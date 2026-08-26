@@ -1392,6 +1392,14 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) (bool, string) {
 	if cloudType == "" {
 		cloudType = Linux
 	}
+	curCloudInterface := curVirt.CloudInterface
+	if curCloudInterface == "" {
+		curCloudInterface = Default
+	}
+	cloudInterface := i.Virt.CloudInterface
+	if cloudInterface == "" {
+		cloudInterface = Default
+	}
 
 	if i.Virt.Memory != curVirt.Memory {
 		return true, "Memory size changed"
@@ -1431,6 +1439,9 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) (bool, string) {
 	}
 	if cloudType != curCloudType {
 		return true, "Cloud type changed"
+	}
+	if cloudInterface != curCloudInterface {
+		return true, "Cloud interface changed"
 	}
 	if i.Virt.NoPublicAddress != curVirt.NoPublicAddress {
 		return true, "Public address changed"
