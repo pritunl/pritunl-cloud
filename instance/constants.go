@@ -5,6 +5,8 @@ import (
 )
 
 const (
+	Default = "default"
+
 	Starting     = "starting"
 	Running      = "running"
 	Stopped      = "stopped"
