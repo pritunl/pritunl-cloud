@@ -77,6 +77,7 @@ type Instance struct {
 	DhcpServer          bool                `bson:"dhcp_server" json:"dhcp_server"`
 	CloudType           string              `bson:"cloud_type" json:"cloud_type"`
 	CloudScript         string              `bson:"cloud_script" json:"cloud_script"`
+	CloudInterface      string              `bson:"cloud_interface" json:"cloud_interface"`
 	SystemKind          string              `bson:"system_kind" json:"system_kind"`
 	DeleteProtection    bool                `bson:"delete_protection" json:"delete_protection"`
 	SkipSourceDestCheck bool                `bson:"skip_source_dest_check" json:"skip_source_dest_check"`
