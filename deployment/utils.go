@@ -287,7 +287,7 @@ func RemoveDomains(db *database.Database, deplyId bson.ObjectID) (
 			}
 
 			if changed {
-				err = domn.CommitRecords(db)
+				err = domn.CommitRecordsWeak(db)
 				if err != nil {
 					return
 				}
@@ -353,7 +353,7 @@ func CleanDomains(db *database.Database, deplyId bson.ObjectID,
 		}
 
 		if changed {
-			err = domn.CommitRecords(db)
+			err = domn.CommitRecordsWeak(db)
 			if err != nil {
 				return
 			}
