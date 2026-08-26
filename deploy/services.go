@@ -320,6 +320,9 @@ func (s *Pods) DeploySpec(db *database.Database,
 	if spc.Instance.CloudType != "" {
 		inst.CloudType = spc.Instance.CloudType
 	}
+	if spc.Instance.CloudInterface != "" {
+		inst.CloudInterface = spc.Instance.CloudInterface
+	}
 	if spc.Instance.HostAddress != nil {
 		inst.NoHostAddress = !*spc.Instance.HostAddress
 	}
