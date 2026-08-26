@@ -382,6 +382,17 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
+	if i.CloudInterface == "" {
+		i.CloudInterface = Default
+	}
+	if !ValidCloudInterfaces.Contains(i.CloudInterface) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_cloud_interface",
+			Message: "Invalid cloud init interface",
+		}
+		return
+	}
+
 	if i.SystemKind != "" && !ValidSystemKinds.Contains(i.SystemKind) {
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_system_kind",
