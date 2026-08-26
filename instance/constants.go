@@ -60,6 +60,10 @@ var (
 		LinuxLegacy,
 		BSD,
 	)
+	ValidCloudInterfaces = set.NewSet(
+		Default,
+		Bridge,
+	)
 	ValidSystemKinds = set.NewSet(
 		AlpineLinux,
 		ArchLinux,
