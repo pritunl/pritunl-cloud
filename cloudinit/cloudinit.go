@@ -747,6 +747,8 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	} else {
 		if virt.CloudType == instance.LinuxLegacy {
 			err = netConfigLegacy.Execute(output, data)
+		} else if virt.CloudInterface == instance.Bridge {
+			err = netConfigBridge.Execute(output, data)
 		} else {
 			err = netConfig.Execute(output, data)
 		}
