@@ -21,6 +21,7 @@ type Instance struct {
 	Uefi                *bool           `bson:"uefi,omitempty" json:"uefi"`                           // soft
 	SecureBoot          *bool           `bson:"secure_boot,omitempty" json:"secure_boot"`             // soft
 	CloudType           string          `bson:"cloud_type" json:"cloud_type"`                         // soft
+	CloudInterface      string          `bson:"cloud_interface" json:"cloud_interface"`               // soft
 	Tpm                 bool            `bson:"tpm" json:"tpm"`                                       // soft
 	Vnc                 bool            `bson:"vnc" json:"vnc"`                                       // soft
 	DeleteProtection    bool            `bson:"delete_protection" json:"delete_protection"`           // soft
@@ -155,6 +156,7 @@ type InstanceYaml struct {
 	Uefi                *bool                  `yaml:"uefi"`
 	SecureBoot          *bool                  `yaml:"secureBoot"`
 	CloudType           string                 `yaml:"cloudType"`
+	CloudInterface      string                 `yaml:"cloudInterface"`
 	Tpm                 bool                   `yaml:"tpm"`
 	Vnc                 bool                   `yaml:"vnc"`
 	DeleteProtection    bool                   `yaml:"deleteProtection"`
