@@ -815,6 +815,23 @@ func (s *Spec) parseInstance(db *database.Database,
 		return
 	}
 
+	switch dataYaml.CloudInterface {
+	case instance.Default:
+		data.CloudInterface = instance.Default
+		break
+	case instance.Bridge:
+		data.CloudInterface = instance.Bridge
+		break
+	case "":
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_unit_cloud_interface",
+			Message: "Unit instance cloud interface is invalid",
+		}
+		return
+	}
+
 	data.Tpm = dataYaml.Tpm
 	data.Vnc = dataYaml.Vnc
 	data.DeleteProtection = dataYaml.DeleteProtection
