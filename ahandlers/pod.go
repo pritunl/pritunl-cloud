@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -517,10 +518,12 @@ func podsGet(c *gin.Context) {
 }
 
 type PodUnit struct {
-	Id          bson.ObjectID           `json:"id"`
-	Pod         bson.ObjectID           `json:"pod"`
-	Kind        string                  `json:"kind"`
-	Deployments []*aggregate.Deployment `json:"deployments"`
+	Id               bson.ObjectID           `json:"id"`
+	Pod              bson.ObjectID           `json:"pod"`
+	Kind             string                  `json:"kind"`
+	Primary          bson.ObjectID           `json:"primary"`
+	PrimaryTimestamp time.Time               `json:"primary_timestamp"`
+	Deployments      []*aggregate.Deployment `json:"deployments"`
 }
 
 func podUnitGet(c *gin.Context) {
@@ -547,10 +550,12 @@ func podUnitGet(c *gin.Context) {
 		}
 
 		data := &PodUnit{
-			Id:          unit.Id,
-			Pod:         demo.Pods[0].Id,
-			Kind:        unit.Kind,
-			Deployments: deplys,
+			Id:               unit.Id,
+			Pod:              demo.Pods[0].Id,
+			Kind:             unit.Kind,
+			Primary:          unit.Primary,
+			PrimaryTimestamp: unit.PrimaryTimestamp,
+			Deployments:      deplys,
 		}
 
 		c.JSON(200, data)
@@ -586,10 +591,12 @@ func podUnitGet(c *gin.Context) {
 	}
 
 	pdUnit := &PodUnit{
-		Id:          unt.Id,
-		Pod:         unt.Pod,
-		Kind:        unt.Kind,
-		Deployments: deploys,
+		Id:               unt.Id,
+		Pod:              unt.Pod,
+		Kind:             unt.Kind,
+		Primary:          unt.Primary,
+		PrimaryTimestamp: unt.PrimaryTimestamp,
+		Deployments:      deploys,
 	}
 
 	c.JSON(200, pdUnit)
@@ -662,6 +669,38 @@ func podUnitDeploymentsPut(c *gin.Context) {
 
 		if errData != nil {
 			c.JSON(400, errData)
+			return
+		}
+
+		break
+	case deployment.Primary:
+		if len(data) != 1 {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		deply, err := deployment.GetUnit(db, unt.Id, data[0])
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				c.AbortWithStatus(404)
+			} else {
+				utils.AbortWithError(c, 500, err)
+			}
+			return
+		}
+
+		if deply.State != deployment.Deployed || deply.Action != "" {
+			errData := &errortypes.ErrorData{
+				Error:   "deployment_state_invalid",
+				Message: "Deployment state invalid for set primary",
+			}
+			c.JSON(400, errData)
+			return
+		}
+
+		_, err = unit.SetPrimary(db, unt.Id, deply.Id, time.Now())
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 
