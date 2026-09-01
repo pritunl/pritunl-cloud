@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -520,10 +521,12 @@ func podsGet(c *gin.Context) {
 }
 
 type PodUnit struct {
-	Id          bson.ObjectID           `json:"id"`
-	Pod         bson.ObjectID           `json:"pod"`
-	Kind        string                  `json:"kind"`
-	Deployments []*aggregate.Deployment `json:"deployments"`
+	Id               bson.ObjectID           `json:"id"`
+	Pod              bson.ObjectID           `json:"pod"`
+	Kind             string                  `json:"kind"`
+	Primary          bson.ObjectID           `json:"primary"`
+	PrimaryTimestamp time.Time               `json:"primary_timestamp"`
+	Deployments      []*aggregate.Deployment `json:"deployments"`
 }
 
 func podUnitGet(c *gin.Context) {
@@ -550,10 +553,12 @@ func podUnitGet(c *gin.Context) {
 		}
 
 		data := &PodUnit{
-			Id:          unit.Id,
-			Pod:         demo.Pods[0].Id,
-			Kind:        unit.Kind,
-			Deployments: deplys,
+			Id:               unit.Id,
+			Pod:              demo.Pods[0].Id,
+			Kind:             unit.Kind,
+			Primary:          unit.Primary,
+			PrimaryTimestamp: unit.PrimaryTimestamp,
+			Deployments:      deplys,
 		}
 
 		c.JSON(200, data)
@@ -590,10 +595,12 @@ func podUnitGet(c *gin.Context) {
 	}
 
 	pdUnit := &PodUnit{
-		Id:          unt.Id,
-		Pod:         unt.Pod,
-		Kind:        unt.Kind,
-		Deployments: deploys,
+		Id:               unt.Id,
+		Pod:              unt.Pod,
+		Kind:             unt.Kind,
+		Primary:          unt.Primary,
+		PrimaryTimestamp: unt.PrimaryTimestamp,
+		Deployments:      deploys,
 	}
 
 	c.JSON(200, pdUnit)
