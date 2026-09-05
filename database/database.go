@@ -909,6 +909,27 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
+	index = &Index{
+		Collection: db.Disks(),
+		Keys: &bson.D{
+			{"pool", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.Pools(),
+		Keys: &bson.D{
+			{"zone", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
 
 	index = &Index{
 		Collection: db.Domains(),
@@ -1393,6 +1414,17 @@ func addIndexes() (err error) {
 		Collection: db.Units(),
 		Keys: &bson.D{
 			{"pod", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.Deployments(),
+		Keys: &bson.D{
+			{"node", 1},
 		},
 	}
 	err = index.Create()
