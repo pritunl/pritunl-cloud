@@ -1265,6 +1265,7 @@ func (d *Deployments) domain(db *database.Database, unt *unit.Unit,
 				domnDataRecs = append(domnDataRecs, &deployment.RecordData{
 					Domain: rec.SubDomain + "." + domn.RootDomain,
 					Value:  rec.Value,
+					Select: rec.Select,
 				})
 			}
 
