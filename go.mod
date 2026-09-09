@@ -23,7 +23,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.76
 	github.com/oracle/oci-go-sdk/v65 v65.74.0
 	github.com/pritunl/mongo-go-driver/v2 v2.3.0
-	github.com/pritunl/tools v1.2.5
+	github.com/pritunl/tools v1.2.6
 	github.com/sirupsen/logrus v1.9.3
 	github.com/twilio/twilio-go v1.23.0
 	github.com/ua-parser/uap-go v0.0.0-20250213224047-9c035f085b90
