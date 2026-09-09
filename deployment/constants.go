@@ -16,6 +16,7 @@ const (
 	Archive = "archive"
 	Migrate = "migrate"
 	Restore = "restore"
+	Primary = "primary"
 
 	Ready    = "ready"
 	Snapshot = "snapshot"
