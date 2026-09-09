@@ -368,6 +368,11 @@ func main() {
 		}
 		defer ids.Close()
 
+		err = ids.OpenLog()
+		if err != nil {
+			return
+		}
+
 		err = ids.SetPrimary()
 		if err != nil {
 			logger.WithFields(logger.Fields{
@@ -376,6 +381,10 @@ func main() {
 			utils.DelayExit(1, 1*time.Second)
 			return
 		}
+
+		logger.Info("agent: Initiated deployment primary election")
+
+		time.Sleep(200 * time.Millisecond)
 
 		break
 	case "status":
