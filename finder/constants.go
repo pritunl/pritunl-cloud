@@ -13,6 +13,7 @@ const (
 	ImageKind       = "image"
 	BuildKind       = "build"
 	InstanceKind    = "instance"
+	DeploymentKind  = "deployment"
 	FirewallKind    = "firewall"
 	PlanKind        = "plan"
 	CertificateKind = "certificate"
