@@ -29,6 +29,13 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		key = keys[1]
 		resrcInf = config.Config.Instance
 		break
+	case finder.DeploymentKind:
+		if len(keys) != 2 || keys[0] != "self" {
+			break
+		}
+		key = keys[1]
+		resrcInf = config.Config.Deployment
+		break
 	case finder.VpcKind:
 		if len(keys) != 2 || keys[0] != "self" {
 			break
