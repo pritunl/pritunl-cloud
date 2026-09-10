@@ -1681,6 +1681,9 @@ func (i *Instance) VncConnect(db *database.Database,
 	if nde.Id == node.Self.Id {
 		vncHost = "127.0.0.1"
 	}
+	if vncHost == "" && nde.AdvertiseAddress != "" {
+		vncHost = nde.AdvertiseAddress
+	}
 	if vncHost == "" && len(nde.PrivateIps) > 0 {
 		vncHost = nde.PrivateIps[nde.DefaultInterface]
 		if vncHost == "" {
