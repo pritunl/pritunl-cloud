@@ -63,6 +63,7 @@ type nodeData struct {
 	HostNat                 bool                    `json:"host_nat"`
 	DefaultNoPublicAddress  bool                    `json:"default_no_public_address"`
 	DefaultNoPublicAddress6 bool                    `json:"default_no_public_address6"`
+	AdvertiseAddress        string                  `json:"advertise_address"`
 	JumboFrames             bool                    `json:"jumbo_frames"`
 	JumboFramesInternal     bool                    `json:"jumbo_frames_internal"`
 	Iscsi                   bool                    `json:"iscsi"`
@@ -175,6 +176,7 @@ func nodePut(c *gin.Context) {
 	nde.HostNat = data.HostNat
 	nde.DefaultNoPublicAddress = data.DefaultNoPublicAddress
 	nde.DefaultNoPublicAddress6 = data.DefaultNoPublicAddress6
+	nde.AdvertiseAddress = data.AdvertiseAddress
 	nde.JumboFrames = data.JumboFrames
 	nde.JumboFramesInternal = data.JumboFramesInternal
 	nde.Iscsi = data.Iscsi
@@ -223,6 +225,7 @@ func nodePut(c *gin.Context) {
 		"host_nat",
 		"default_no_public_address",
 		"default_no_public_address6",
+		"advertise_address",
 		"jumbo_frames",
 		"jumbo_frames_internal",
 		"iscsi",
