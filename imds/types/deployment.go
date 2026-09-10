@@ -20,9 +20,10 @@ type Deployment struct {
 	Action       string        `json:"action"`
 	Status       string        `json:"status"`
 	Failover     string        `json:"failover"`
+	Primary      bool          `json:"primary"`
 }
 
-func NewDeployment(deply *deployment.Deployment) *Deployment {
+func NewDeployment(deply *deployment.Deployment, primary bool) *Deployment {
 	if deply == nil {
 		return &Deployment{}
 	}
@@ -40,5 +41,6 @@ func NewDeployment(deply *deployment.Deployment) *Deployment {
 		Action:       deply.Action,
 		Status:       deply.Status,
 		Failover:     deply.Failover,
+		Primary:      primary,
 	}
 }
