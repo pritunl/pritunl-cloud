@@ -644,6 +644,19 @@ func (n *Node) Validate(db *database.Database) (
 		}
 	}
 
+	n.AdvertiseAddress = strings.TrimSpace(n.AdvertiseAddress)
+	if n.AdvertiseAddress != "" && net.ParseIP(n.AdvertiseAddress) == nil {
+		n.AdvertiseAddress = utils.FilterDomain(n.AdvertiseAddress)
+		if n.AdvertiseAddress == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "advertise_address_invalid",
+				Message: "Advertise address must be a domain, " +
+					"IPv4 or IPv6 address",
+			}
+			return
+		}
+	}
+
 	if !n.Zone.IsZero() {
 		zne, e := zone.Get(db, n.Zone)
 		if e != nil {
@@ -1401,6 +1414,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
 	n.Blocks6 = nde.Blocks6
+	n.AdvertiseAddress = nde.AdvertiseAddress
 	n.AdvisoryCount = nde.AdvisoryCount
 	n.AdvisoryMax = nde.AdvisoryMax
 	n.Shares = nde.Shares
