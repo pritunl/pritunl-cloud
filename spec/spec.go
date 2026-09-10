@@ -189,6 +189,15 @@ func (s *Spec) parseFirewall(db *database.Database,
 		Ingress: []*Rule{},
 	}
 
+	dataYaml.Name = utils.FilterName(dataYaml.Name)
+	if dataYaml.Name == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "firewall_name_missing",
+			Message: "Firewall name is missing",
+		}
+		return
+	}
+
 	if dataYaml.Kind != finder.FirewallKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
@@ -263,6 +272,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	data := &Instance{}
 	var shpe *shape.Shape
 
+	dataYaml.Name = utils.FilterName(dataYaml.Name)
 	if dataYaml.Name == "" {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_name_missing",
@@ -621,10 +631,19 @@ func (s *Spec) parseInstance(db *database.Database,
 	}
 
 	if dataYaml.Mounts != nil {
-		for _, mount := range dataYaml.Mounts {
+		for _, mountYaml := range dataYaml.Mounts {
 			mnt := Mount{
-				Path:  utils.FilterPath(mount.Path),
+				Path:  utils.FilterPath(mountYaml.Path),
 				Disks: []bson.ObjectID{},
+			}
+
+			mountYaml.Name = utils.FilterName(mountYaml.Name)
+			if mountYaml.Name == "" {
+				errData = &errortypes.ErrorData{
+					Error:   "mount_name_missing",
+					Message: "Mount name is missing",
+				}
+				return
 			}
 
 			if mnt.Path == "" {
@@ -635,10 +654,10 @@ func (s *Spec) parseInstance(db *database.Database,
 				return
 			}
 
-			if mount.Type == HostPath {
-				mnt.Name = mount.Name
+			if mountYaml.Type == HostPath {
+				mnt.Name = mountYaml.Name
 				mnt.Type = HostPath
-				mnt.HostPath = utils.FilterPath(mount.HostPath)
+				mnt.HostPath = utils.FilterPath(mountYaml.HostPath)
 
 				if mnt.Name == "" {
 					errData = &errortypes.ErrorData{
@@ -655,7 +674,7 @@ func (s *Spec) parseInstance(db *database.Database,
 					}
 					return
 				}
-			} else if mount.Type == Disk || mount.Type == "" {
+			} else if mountYaml.Type == Disk || mountYaml.Type == "" {
 				mnt.Type = Disk
 
 				if mnt.Path == "" {
@@ -666,7 +685,7 @@ func (s *Spec) parseInstance(db *database.Database,
 					return
 				}
 
-				for _, dsk := range mount.Disks {
+				for _, dsk := range mountYaml.Disks {
 					kind, e := resources.Find(db, dsk)
 					if e != nil {
 						err = e
@@ -871,6 +890,15 @@ func (s *Spec) parseDomain(db *database.Database,
 		Records: []*Record{},
 	}
 
+	dataYaml.Name = utils.FilterName(dataYaml.Name)
+	if dataYaml.Name == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "domain_name_missing",
+			Message: "Domain name is missing",
+		}
+		return
+	}
+
 	if dataYaml.Kind != finder.DomainKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
@@ -884,12 +912,21 @@ func (s *Spec) parseDomain(db *database.Database,
 	}
 
 	for _, recordYaml := range dataYaml.Records {
-		if recordYaml.Name == "" || recordYaml.Type == "" {
+		recordYaml.Name = utils.FilterName(recordYaml.Name)
+		if recordYaml.Name == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "domain_record_name_missing",
+				Message: "Domain record name is missing",
+			}
+			return
+		}
+
+		if recordYaml.Type == "" {
 			continue
 		}
 
 		record := &Record{
-			Name:   utils.FilterName(recordYaml.Name),
+			Name:   recordYaml.Name,
 			Type:   recordYaml.Type,
 			Select: recordYaml.Select,
 		}
@@ -925,6 +962,15 @@ func (s *Spec) parseJournal(db *database.Database,
 		Inputs: []*Input{},
 	}
 
+	dataYaml.Name = utils.FilterName(dataYaml.Name)
+	if dataYaml.Name == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "journal_name_missing",
+			Message: "Journal name is missing",
+		}
+		return
+	}
+
 	if dataYaml.Kind != finder.JournalKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
@@ -940,12 +986,21 @@ func (s *Spec) parseJournal(db *database.Database,
 		}
 	}
 
-	for _, input := range dataYaml.Inputs {
+	for _, inputYaml := range dataYaml.Inputs {
+		inputYaml.Key = utils.FilterName(inputYaml.Key)
+		if inputYaml.Key == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "journal_input_key_missing",
+				Message: "Journal input key is missing",
+			}
+			return
+		}
+
 		data.Inputs = append(data.Inputs, &Input{
-			Key:  input.Key,
-			Type: input.Type,
-			Unit: input.Unit,
-			Path: input.Path,
+			Key:  inputYaml.Key,
+			Type: inputYaml.Type,
+			Unit: inputYaml.Unit,
+			Path: inputYaml.Path,
 		})
 	}
 
