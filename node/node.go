@@ -118,6 +118,7 @@ type Node struct {
 	PublicIps               []string           `bson:"public_ips" json:"public_ips"`
 	PublicIps6              []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps              map[string]string  `bson:"private_ips" json:"private_ips"`
+	AdvertiseAddress        string             `bson:"advertise_address" json:"advertise_address"`
 	AdvisoryCount           int                `bson:"advisory_count" json:"advisory_count"`
 	AdvisoryMax             int                `bson:"advisory_max" json:"advisory_max"`
 	SoftwareVersion         string             `bson:"software_version" json:"software_version"`
@@ -275,6 +276,7 @@ func (n *Node) Copy() *Node {
 		PublicIps:               n.PublicIps,
 		PublicIps6:              n.PublicIps6,
 		PrivateIps:              n.PrivateIps,
+		AdvertiseAddress:        n.AdvertiseAddress,
 		AdvisoryCount:           n.AdvisoryCount,
 		AdvisoryMax:             n.AdvisoryMax,
 		SoftwareVersion:         n.SoftwareVersion,
