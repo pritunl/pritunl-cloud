@@ -160,7 +160,7 @@ func Schedule(db *database.Database, unt *unit.Unit) (err error) {
 
 	switch unt.Kind {
 	case deployment.Instance, deployment.Image:
-		schd := NewInstanceUnit(unt, spc)
+		schd := NewInstanceUnit(unt, spc, nil)
 		err = schd.Schedule(db, 0)
 		if err != nil {
 			return
@@ -171,7 +171,7 @@ func Schedule(db *database.Database, unt *unit.Unit) (err error) {
 }
 
 func ManualSchedule(db *database.Database, unt *unit.Unit,
-	specId bson.ObjectID, count int) (
+	specId bson.ObjectID, count int, realmName string) (
 	errData *errortypes.ErrorData, err error) {
 
 	exists, e := Exists(db, unt.Id)
@@ -214,13 +214,33 @@ func ManualSchedule(db *database.Database, unt *unit.Unit,
 		return
 	}
 
+	var rlm *spec.Realm
+	if realmName != "" {
+		if spc.Instance != nil {
+			for _, specRlm := range spc.Instance.Realms {
+				if specRlm.Name == realmName {
+					rlm = specRlm
+					break
+				}
+			}
+		}
+
+		if rlm == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "unit_deploy_realm_invalid",
+				Message: "Invalid unit deployment realm",
+			}
+			return
+		}
+	}
+
 	switch unt.Kind {
 	case deployment.Instance, deployment.Image:
 		if unt.Kind == deployment.Image {
 			count = 1
 		}
 
-		schd := NewInstanceUnit(unt, spc)
+		schd := NewInstanceUnit(unt, spc, rlm)
 		err = schd.Schedule(db, count)
 		if err != nil {
 			return
