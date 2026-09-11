@@ -46,6 +46,7 @@ type podsData struct {
 type podsDeployData struct {
 	Count int           `json:"count"`
 	Spec  bson.ObjectID `json:"spec"`
+	Realm string        `json:"realm"`
 }
 
 type deploymentData struct {
@@ -737,13 +738,16 @@ func podUnitDeploymentPost(c *gin.Context) {
 		return
 	}
 
+	data.Realm = utils.FilterName(data.Realm)
+
 	unt, err := unit.Get(db, unitId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	errData, err := scheduler.ManualSchedule(db, unt, data.Spec, data.Count)
+	errData, err := scheduler.ManualSchedule(db, unt, data.Spec,
+		data.Count, data.Realm)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
