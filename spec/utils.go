@@ -17,6 +17,7 @@ type Named struct {
 	Unit      bson.ObjectID `bson:"unit" json:"unit"`
 	Index     int           `bson:"index" json:"index"`
 	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
+	Realms    []*Realm      `bson:"realms,omitempty" json:"realms"`
 }
 
 var (
@@ -122,6 +123,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 				"unit":      1,
 				"index":     1,
 				"timestamp": 1,
+				"realms":    "$instance.realms",
 			}).
 			SetSort(bson.D{{"timestamp", -1}}).
 			SetSkip(skip).
