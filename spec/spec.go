@@ -342,6 +342,16 @@ func (s *Spec) parseInstance(db *database.Database,
 			}
 			rlm := &Realm{}
 
+			rlmYaml.Name = utils.FilterName(rlmYaml.Name)
+			if rlmYaml.Name == "" {
+				errData = &errortypes.ErrorData{
+					Error:   "realm_name_missing",
+					Message: "Realm name is missing",
+				}
+				return
+			}
+			rlm.Name = rlmYaml.Name
+
 			if rlmYaml.Datacenter != "" {
 				kind, e := rlmRes.Find(db, rlmYaml.Datacenter)
 				if e != nil {
