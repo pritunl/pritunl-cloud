@@ -18,6 +18,7 @@ import (
 type InstanceUnit struct {
 	unit  *unit.Unit
 	spec  *spec.Spec
+	realm *spec.Realm
 	count int
 	nodes spec.Nodes
 }
@@ -66,7 +67,10 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	}
 
 	var rlm *spec.Realm
-	if len(u.spec.Instance.Realms) > 0 {
+	if u.realm != nil {
+		rlm = u.realm
+		schd.Realm = rlm
+	} else if len(u.spec.Instance.Realms) > 0 {
 		rlm = u.spec.Instance.Realms[rand.Intn(
 			len(u.spec.Instance.Realms))]
 		schd.Realm = rlm
@@ -351,12 +355,13 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	return
 }
 
-func NewInstanceUnit(unt *unit.Unit, spc *spec.Spec) (
+func NewInstanceUnit(unt *unit.Unit, spc *spec.Spec, rlm *spec.Realm) (
 	instUnit *InstanceUnit) {
 
 	instUnit = &InstanceUnit{
-		unit: unt,
-		spec: spc,
+		unit:  unt,
+		spec:  spc,
+		realm: rlm,
 	}
 
 	return
