@@ -17,21 +17,22 @@ import (
 )
 
 type Advisory struct {
-	Id                 bson.ObjectID                  `bson:"_id" json:"id"`
-	Organization       bson.ObjectID                  `bson:"organization" json:"organization"`
-	Reference          string                         `bson:"reference" json:"reference"`
-	Dismissed          bool                           `bson:"dismissed" json:"dismissed"`
-	Type               string                         `bson:"type" json:"type"`
-	Updated            time.Time                      `bson:"updated" json:"updated"`
-	Severity           string                         `bson:"severity" json:"severity"`
-	Description        string                         `bson:"description" json:"description"`
-	Score              int                            `bson:"score" json:"score"`
-	Packages           []string                       `bson:"packages" json:"packages"`
-	Vuxmls             []string                       `bson:"vuxmls" json:"vuxmls"`
-	Vulnerabilities    []*vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
-	Instances          []bson.ObjectID                `bson:"instances" json:"instances"`
-	Nodes              []bson.ObjectID                `bson:"nodes" json:"nodes"`
-	DismissedResources []bson.ObjectID                `bson:"dismissed_resources" json:"dismissed_resources"`
+	Id                   bson.ObjectID                  `bson:"_id" json:"id"`
+	Organization         bson.ObjectID                  `bson:"organization" json:"organization"`
+	Reference            string                         `bson:"reference" json:"reference"`
+	Dismissed            bool                           `bson:"dismissed" json:"dismissed"`
+	Type                 string                         `bson:"type" json:"type"`
+	Updated              time.Time                      `bson:"updated" json:"updated"`
+	Severity             string                         `bson:"severity" json:"severity"`
+	Description          string                         `bson:"description" json:"description"`
+	Score                int                            `bson:"score" json:"score"`
+	Packages             []string                       `bson:"packages" json:"packages"`
+	Vuxmls               []string                       `bson:"vuxmls" json:"vuxmls"`
+	Vulnerabilities      []*vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
+	Instances            []bson.ObjectID                `bson:"instances" json:"instances"`
+	Nodes                []bson.ObjectID                `bson:"nodes" json:"nodes"`
+	UnreachableResources []bson.ObjectID                `bson:"unreachable_resources" json:"unreachable_resources"`
+	DismissedResources   []bson.ObjectID                `bson:"dismissed_resources" json:"dismissed_resources"`
 }
 
 func (a *Advisory) Validate(db *database.Database) (
@@ -98,6 +99,9 @@ func (a *Advisory) Validate(db *database.Database) (
 	if a.DismissedResources == nil {
 		a.DismissedResources = []bson.ObjectID{}
 	}
+	if a.UnreachableResources == nil {
+		a.UnreachableResources = []bson.ObjectID{}
+	}
 
 	for _, vuln := range a.Vulnerabilities {
 		if vuln == nil {
@@ -116,9 +120,29 @@ func (a *Advisory) Validate(db *database.Database) (
 	return
 }
 
+func scoreAnalysis(analysis *vulnerability.Analysis) int {
+	score := analysis.RealScore
+
+	if score >= 9.0 {
+		return Critical
+	}
+	if score >= 6.0 {
+		return High
+	}
+	if score >= 3.0 {
+		return Medium
+	}
+
+	return Low
+}
+
 func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
 	if vuln == nil {
 		return Low
+	}
+
+	if vuln.Analysis != nil {
+		return scoreAnalysis(vuln.Analysis)
 	}
 
 	isNetwork := vuln.Vector == vulnerability.Network
@@ -176,6 +200,37 @@ func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
 	}
 
 	return Low
+}
+
+func (a *Advisory) Reachable(components []*telemetry.Component) bool {
+	if len(a.Vulnerabilities) == 0 {
+		return true
+	}
+
+	for _, vuln := range a.Vulnerabilities {
+		if vuln == nil || vuln.Analysis.Reachable(components) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (a *Advisory) UpdateUnreachable(resourceId bson.ObjectID,
+	components []*telemetry.Component) {
+
+	reachable := a.Reachable(components)
+
+	idx := slices.Index(a.UnreachableResources, resourceId)
+	if reachable {
+		if idx >= 0 {
+			a.UnreachableResources = slices.Delete(
+				a.UnreachableResources, idx, idx+1)
+		}
+	} else if idx < 0 {
+		a.UnreachableResources = append(
+			a.UnreachableResources, resourceId)
+	}
 }
 
 func (a *Advisory) UpdateScore() {
@@ -325,17 +380,18 @@ func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
 	vulns []*vulnerability.Vulnerability) *Advisory {
 
 	return &Advisory{
-		Organization:       orgId,
-		Reference:          updt.Id,
-		Type:               RedHat,
-		Updated:            now,
-		Severity:           updt.Severity,
-		Description:        updt.Description,
-		Packages:           updt.Packages,
-		Vulnerabilities:    vulns,
-		Instances:          []bson.ObjectID{},
-		Nodes:              []bson.ObjectID{},
-		DismissedResources: []bson.ObjectID{},
+		Organization:         orgId,
+		Reference:            updt.Id,
+		Type:                 RedHat,
+		Updated:              now,
+		Severity:             updt.Severity,
+		Description:          updt.Description,
+		Packages:             updt.Packages,
+		Vulnerabilities:      vulns,
+		Instances:            []bson.ObjectID{},
+		Nodes:                []bson.ObjectID{},
+		DismissedResources:   []bson.ObjectID{},
+		UnreachableResources: []bson.ObjectID{},
 	}
 }
 
@@ -343,16 +399,17 @@ func NewUpdate(ref string, typ string, orgId bson.ObjectID,
 	now time.Time) *Advisory {
 
 	return &Advisory{
-		Organization:       orgId,
-		Reference:          ref,
-		Type:               typ,
-		Updated:            now,
-		Severity:           "",
-		Description:        "",
-		Packages:           []string{},
-		Vulnerabilities:    []*vulnerability.Vulnerability{},
-		Instances:          []bson.ObjectID{},
-		Nodes:              []bson.ObjectID{},
-		DismissedResources: []bson.ObjectID{},
+		Organization:         orgId,
+		Reference:            ref,
+		Type:                 typ,
+		Updated:              now,
+		Severity:             "",
+		Description:          "",
+		Packages:             []string{},
+		Vulnerabilities:      []*vulnerability.Vulnerability{},
+		Instances:            []bson.ObjectID{},
+		Nodes:                []bson.ObjectID{},
+		DismissedResources:   []bson.ObjectID{},
+		UnreachableResources: []bson.ObjectID{},
 	}
 }
