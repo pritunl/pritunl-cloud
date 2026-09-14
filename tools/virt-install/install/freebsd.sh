@@ -36,10 +36,9 @@ fi
 # New Password: cloud
 # Retype New Password: cloud
 # Network Configuration: Manual
-# Network Configuration: Enter
-# Network Configuration: Enter
-# Network Configuration: Enter
-# Network Configuration: No
+# Network Configuration [IPv4]: Enter
+# Network Configuration [IPv4]: Enter
+# Network Configuration [IPv6]: No
 # IPv4 DNS #1: 8.8.8.8
 # IPv4 DNS #2: 8.8.4.4
 # Time Zone Selector: Enter
