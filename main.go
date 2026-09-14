@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/cli/iface"
 	"github.com/pritunl/pritunl-cloud/cmd"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/logger"
@@ -17,6 +18,7 @@ const help = `
 Usage: pritunl-cloud COMMAND
 
 Commands:
+  tui               Start tui
   version           Show version
   mongo             Set MongoDB URI
   set               Set a setting
@@ -77,6 +79,24 @@ func main() {
 
 		Init()
 		err := cmd.Node()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "tui":
+		flag.Parse()
+
+		autoColor := false
+		for _, arg := range flag.Args() {
+			switch arg {
+			case "--auto-color":
+				autoColor = true
+				break
+			}
+		}
+
+		InitLimited()
+		err := iface.Iface(autoColor)
 		if err != nil {
 			panic(err)
 		}
