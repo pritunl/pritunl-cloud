@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="oraclelinux10"
-ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL10/u1/x86_64/OracleLinux-R10-U1-x86_64-dvd.iso"
-ISO_HASH="82fa2b70a18fb268c5ef013e298f85bba0d0e6c7ae882c49a3f67c02ee6d68de"
+ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL10/u2/x86_64/OracleLinux-R10-U2-x86_64-dvd.iso"
+ISO_HASH="1ce70064f677e9af4ef6ff3bcd0d2de26e956236b36d2c857b533588aa06958b"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
