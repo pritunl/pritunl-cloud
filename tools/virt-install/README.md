@@ -79,6 +79,7 @@ curl -o /root/setup.sh http://192.168.122.1:8000/arch.sh
 echo "7385d5a8093b4c1363870a6454e34768aa4f8158b91e0a4bd2988b8b1a9bdaa9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # debian
+sudo true
 sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
 echo "cfd58b0b0a4c5da755f5f28eb71159fc32c75836a058ce8927cd3f3b853754ea /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
 
@@ -88,7 +89,7 @@ echo "ef59ae6a30463a20798458e0e9c389b004d531a8fabd533fef5223017250691b /root/set
 
 # freebsd
 fetch -o /root/setup.sh http://192.168.122.1:8000/freebsd.sh
-[ "$(sha256sum /root/setup.sh)" = "6aab203e3ba7c8aa31ad9dc7da38f701f3871a1ae339904e1f1e6f774ec58238  /root/setup.sh" ] && sh /root/setup.sh
+[ "$(sha256sum /root/setup.sh)" = "9150878d2b61a7d98d878bd06c7f91eefe6c4aa7b0f42dcf95c493c4c64d8e14  /root/setup.sh" ] && sh /root/setup.sh
 
 # rhel7
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel7.sh
