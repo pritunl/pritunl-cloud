@@ -20,7 +20,7 @@ sysrc ifconfig_vtnet0=""
 sysrc ifconfig_vtnet0_ipv6=""
 
 pkg search cloud-init
-pkg install -y dual-dhclient py311-cloud-init
+pkg install -y dual-dhclient py312-cloud-init
 sysrc dhclient_program="/usr/local/sbin/dual-dhclient"
 
 pw mod user root -w no
