@@ -265,6 +265,15 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
+	if dta.Zone.IsZero() {
+		errData := &errortypes.ErrorData{
+			Error:   "zone_missing",
+			Message: "Missing required zone",
+		}
+		c.JSON(400, errData)
+		return
+	}
+
 	zne, err := zone.Get(db, dta.Zone)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
