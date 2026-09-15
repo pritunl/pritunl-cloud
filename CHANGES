@@ -9,6 +9,7 @@ Add instance and node metrics
 Add Google Cloud DNS support
 Add support to manual renew certificates
 Add instance network interface bridge mode
+Improve instance networking
 Live DNS server updates
 Fix host network bridge management issues
 Optimize database indexes
