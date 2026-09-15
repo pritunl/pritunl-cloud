@@ -28,12 +28,7 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 
 	data.Metrics = telemetry.Metrics.GetAll()
 
-	updates, ok := telemetry.Updates.Get()
-	if ok {
-		data.Updates = updates
-	} else {
-		data.Updates = nil
-	}
+	data.Updates, data.Components = telemetry.GetUpdates()
 
 	return
 }
