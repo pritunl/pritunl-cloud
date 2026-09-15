@@ -169,6 +169,10 @@ func CountResource(resourceId bson.ObjectID, advisories []*Advisory) (
 			continue
 		}
 
+		if slices.Contains(adv.UnreachableResources, resourceId) {
+			continue
+		}
+
 		if adv.Score >= High {
 			count += 1
 		}
@@ -269,6 +273,10 @@ func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
 			continue
 		}
 
+		if slices.Contains(adv.UnreachableResources, instId) {
+			continue
+		}
+
 		if adv.Score >= High {
 			count += 1
 		}
@@ -332,6 +340,10 @@ func UpdateNode(db *database.Database, nodeId bson.ObjectID) (err error) {
 		}
 
 		if slices.Contains(adv.DismissedResources, nodeId) {
+			continue
+		}
+
+		if slices.Contains(adv.UnreachableResources, nodeId) {
 			continue
 		}
 
