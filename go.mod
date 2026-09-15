@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.43.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.30
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.65.2
+	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/cloudflare/cloudflare-go v0.104.0
 	github.com/coredns/coredns v1.14.4
 	github.com/dropbox/godropbox v0.0.0-20230623171840-436d2007a9fd
@@ -55,7 +56,6 @@ require (
 	github.com/bytedance/sonic/loader v0.5.2 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260811164956-006e29f97886 // indirect
 	github.com/charmbracelet/x/ansi v0.11.8 // indirect
 	github.com/charmbracelet/x/exp/ordered v0.1.0 // indirect
