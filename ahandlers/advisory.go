@@ -1,7 +1,6 @@
 package ahandlers
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -73,8 +72,15 @@ func advisoriesGet(c *gin.Context) {
 	reference := strings.TrimSpace(c.Query("reference"))
 	if reference != "" {
 		query["reference"] = &bson.M{
-			"$regex": fmt.Sprintf(
-				"^([^:]+:)?%s", regexp.QuoteMeta(reference)),
+			"$regex":   regexp.QuoteMeta(reference),
+			"$options": "i",
+		}
+	}
+
+	cve := strings.TrimSpace(c.Query("cve"))
+	if cve != "" {
+		query["vulnerabilities._id"] = &bson.M{
+			"$regex":   regexp.QuoteMeta(cve),
 			"$options": "i",
 		}
 	}
