@@ -181,6 +181,12 @@ func Sync(db *database.Database, namespace string,
 			}
 		}
 
+		var components []*telemetry.Component
+		if ste.Components != nil {
+			components = validateComponents(db, instId, ste.Components)
+			data["guest.components"] = components
+		}
+
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
@@ -219,7 +225,7 @@ func Sync(db *database.Database, namespace string,
 			}
 
 			err = manifest.UpsertInstanceUpdates(
-				db, instId, orgId, updts)
+				db, instId, orgId, updts, components)
 			if err != nil {
 				return
 			}
@@ -634,6 +640,12 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 			}
 		}
 
+		var components []*telemetry.Component
+		if ste.Components != nil {
+			components = validateComponents(db, instId, ste.Components)
+			data["guest.components"] = components
+		}
+
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
@@ -646,7 +658,7 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 
 		if ste.Updates != nil {
 			err = manifest.UpsertInstanceUpdates(
-				db, instId, orgId, ste.Updates)
+				db, instId, orgId, ste.Updates, components)
 			if err != nil {
 				return
 			}
@@ -803,6 +815,39 @@ func State(db *database.Database, instId bson.ObjectID,
 			errors.Wrap(err, "agent: Failed to decode imds host sync resp"),
 		}
 		return
+	}
+
+	return
+}
+
+func validateComponents(db *database.Database, instId bson.ObjectID,
+	components []*telemetry.Component) (comps []*telemetry.Component) {
+
+	comps = []*telemetry.Component{}
+	invalid := 0
+
+	for _, comp := range components {
+		if comp == nil {
+			continue
+		}
+
+		errData, err := comp.Validate(db)
+		if err != nil || errData != nil {
+			invalid += 1
+			continue
+		}
+
+		comps = append(comps, comp)
+		if len(comps) >= telemetry.ComponentsLimit {
+			break
+		}
+	}
+
+	if invalid > 0 {
+		logrus.WithFields(logrus.Fields{
+			"instance": instId.Hex(),
+			"count":    invalid,
+		}).Warn("imds: Skipped invalid components")
 	}
 
 	return
