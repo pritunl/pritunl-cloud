@@ -17,21 +17,26 @@ const (
 )
 
 type Updates struct {
-	Id           bson.ObjectID       `bson:"_id,omitempty" json:"id"`
-	Type         string              `bson:"type" json:"type"`
-	Organization bson.ObjectID       `bson:"organization" json:"organization"`
-	Resource     bson.ObjectID       `bson:"resource" json:"resource"`
-	Timestamp    time.Time           `bson:"timestamp" json:"timestamp"`
-	Variant      string              `bson:"variant" json:"variant"`
-	Updates      []*telemetry.Update `bson:"updates" json:"updates"`
-	Count        int                 `bson:"count" json:"count"`
-	Max          int                 `bson:"max" json:"max"`
+	Id           bson.ObjectID          `bson:"_id,omitempty" json:"id"`
+	Type         string                 `bson:"type" json:"type"`
+	Organization bson.ObjectID          `bson:"organization" json:"organization"`
+	Resource     bson.ObjectID          `bson:"resource" json:"resource"`
+	Timestamp    time.Time              `bson:"timestamp" json:"timestamp"`
+	Variant      string                 `bson:"variant" json:"variant"`
+	Updates      []*telemetry.Update    `bson:"updates" json:"updates"`
+	Components   []*telemetry.Component `bson:"components" json:"components"`
+	Count        int                    `bson:"count" json:"count"`
+	Max          int                    `bson:"max" json:"max"`
 }
 
 func (u *Updates) Upsert(db *database.Database) (err error) {
 	coll := db.Manifests()
 
 	u.Timestamp = time.Now()
+
+	if u.Components == nil {
+		u.Components = []*telemetry.Component{}
+	}
 
 	_, err = coll.UpdateOne(db, &bson.M{
 		"type":     u.Type,
@@ -44,6 +49,7 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 			"timestamp":    u.Timestamp,
 			"variant":      u.Variant,
 			"updates":      u.Updates,
+			"components":   u.Components,
 		},
 		"$setOnInsert": &bson.M{
 			"count": 0,
@@ -59,7 +65,8 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 }
 
 func upsertUpdates(db *database.Database, variant string,
-	resource, orgId bson.ObjectID, updates []*telemetry.Update) (err error) {
+	resource, orgId bson.ObjectID, updates []*telemetry.Update,
+	components []*telemetry.Component) (err error) {
 
 	entry := &Updates{
 		Type:         UpdatesType,
@@ -67,6 +74,7 @@ func upsertUpdates(db *database.Database, variant string,
 		Organization: orgId,
 		Variant:      variant,
 		Updates:      updates,
+		Components:   components,
 	}
 
 	err = entry.Upsert(db)
@@ -78,9 +86,11 @@ func upsertUpdates(db *database.Database, variant string,
 }
 
 func UpsertInstanceUpdates(db *database.Database,
-	instId, orgId bson.ObjectID, updates []*telemetry.Update) (err error) {
+	instId, orgId bson.ObjectID, updates []*telemetry.Update,
+	components []*telemetry.Component) (err error) {
 
-	err = upsertUpdates(db, InstanceVariant, instId, orgId, updates)
+	err = upsertUpdates(db, InstanceVariant, instId, orgId,
+		updates, components)
 	if err != nil {
 		return
 	}
@@ -89,9 +99,11 @@ func UpsertInstanceUpdates(db *database.Database,
 }
 
 func UpsertNodeUpdates(db *database.Database,
-	instId, orgId bson.ObjectID, updates []*telemetry.Update) (err error) {
+	instId, orgId bson.ObjectID, updates []*telemetry.Update,
+	components []*telemetry.Component) (err error) {
 
-	err = upsertUpdates(db, NodeVariant, instId, orgId, updates)
+	err = upsertUpdates(db, NodeVariant, instId, orgId,
+		updates, components)
 	if err != nil {
 		return
 	}
