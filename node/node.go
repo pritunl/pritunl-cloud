@@ -150,6 +150,7 @@ type MetricData struct {
 	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
 	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
 	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
+	Components []*telemetry.Component    `bson:"components" json:"components"`
 }
 
 type Completion struct {
@@ -649,7 +650,7 @@ func (n *Node) Validate(db *database.Database) (
 		n.AdvertiseAddress = utils.FilterDomain(n.AdvertiseAddress)
 		if n.AdvertiseAddress == "" {
 			errData = &errortypes.ErrorData{
-				Error:   "advertise_address_invalid",
+				Error: "advertise_address_invalid",
 				Message: "Advertise address must be a domain, " +
 					"IPv4 or IPv6 address",
 			}
@@ -1359,6 +1360,16 @@ func (n *Node) update(db *database.Database) (err error) {
 
 	updates, ok := n.getUpdateDetails(db)
 
+	components, componentsOk := telemetry.Components.Get()
+	if componentsOk {
+		fields["metric.components"] = components
+	} else if ok {
+		components = telemetry.Components.Current()
+		if components == nil {
+			components = []*telemetry.Component{}
+		}
+	}
+
 	nde := &Node{}
 	err = coll.FindOneAndUpdate(
 		db,
@@ -1376,7 +1387,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	}
 
 	if ok {
-		err = manifest.UpsertNodeUpdates(db, n.Id, Global, updates)
+		err = manifest.UpsertNodeUpdates(
+			db, n.Id, Global, updates, components)
 		if err != nil {
 			return
 		}
