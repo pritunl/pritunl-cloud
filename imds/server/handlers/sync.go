@@ -43,6 +43,9 @@ func syncPut(c *gin.Context) {
 	if data.Updates != nil {
 		telemetry.Updates.Set(data.Updates)
 	}
+	if data.Components != nil {
+		telemetry.Components.Set(data.Components)
+	}
 
 	if data.Output != nil {
 		for _, entry := range data.Output {
@@ -96,12 +99,7 @@ func hostSyncPut(c *gin.Context) {
 	ste.Metrics = telemetry.Metrics.GetAll()
 	ste.Primary, ste.PrimaryTimestamp = state.Global.GetSetPrimary()
 
-	updates, ok := telemetry.Updates.Get()
-	if ok {
-		ste.Updates = updates
-	} else {
-		ste.Updates = nil
-	}
+	ste.Updates, ste.Components = telemetry.GetUpdates()
 
 	c.JSON(200, ste)
 }
@@ -112,12 +110,7 @@ func hostSyncGet(c *gin.Context) {
 	ste.Journals = state.Global.GetJournals()
 	ste.Metrics = telemetry.Metrics.GetAll()
 
-	updates, ok := telemetry.Updates.Get()
-	if ok {
-		ste.Updates = updates
-	} else {
-		ste.Updates = nil
-	}
+	ste.Updates, ste.Components = telemetry.GetUpdates()
 
 	c.JSON(200, ste)
 }
