@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/manifest"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/vulnerability"
 	"github.com/pritunl/pritunl-cloud/vuxml"
 	"github.com/sirupsen/logrus"
@@ -30,6 +31,7 @@ type advisoryProcessor struct {
 	advisories      map[bson.ObjectID]map[string]*advisory.Advisory
 	vuxmlDb         map[string]*vuxml.VuxmlEntry
 	dismissals      map[bson.ObjectID]map[string]*advisory.Dismissal
+	components      map[bson.ObjectID][]*telemetry.Component
 }
 
 func (a *advisoryProcessor) Run(db *database.Database) (err error) {
@@ -61,24 +63,31 @@ func (a *advisoryProcessor) Run(db *database.Database) (err error) {
 
 	for orgId, orgAdvs := range a.advisories {
 		for advId, adv := range orgAdvs {
+			for _, resourceId := range adv.Instances {
+				adv.UpdateUnreachable(resourceId, a.components[resourceId])
+			}
+			for _, resourceId := range adv.Nodes {
+				adv.UpdateUnreachable(resourceId, a.components[resourceId])
+			}
 
 			_, err = coll.UpdateOne(db, &bson.M{
 				"organization": orgId,
 				"reference":    advId,
 			}, &bson.M{
 				"$set": &bson.M{
-					"organization":    orgId,
-					"reference":       advId,
-					"type":            adv.Type,
-					"updated":         adv.Updated,
-					"severity":        adv.Severity,
-					"description":     adv.Description,
-					"score":           adv.Score,
-					"packages":        adv.Packages,
-					"vuxmls":          adv.Vuxmls,
-					"vulnerabilities": adv.Vulnerabilities,
-					"instances":       adv.Instances,
-					"nodes":           adv.Nodes,
+					"organization":          orgId,
+					"reference":             advId,
+					"type":                  adv.Type,
+					"updated":               adv.Updated,
+					"severity":              adv.Severity,
+					"description":           adv.Description,
+					"score":                 adv.Score,
+					"packages":              adv.Packages,
+					"vuxmls":                adv.Vuxmls,
+					"vulnerabilities":       adv.Vulnerabilities,
+					"instances":             adv.Instances,
+					"nodes":                 adv.Nodes,
+					"unreachable_resources": adv.UnreachableResources,
 				},
 				"$setOnInsert": &bson.M{
 					"dismissed":           false,
@@ -114,6 +123,8 @@ func (a *advisoryProcessor) parseUpdates(db *database.Database,
 		a.advisories[updts.Organization] = orgAdvs
 	}
 	orgDismissals := a.dismissals[updts.Organization]
+
+	a.components[updts.Resource] = updts.Components
 
 	resourceAdvs := []*advisory.Advisory{}
 	resourceAdvsSet := set.NewSet()
@@ -263,6 +274,10 @@ func (a *advisoryProcessor) parseUpdates(db *database.Database,
 		}
 	}
 
+	for _, adv := range resourceAdvs {
+		adv.UpdateUnreachable(updts.Resource, updts.Components)
+	}
+
 	advCount, advMax := advisory.CountResource(
 		updts.Resource, resourceAdvs)
 
@@ -318,6 +333,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	advProc := &advisoryProcessor{
 		vulnerabilities: map[string]*vulnerability.Vulnerability{},
 		advisories:      map[bson.ObjectID]map[string]*advisory.Advisory{},
+		components:      map[bson.ObjectID][]*telemetry.Component{},
 		now:             time.Now(),
 	}
 
