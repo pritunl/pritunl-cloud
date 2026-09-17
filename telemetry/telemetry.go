@@ -27,6 +27,7 @@ type Telemetry[Data any] struct {
 	lastRefresh  time.Time
 	RefreshRate  time.Duration
 	Queue        int
+	Relay        bool
 	Refresher    func() (Data, error)
 	Validate     func(Data) Data
 	data         Data
@@ -38,6 +39,10 @@ func (r *Telemetry[Data]) getName() string {
 }
 
 func (r *Telemetry[Data]) Refresh() (err error) {
+	if r.Relay && Mode == Namespace {
+		return
+	}
+
 	r.lock.Lock()
 	lastRefresh := r.lastRefresh
 	r.lock.Unlock()
@@ -80,23 +85,43 @@ func (r *Telemetry[Data]) Set(data Data) {
 	r.lock.Unlock()
 }
 
+func (r *Telemetry[Data]) Current() Data {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	if r.Validate != nil {
+		return r.Validate(r.data)
+	}
+	return r.data
+}
+
 func (r *Telemetry[Data]) Get() (Data, bool) {
 	r.lock.Lock()
 	lastRefresh := r.lastRefresh
 	lastTransmit := r.lastTransmit
+	data := r.data
 	r.lock.Unlock()
-	if lastRefresh.IsZero() || time.Since(lastTransmit) < r.TransmitRate {
+
+	if lastRefresh.IsZero() {
 		var x Data
 		return x, false
 	}
+
+	if !lastTransmit.IsZero() &&
+		time.Since(lastTransmit) < r.TransmitRate {
+
+		var x Data
+		return x, false
+	}
+
 	r.lock.Lock()
 	r.lastTransmit = time.Now()
 	r.lock.Unlock()
 
 	if r.Validate != nil {
-		return r.Validate(r.data), true
+		return r.Validate(data), true
 	} else {
-		return r.data, true
+		return data, true
 	}
 }
 
