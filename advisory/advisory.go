@@ -121,7 +121,7 @@ func (a *Advisory) Validate(db *database.Database) (
 }
 
 func scoreAnalysis(analysis *vulnerability.Analysis) int {
-	score := analysis.RealScore
+	score := analysis.Score
 
 	if score >= 9.0 {
 		return Critical
@@ -202,7 +202,7 @@ func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
 	return Low
 }
 
-func (a *Advisory) Reachable(components []*telemetry.Component) bool {
+func (a *Advisory) Reachable(components *telemetry.ComponentData) bool {
 	if len(a.Vulnerabilities) == 0 {
 		return true
 	}
@@ -217,7 +217,7 @@ func (a *Advisory) Reachable(components []*telemetry.Component) bool {
 }
 
 func (a *Advisory) UpdateUnreachable(resourceId bson.ObjectID,
-	components []*telemetry.Component) {
+	components *telemetry.ComponentData) {
 
 	reachable := a.Reachable(components)
 
