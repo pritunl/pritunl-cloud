@@ -958,6 +958,34 @@ func instanceAdvisoryGet(c *gin.Context) {
 	c.JSON(200, advisories)
 }
 
+func instanceGuestGet(c *gin.Context) {
+	if demo.IsDemo() {
+		guest := demo.Instances[0].Guest
+		if guest == nil {
+			guest = &instance.GuestData{}
+		}
+		c.JSON(200, guest)
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+
+	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	guest, err := instance.GetGuestOrg(db, userOrg, instanceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, guest)
+}
+
 func instanceChartGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)

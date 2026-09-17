@@ -139,6 +139,7 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/instance/:instance_id", instanceGet)
 	orgGroup.GET("/instance/:instance_id/advisory", instanceAdvisoryGet)
 	orgGroup.GET("/instance/:instance_id/chart", instanceChartGet)
+	orgGroup.GET("/instance/:instance_id/guest", instanceGuestGet)
 	orgGroup.GET("/instance/:instance_id/vnc", instanceVncGet)
 	orgGroup.PUT("/instance/:instance_id", instancePut)
 	orgGroup.POST("/instance", instancePost)
