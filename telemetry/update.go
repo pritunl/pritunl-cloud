@@ -40,6 +40,7 @@ type pkgAuditReport struct {
 var Updates = &Telemetry[[]*Update]{
 	TransmitRate: 6 * time.Minute,
 	RefreshRate:  6 * time.Hour,
+	Relay:        true,
 	Refresher:    UpdatesRefresh,
 	Validate: func(data []*Update) []*Update {
 		if len(data) > 50 {
