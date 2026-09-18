@@ -17,16 +17,37 @@ const (
 )
 
 type Updates struct {
-	Id           bson.ObjectID          `bson:"_id,omitempty" json:"id"`
-	Type         string                 `bson:"type" json:"type"`
-	Organization bson.ObjectID          `bson:"organization" json:"organization"`
-	Resource     bson.ObjectID          `bson:"resource" json:"resource"`
-	Timestamp    time.Time              `bson:"timestamp" json:"timestamp"`
-	Variant      string                 `bson:"variant" json:"variant"`
-	Updates      []*telemetry.Update    `bson:"updates" json:"updates"`
-	Components   []*telemetry.Component `bson:"components" json:"components"`
-	Count        int                    `bson:"count" json:"count"`
-	Max          int                    `bson:"max" json:"max"`
+	Id           bson.ObjectID       `bson:"_id,omitempty" json:"id"`
+	Type         string              `bson:"type" json:"type"`
+	Organization bson.ObjectID       `bson:"organization" json:"organization"`
+	Resource     bson.ObjectID       `bson:"resource" json:"resource"`
+	Timestamp    time.Time           `bson:"timestamp" json:"timestamp"`
+	Variant      string              `bson:"variant" json:"variant"`
+	Updates      []*telemetry.Update `bson:"updates" json:"updates"`
+	Processes    []string            `bson:"processes" json:"processes"`
+	Modules      []string            `bson:"modules" json:"modules"`
+	Ports        []string            `bson:"ports" json:"ports"`
+	Count        int                 `bson:"count" json:"count"`
+	Max          int                 `bson:"max" json:"max"`
+}
+
+func (u *Updates) Components() *telemetry.ComponentData {
+	return &telemetry.ComponentData{
+		Processes: u.Processes,
+		Modules:   u.Modules,
+		Ports:     u.Ports,
+	}
+}
+
+func (u *Updates) SetComponents(components *telemetry.ComponentData) {
+	if components == nil {
+		components = telemetry.NewComponentData()
+	}
+	components.Normalize()
+
+	u.Processes = components.Processes
+	u.Modules = components.Modules
+	u.Ports = components.Ports
 }
 
 func (u *Updates) Upsert(db *database.Database) (err error) {
@@ -34,8 +55,8 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 
 	u.Timestamp = time.Now()
 
-	if u.Components == nil {
-		u.Components = []*telemetry.Component{}
+	if u.Processes == nil || u.Modules == nil || u.Ports == nil {
+		u.SetComponents(u.Components())
 	}
 
 	_, err = coll.UpdateOne(db, &bson.M{
@@ -49,7 +70,9 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 			"timestamp":    u.Timestamp,
 			"variant":      u.Variant,
 			"updates":      u.Updates,
-			"components":   u.Components,
+			"processes":    u.Processes,
+			"modules":      u.Modules,
+			"ports":        u.Ports,
 		},
 		"$setOnInsert": &bson.M{
 			"count": 0,
@@ -66,7 +89,7 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 
 func upsertUpdates(db *database.Database, variant string,
 	resource, orgId bson.ObjectID, updates []*telemetry.Update,
-	components []*telemetry.Component) (err error) {
+	components *telemetry.ComponentData) (err error) {
 
 	entry := &Updates{
 		Type:         UpdatesType,
@@ -74,8 +97,8 @@ func upsertUpdates(db *database.Database, variant string,
 		Organization: orgId,
 		Variant:      variant,
 		Updates:      updates,
-		Components:   components,
 	}
+	entry.SetComponents(components)
 
 	err = entry.Upsert(db)
 	if err != nil {
@@ -87,7 +110,7 @@ func upsertUpdates(db *database.Database, variant string,
 
 func UpsertInstanceUpdates(db *database.Database,
 	instId, orgId bson.ObjectID, updates []*telemetry.Update,
-	components []*telemetry.Component) (err error) {
+	components *telemetry.ComponentData) (err error) {
 
 	err = upsertUpdates(db, InstanceVariant, instId, orgId,
 		updates, components)
@@ -100,7 +123,7 @@ func UpsertInstanceUpdates(db *database.Database,
 
 func UpsertNodeUpdates(db *database.Database,
 	instId, orgId bson.ObjectID, updates []*telemetry.Update,
-	components []*telemetry.Component) (err error) {
+	components *telemetry.ComponentData) (err error) {
 
 	err = upsertUpdates(db, NodeVariant, instId, orgId,
 		updates, components)
