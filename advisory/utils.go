@@ -3,10 +3,13 @@ package advisory
 import (
 	"slices"
 
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vulnerability"
 )
 
 func Get(db *database.Database, advId bson.ObjectID) (
@@ -691,6 +694,103 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
 	})
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func refreshVulnerability(db *database.Database, adv *Advisory,
+	cveId string) (err error) {
+
+	idx := -1
+	for i, vuln := range adv.Vulnerabilities {
+		if vuln != nil && vuln.Id == cveId {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		err = &errortypes.NotFoundError{
+			errors.New("advisory: Vulnerability not found in advisory"),
+		}
+		return
+	}
+
+	vuln, err := vulnerability.GetOneForce(db, cveId)
+	if err != nil {
+		return
+	}
+	if vuln == nil {
+		err = &errortypes.NotFoundError{
+			errors.New("advisory: Vulnerability not found"),
+		}
+		return
+	}
+
+	prevScore := adv.Score
+	adv.Vulnerabilities[idx] = vuln
+	adv.UpdateScore()
+
+	coll := db.Advisories()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": adv.Id,
+	}, &bson.M{
+		"$set": &bson.M{
+			"vulnerabilities": adv.Vulnerabilities,
+			"score":           adv.Score,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if adv.Score != prevScore {
+		for _, ndeId := range adv.Nodes {
+			err = UpdateNode(db, ndeId)
+			if err != nil {
+				return
+			}
+		}
+		for _, instId := range adv.Instances {
+			err = UpdateInstance(db, instId)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
+
+func RefreshVulnerability(db *database.Database, advId bson.ObjectID,
+	cveId string) (err error) {
+
+	adv, err := Get(db, advId)
+	if err != nil {
+		return
+	}
+
+	err = refreshVulnerability(db, adv, cveId)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func RefreshVulnerabilityOrg(db *database.Database, orgId, advId bson.ObjectID,
+	cveId string) (err error) {
+
+	adv, err := GetOrg(db, orgId, advId)
+	if err != nil {
+		return
+	}
+
+	err = refreshVulnerability(db, adv, cveId)
+	if err != nil {
 		return
 	}
 
