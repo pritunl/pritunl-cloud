@@ -181,10 +181,12 @@ func Sync(db *database.Database, namespace string,
 			}
 		}
 
-		var components []*telemetry.Component
+		var components *telemetry.ComponentData
 		if ste.Components != nil {
 			components = validateComponents(db, instId, ste.Components)
-			data["guest.components"] = components
+			data["guest.processes"] = components.Processes
+			data["guest.modules"] = components.Modules
+			data["guest.ports"] = components.Ports
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
@@ -640,10 +642,12 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 			}
 		}
 
-		var components []*telemetry.Component
+		var components *telemetry.ComponentData
 		if ste.Components != nil {
 			components = validateComponents(db, instId, ste.Components)
-			data["guest.components"] = components
+			data["guest.processes"] = components.Processes
+			data["guest.modules"] = components.Modules
+			data["guest.ports"] = components.Ports
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
@@ -821,27 +825,9 @@ func State(db *database.Database, instId bson.ObjectID,
 }
 
 func validateComponents(db *database.Database, instId bson.ObjectID,
-	components []*telemetry.Component) (comps []*telemetry.Component) {
+	components *telemetry.ComponentData) (comps *telemetry.ComponentData) {
 
-	comps = []*telemetry.Component{}
-	invalid := 0
-
-	for _, comp := range components {
-		if comp == nil {
-			continue
-		}
-
-		errData, err := comp.Validate(db)
-		if err != nil || errData != nil {
-			invalid += 1
-			continue
-		}
-
-		comps = append(comps, comp)
-		if len(comps) >= telemetry.ComponentsLimit {
-			break
-		}
-	}
+	comps, invalid := components.Validate()
 
 	if invalid > 0 {
 		logrus.WithFields(logrus.Fields{
