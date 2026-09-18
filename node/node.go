@@ -150,7 +150,9 @@ type MetricData struct {
 	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
 	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
 	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
-	Components []*telemetry.Component    `bson:"components" json:"components"`
+	Processes  []string                  `bson:"processes" json:"processes"`
+	Modules    []string                  `bson:"modules" json:"modules"`
+	Ports      []string                  `bson:"ports" json:"ports"`
 }
 
 type Completion struct {
@@ -1362,11 +1364,14 @@ func (n *Node) update(db *database.Database) (err error) {
 
 	components, componentsOk := telemetry.Components.Get()
 	if componentsOk {
-		fields["metric.components"] = components
+		components.Normalize()
+		fields["metric.processes"] = components.Processes
+		fields["metric.modules"] = components.Modules
+		fields["metric.ports"] = components.Ports
 	} else if ok {
 		components = telemetry.Components.Current()
 		if components == nil {
-			components = []*telemetry.Component{}
+			components = telemetry.NewComponentData()
 		}
 	}
 
