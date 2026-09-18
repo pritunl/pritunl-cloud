@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/psutil"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
@@ -25,52 +23,95 @@ const (
 	componentsName  = 128
 )
 
-type Component struct {
-	Type string `bson:"type" json:"type"`
-	Name string `bson:"name" json:"name"`
+type ComponentData struct {
+	Processes []string `bson:"processes" json:"processes"`
+	Modules   []string `bson:"modules" json:"modules"`
+	Ports     []string `bson:"ports" json:"ports"`
 }
 
-func (c *Component) Validate(db *database.Database) (
-	errData *errortypes.ErrorData, err error) {
+func NewComponentData() *ComponentData {
+	return &ComponentData{
+		Processes: []string{},
+		Modules:   []string{},
+		Ports:     []string{},
+	}
+}
 
-	if c.Type != Process && c.Type != Module && c.Type != Port {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_type",
-			Message: "Invalid component type",
+func (c *ComponentData) Len() int {
+	if c == nil {
+		return 0
+	}
+	return len(c.Processes) + len(c.Modules) + len(c.Ports)
+}
+
+func (c *ComponentData) Normalize() {
+	if c.Processes == nil {
+		c.Processes = []string{}
+	}
+	if c.Modules == nil {
+		c.Modules = []string{}
+	}
+	if c.Ports == nil {
+		c.Ports = []string{}
+	}
+}
+
+func validPort(name string) bool {
+	proto, portStr, ok := strings.Cut(name, "/")
+	if !ok || (proto != "tcp" && proto != "udp") {
+		return false
+	}
+
+	port, err := strconv.Atoi(portStr)
+	if err != nil || port < 1 || port > 65535 ||
+		strconv.Itoa(port) != portStr {
+
+		return false
+	}
+
+	return true
+}
+
+func validateNames(names []string, isPort bool) (
+	valid []string, invalid int) {
+
+	valid = []string{}
+	seen := map[string]bool{}
+
+	for _, name := range names {
+		name = utils.FilterStr(name, componentsName)
+		if name == "" || (isPort && !validPort(name)) {
+			invalid += 1
+			continue
 		}
+
+		if seen[name] {
+			continue
+		}
+		seen[name] = true
+
+		valid = append(valid, name)
+		if len(valid) >= ComponentsLimit {
+			break
+		}
+	}
+
+	return
+}
+
+func (c *ComponentData) Validate() (clean *ComponentData, invalid int) {
+	clean = NewComponentData()
+	if c == nil {
 		return
 	}
 
-	c.Name = utils.FilterStr(c.Name, componentsName)
-	if c.Name == "" {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_name",
-			Message: "Invalid component name",
-		}
-		return
-	}
-
-	if c.Type == Port {
-		proto, portStr, ok := strings.Cut(c.Name, "/")
-		if !ok || (proto != "tcp" && proto != "udp") {
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_name",
-				Message: "Invalid port component name",
-			}
-			return
-		}
-
-		port, e := strconv.Atoi(portStr)
-		if e != nil || port < 1 || port > 65535 ||
-			strconv.Itoa(port) != portStr {
-
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_name",
-				Message: "Invalid port component name",
-			}
-			return
-		}
-	}
+	var n int
+	clean.Processes, n = validateNames(c.Processes, false)
+	invalid += n
+	clean.Modules, n = validateNames(c.Modules, false)
+	invalid += n
+	clean.Ports, n = validateNames(c.Ports, true)
+	invalid += n
 
 	return
 }
@@ -85,17 +126,11 @@ var (
 	componentsSeen = map[componentKey]time.Time{}
 )
 
-var Components = &Telemetry[[]*Component]{
+var Components = &Telemetry[*ComponentData]{
 	TransmitRate: 6 * time.Minute,
 	RefreshRate:  1 * time.Minute,
 	Relay:        true,
 	Refresher:    ComponentsRefresh,
-	Validate: func(data []*Component) []*Component {
-		if len(data) > ComponentsLimit {
-			return data[:ComponentsLimit]
-		}
-		return data
-	},
 }
 
 func componentsMark(now time.Time, typ string, names []string) {
@@ -112,7 +147,7 @@ func componentsMark(now time.Time, typ string, names []string) {
 	}
 }
 
-func ComponentsRefresh() (components []*Component, err error) {
+func ComponentsRefresh() (components *ComponentData, err error) {
 	if Mode == Namespace {
 		return
 	}
@@ -159,30 +194,31 @@ func ComponentsRefresh() (components []*Component, err error) {
 	componentsMark(now, Module, mods)
 	componentsMark(now, Port, ports)
 
-	components = []*Component{}
+	components = NewComponentData()
 	for key, seen := range componentsSeen {
 		if now.Sub(seen) > componentsTtl {
 			delete(componentsSeen, key)
 			continue
 		}
 
-		components = append(components, &Component{
-			Type: key.Type,
-			Name: key.Name,
-		})
+		switch key.Type {
+		case Process:
+			components.Processes = append(components.Processes, key.Name)
+		case Module:
+			components.Modules = append(components.Modules, key.Name)
+		case Port:
+			components.Ports = append(components.Ports, key.Name)
+		}
 	}
 
-	sort.Slice(components, func(i, j int) bool {
-		if components[i].Type != components[j].Type {
-			return components[i].Type < components[j].Type
-		}
-		return components[i].Name < components[j].Name
-	})
+	sort.Strings(components.Processes)
+	sort.Strings(components.Modules)
+	sort.Strings(components.Ports)
 
 	return
 }
 
-func GetUpdates() (updates []*Update, components []*Component) {
+func GetUpdates() (updates []*Update, components *ComponentData) {
 	updates, ok := Updates.Get()
 	if !ok {
 		updates = nil
@@ -196,7 +232,7 @@ func GetUpdates() (updates []*Update, components []*Component) {
 	if updates != nil && components == nil {
 		components = Components.Current()
 		if components == nil {
-			components = []*Component{}
+			components = NewComponentData()
 		}
 	}
 
