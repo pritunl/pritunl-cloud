@@ -31,7 +31,7 @@ type advisoryProcessor struct {
 	advisories      map[bson.ObjectID]map[string]*advisory.Advisory
 	vuxmlDb         map[string]*vuxml.VuxmlEntry
 	dismissals      map[bson.ObjectID]map[string]*advisory.Dismissal
-	components      map[bson.ObjectID][]*telemetry.Component
+	components      map[bson.ObjectID]*telemetry.ComponentData
 }
 
 func (a *advisoryProcessor) Run(db *database.Database) (err error) {
@@ -124,7 +124,7 @@ func (a *advisoryProcessor) parseUpdates(db *database.Database,
 	}
 	orgDismissals := a.dismissals[updts.Organization]
 
-	a.components[updts.Resource] = updts.Components
+	a.components[updts.Resource] = updts.Components()
 
 	resourceAdvs := []*advisory.Advisory{}
 	resourceAdvsSet := set.NewSet()
@@ -275,7 +275,7 @@ func (a *advisoryProcessor) parseUpdates(db *database.Database,
 	}
 
 	for _, adv := range resourceAdvs {
-		adv.UpdateUnreachable(updts.Resource, updts.Components)
+		adv.UpdateUnreachable(updts.Resource, updts.Components())
 	}
 
 	advCount, advMax := advisory.CountResource(
@@ -333,7 +333,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 	advProc := &advisoryProcessor{
 		vulnerabilities: map[string]*vulnerability.Vulnerability{},
 		advisories:      map[bson.ObjectID]map[string]*advisory.Advisory{},
-		components:      map[bson.ObjectID][]*telemetry.Component{},
+		components:      map[bson.ObjectID]*telemetry.ComponentData{},
 		now:             time.Now(),
 	}
 
