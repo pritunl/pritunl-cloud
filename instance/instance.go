@@ -32,7 +32,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/systemd"
-	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -174,7 +173,9 @@ type GuestData struct {
 	Load1      float64                   `bson:"load1" json:"load1"`
 	Load5      float64                   `bson:"load5" json:"load5"`
 	Load15     float64                   `bson:"load15" json:"load15"`
-	Components []*telemetry.Component    `bson:"components" json:"components"`
+	Processes  []string                  `bson:"processes" json:"processes"`
+	Modules    []string                  `bson:"modules" json:"modules"`
+	Ports      []string                  `bson:"ports" json:"ports"`
 	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
 	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
 	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
