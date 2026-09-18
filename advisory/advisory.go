@@ -33,6 +33,7 @@ type Advisory struct {
 	Nodes                []bson.ObjectID                `bson:"nodes" json:"nodes"`
 	UnreachableResources []bson.ObjectID                `bson:"unreachable_resources" json:"unreachable_resources"`
 	DismissedResources   []bson.ObjectID                `bson:"dismissed_resources" json:"dismissed_resources"`
+	ExclusionResources   map[string][]bson.ObjectID     `bson:"exclusion_resources" json:"exclusion_resources"`
 }
 
 func (a *Advisory) Validate(db *database.Database) (
@@ -101,6 +102,9 @@ func (a *Advisory) Validate(db *database.Database) (
 	}
 	if a.UnreachableResources == nil {
 		a.UnreachableResources = []bson.ObjectID{}
+	}
+	if a.ExclusionResources == nil {
+		a.ExclusionResources = map[string][]bson.ObjectID{}
 	}
 
 	for _, vuln := range a.Vulnerabilities {
@@ -219,6 +223,34 @@ func (a *Advisory) Reachable(components *telemetry.ComponentData) bool {
 func (a *Advisory) UpdateUnreachable(resourceId bson.ObjectID,
 	components *telemetry.ComponentData) {
 
+	if a.ExclusionResources == nil {
+		a.ExclusionResources = map[string][]bson.ObjectID{}
+	}
+
+	for _, vuln := range a.Vulnerabilities {
+		if vuln == nil {
+			continue
+		}
+
+		cveId := vuln.Id
+		resources := a.ExclusionResources[cveId]
+		idx := slices.Index(resources, resourceId)
+
+		if vuln.Analysis.Reachable(components) {
+			if idx >= 0 {
+				resources = slices.Delete(resources, idx, idx+1)
+			}
+		} else if idx < 0 {
+			resources = append(resources, resourceId)
+		}
+
+		if len(resources) == 0 {
+			delete(a.ExclusionResources, cveId)
+		} else {
+			a.ExclusionResources[cveId] = resources
+		}
+	}
+
 	reachable := a.Reachable(components)
 
 	idx := slices.Index(a.UnreachableResources, resourceId)
@@ -230,6 +262,34 @@ func (a *Advisory) UpdateUnreachable(resourceId bson.ObjectID,
 	} else if idx < 0 {
 		a.UnreachableResources = append(
 			a.UnreachableResources, resourceId)
+	}
+}
+
+func (a *Advisory) PruneUnreachable() {
+	resources := set.NewSet()
+	for _, resourceId := range a.Instances {
+		resources.Add(resourceId)
+	}
+	for _, resourceId := range a.Nodes {
+		resources.Add(resourceId)
+	}
+
+	a.UnreachableResources = slices.DeleteFunc(a.UnreachableResources,
+		func(resourceId bson.ObjectID) bool {
+			return !resources.Contains(resourceId)
+		})
+
+	for cveId, cveResources := range a.ExclusionResources {
+		cveResources = slices.DeleteFunc(cveResources,
+			func(resourceId bson.ObjectID) bool {
+				return !resources.Contains(resourceId)
+			})
+
+		if len(cveResources) == 0 {
+			delete(a.ExclusionResources, cveId)
+		} else {
+			a.ExclusionResources[cveId] = cveResources
+		}
 	}
 }
 
@@ -392,6 +452,7 @@ func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
 		Nodes:                []bson.ObjectID{},
 		DismissedResources:   []bson.ObjectID{},
 		UnreachableResources: []bson.ObjectID{},
+		ExclusionResources:   map[string][]bson.ObjectID{},
 	}
 }
 
@@ -411,5 +472,6 @@ func NewUpdate(ref string, typ string, orgId bson.ObjectID,
 		Nodes:                []bson.ObjectID{},
 		DismissedResources:   []bson.ObjectID{},
 		UnreachableResources: []bson.ObjectID{},
+		ExclusionResources:   map[string][]bson.ObjectID{},
 	}
 }
