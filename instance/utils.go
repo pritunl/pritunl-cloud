@@ -46,6 +46,63 @@ func GetOrg(db *database.Database, orgId, instId bson.ObjectID) (
 	return
 }
 
+func GetGuest(db *database.Database, instId bson.ObjectID) (
+	guest *GuestData, err error) {
+
+	coll := db.Instances()
+	inst := &Instance{}
+
+	err = coll.FindOne(
+		db,
+		&bson.M{
+			"_id": instId,
+		},
+		options.FindOne().SetProjection(&bson.D{
+			{"guest", 1},
+		}),
+	).Decode(inst)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	guest = inst.Guest
+	if guest == nil {
+		guest = &GuestData{}
+	}
+
+	return
+}
+
+func GetGuestOrg(db *database.Database, orgId, instId bson.ObjectID) (
+	guest *GuestData, err error) {
+
+	coll := db.Instances()
+	inst := &Instance{}
+
+	err = coll.FindOne(
+		db,
+		&bson.M{
+			"_id":          instId,
+			"organization": orgId,
+		},
+		options.FindOne().SetProjection(&bson.D{
+			{"guest", 1},
+		}),
+	).Decode(inst)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	guest = inst.Guest
+	if guest == nil {
+		guest = &GuestData{}
+	}
+
+	return
+}
+
 func GetOne(db *database.Database, query *bson.M) (inst *Instance, err error) {
 	coll := db.Instances()
 	inst = &Instance{}
@@ -413,6 +470,11 @@ func GetAllPaged(db *database.Database, query *bson.M,
 		options.Find().
 			SetSort(&bson.D{
 				{"name", 1},
+			}).
+			SetProjection(&bson.D{
+				{"guest.processes", 0},
+				{"guest.modules", 0},
+				{"guest.ports", 0},
 			}).
 			SetSkip(skip).
 			SetLimit(pageCount),
