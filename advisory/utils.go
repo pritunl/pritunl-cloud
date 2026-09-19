@@ -2,9 +2,12 @@ package advisory
 
 import (
 	"slices"
+	"strings"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -57,13 +60,14 @@ func GetOrg(db *database.Database, orgId, advId bson.ObjectID) (
 	return
 }
 
-func GetAll(db *database.Database, query *bson.M) (
+func GetAll(db *database.Database, query *bson.M,
+	opts ...options.Lister[options.FindOptions]) (
 	advisories []*Advisory, err error) {
 
 	coll := db.Advisories()
 	advisories = []*Advisory{}
 
-	cursor, err := coll.Find(db, query)
+	cursor, err := coll.Find(db, query, opts...)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -90,98 +94,142 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetInstance(db *database.Database, instId bson.ObjectID) (
-	advisories []*Advisory, err error) {
+var countProjection = &bson.M{
+	"organization": 1,
+	"reference":    1,
+	"dismissed":    1,
+	"updated":      1,
+	"score":        1,
+	"complete":     1,
+}
 
-	coll := db.Advisories()
+func GetResourceAdvisories(db *database.Database,
+	resourceId bson.ObjectID) (advisories []*Advisory,
+	resources map[bson.ObjectID]*Resource, err error) {
+
+	advisories, resources, err = getResourceAdvisories(db, resourceId)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func getResourceAdvisories(db *database.Database,
+	resourceId bson.ObjectID, opts ...options.Lister[options.FindOptions]) (
+	advisories []*Advisory, resources map[bson.ObjectID]*Resource,
+	err error) {
+
 	advisories = []*Advisory{}
+	resources = map[bson.ObjectID]*Resource{}
 
-	cursor, err := coll.Find(db, &bson.M{
-		"instances": instId,
+	joins, err := GetResources(db, &bson.M{
+		"resource": resourceId,
 	})
 	if err != nil {
-		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(db)
 
-	for cursor.Next(db) {
-		adv := &Advisory{}
-		err = cursor.Decode(adv)
-		if err != nil {
-			err = database.ParseError(err)
+	orgRefs := map[bson.ObjectID][]string{}
+	joinsMap := map[bson.ObjectID]map[string]*Resource{}
+	for _, res := range joins {
+		orgRefs[res.Organization] = append(
+			orgRefs[res.Organization], res.Reference)
+
+		orgJoins := joinsMap[res.Organization]
+		if orgJoins == nil {
+			orgJoins = map[string]*Resource{}
+			joinsMap[res.Organization] = orgJoins
+		}
+		orgJoins[res.Reference] = res
+	}
+
+	for orgId, refs := range orgRefs {
+		advs, e := GetAll(db, &bson.M{
+			"organization": orgId,
+			"reference": &bson.M{
+				"$in": refs,
+			},
+		}, opts...)
+		if e != nil {
+			err = e
 			return
 		}
 
-		advisories = append(advisories, adv)
+		for _, adv := range advs {
+			res := joinsMap[orgId][adv.Reference]
+			if res == nil || res.Timestamp.Before(adv.Updated) {
+				continue
+			}
+
+			advisories = append(advisories, adv)
+			resources[adv.Id] = res
+		}
 	}
 
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
-
-func GetNode(db *database.Database, nodeId bson.ObjectID) (
-	advisories []*Advisory, err error) {
-
-	coll := db.Advisories()
-	advisories = []*Advisory{}
-
-	cursor, err := coll.Find(db, &bson.M{
-		"nodes": nodeId,
+	slices.SortFunc(advisories, func(a, b *Advisory) int {
+		return strings.Compare(a.Reference, b.Reference)
 	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-	defer cursor.Close(db)
-
-	for cursor.Next(db) {
-		adv := &Advisory{}
-		err = cursor.Decode(adv)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		advisories = append(advisories, adv)
-	}
-
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
 
 	return
 }
 
-func CountResource(resourceId bson.ObjectID, advisories []*Advisory) (
-	count, maxScore int) {
+func updateResource(db *database.Database, resId bson.ObjectID,
+	kind string) (err error) {
 
+	advisories, resources, err := getResourceAdvisories(db, resId,
+		options.Find().SetProjection(countProjection))
+	if err != nil {
+		return
+	}
+
+	counter := &Counter{}
 	for _, adv := range advisories {
-		if adv.Dismissed {
-			continue
-		}
+		res := resources[adv.Id]
+		counter.Add(adv, res.State, res.Dismissed)
+	}
 
-		if slices.Contains(adv.DismissedResources, resourceId) {
-			continue
-		}
+	var coll *database.Collection
+	if kind == Node {
+		coll = db.Nodes()
+	} else {
+		coll = db.Instances()
+	}
 
-		if slices.Contains(adv.UnreachableResources, resourceId) {
-			continue
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": resId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"advisory_count":   counter.Count,
+			"advisory_max":     counter.Max,
+			"advisory_pending": counter.Pending,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
 		}
+	}
 
-		if adv.Score >= High {
-			count += 1
-		}
-		if adv.Score > maxScore {
-			maxScore = adv.Score
-		}
+	return
+}
+
+func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
+	err = updateResource(db, instId, Instance)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func UpdateNode(db *database.Database, nodeId bson.ObjectID) (err error) {
+	err = updateResource(db, nodeId, Node)
+	if err != nil {
+		return
 	}
 
 	return
@@ -246,141 +294,55 @@ func UpdateResourceOrg(db *database.Database,
 	return
 }
 
-func UpdateInstance(db *database.Database, instId bson.ObjectID) (err error) {
-	coll := db.Advisories()
+func updateResources(db *database.Database, advs ...*Advisory) (err error) {
+	updated := set.NewSet()
 
-	cursor, err := coll.Find(db, &bson.M{
-		"instances": instId,
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-	defer cursor.Close(db)
-
-	count := 0
-	maxScore := 0
-	for cursor.Next(db) {
-		adv := &Advisory{}
-		err = cursor.Decode(adv)
-		if err != nil {
-			err = database.ParseError(err)
+	for _, adv := range advs {
+		resources, e := GetResources(db, &bson.M{
+			"organization": adv.Organization,
+			"reference":    adv.Reference,
+		}, options.Find().SetProjection(&bson.M{
+			"resource": 1,
+			"kind":     1,
+		}))
+		if e != nil {
+			err = e
 			return
 		}
 
-		if adv.Dismissed {
-			continue
-		}
+		for _, res := range resources {
+			if updated.Contains(res.Resource) {
+				continue
+			}
+			updated.Add(res.Resource)
 
-		if slices.Contains(adv.DismissedResources, instId) {
-			continue
-		}
-
-		if slices.Contains(adv.UnreachableResources, instId) {
-			continue
-		}
-
-		if adv.Score >= High {
-			count += 1
-		}
-		if adv.Score > maxScore {
-			maxScore = adv.Score
-		}
-	}
-
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	coll = db.Instances()
-
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id": instId,
-	}, &bson.M{
-		"$set": &bson.M{
-			"advisory_count": count,
-			"advisory_max":   maxScore,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-		} else {
-			return
+			err = updateResource(db, res.Resource, res.Kind)
+			if err != nil {
+				return
+			}
 		}
 	}
 
 	return
 }
 
-func UpdateNode(db *database.Database, nodeId bson.ObjectID) (err error) {
+func UpsertMulti(db *database.Database, advs []*Advisory) (err error) {
+	if len(advs) == 0 {
+		return
+	}
+
+	models := make([]mongo.WriteModel, 0, len(advs))
+	for _, adv := range advs {
+		models = append(models, adv.UpsertModel())
+	}
+
 	coll := db.Advisories()
 
-	cursor, err := coll.Find(db, &bson.M{
-		"nodes": nodeId,
-	})
+	_, err = coll.BulkWrite(db, models,
+		options.BulkWrite().SetOrdered(false))
 	if err != nil {
 		err = database.ParseError(err)
 		return
-	}
-	defer cursor.Close(db)
-
-	count := 0
-	maxScore := 0
-	for cursor.Next(db) {
-		adv := &Advisory{}
-		err = cursor.Decode(adv)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		if adv.Dismissed {
-			continue
-		}
-
-		if slices.Contains(adv.DismissedResources, nodeId) {
-			continue
-		}
-
-		if slices.Contains(adv.UnreachableResources, nodeId) {
-			continue
-		}
-
-		if adv.Score >= High {
-			count += 1
-		}
-		if adv.Score > maxScore {
-			maxScore = adv.Score
-		}
-	}
-
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	coll = db.Nodes()
-
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id": nodeId,
-	}, &bson.M{
-		"$set": &bson.M{
-			"advisory_count": count,
-			"advisory_max":   maxScore,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-		} else {
-			return
-		}
 	}
 
 	return
@@ -528,6 +490,75 @@ func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 	return
 }
 
+func updateDismiss(db *database.Database, adv *Advisory,
+	dismiss, restore bool, dismissals, restores []bson.ObjectID) (
+	changed bool, err error) {
+
+	if dismiss || restore {
+		coll := db.Advisories()
+
+		adv.Dismissed = dismiss
+
+		_, err = coll.UpdateOne(db, &bson.M{
+			"_id": adv.Id,
+		}, &bson.M{
+			"$set": &bson.M{
+				"dismissed": adv.Dismissed,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		changed = true
+	}
+
+	coll := db.AdvisoryResources()
+
+	if len(dismissals) > 0 {
+		_, err = coll.UpdateMany(db, &bson.M{
+			"organization": adv.Organization,
+			"reference":    adv.Reference,
+			"resource": &bson.M{
+				"$in": dismissals,
+			},
+		}, &bson.M{
+			"$set": &bson.M{
+				"dismissed": true,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		changed = true
+	}
+
+	if len(restores) > 0 {
+		_, err = coll.UpdateMany(db, &bson.M{
+			"organization": adv.Organization,
+			"reference":    adv.Reference,
+			"resource": &bson.M{
+				"$in": restores,
+			},
+		}, &bson.M{
+			"$set": &bson.M{
+				"dismissed": false,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		changed = true
+	}
+
+	return
+}
+
 func UpdateDismiss(db *database.Database, advId bson.ObjectID,
 	dismiss, restore bool, dismissals, restores []bson.ObjectID) (err error) {
 
@@ -536,51 +567,35 @@ func UpdateDismiss(db *database.Database, advId bson.ObjectID,
 		return
 	}
 
-	update := adv.buildDismissUpdate(dismiss, restore, dismissals, restores)
-	if update == nil {
+	changed, err := updateDismiss(
+		db, adv, dismiss, restore, dismissals, restores)
+	if err != nil {
 		return
 	}
-
-	coll := db.Advisories()
-
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id": advId,
-	}, update)
-	if err != nil {
-		err = database.ParseError(err)
+	if !changed {
 		return
 	}
 
 	if dismiss || restore {
-		for _, ndeId := range adv.Nodes {
-			err = UpdateNode(db, ndeId)
-			if err != nil {
-				return
-			}
+		err = updateResources(db, adv)
+		if err != nil {
+			return
 		}
-		for _, instId := range adv.Instances {
-			err = UpdateInstance(db, instId)
-			if err != nil {
-				return
-			}
+
+		return
+	}
+
+	for _, resourceId := range dismissals {
+		err = UpdateResource(db, resourceId)
+		if err != nil {
+			return
 		}
 	}
 
-	if len(dismissals) > 0 {
-		for _, resourceId := range dismissals {
-			err = UpdateResource(db, resourceId)
-			if err != nil {
-				return
-			}
-		}
-	}
-
-	if len(restores) > 0 {
-		for _, resourceId := range restores {
-			err = UpdateResource(db, resourceId)
-			if err != nil {
-				return
-			}
+	for _, resourceId := range restores {
+		err = UpdateResource(db, resourceId)
+		if err != nil {
+			return
 		}
 	}
 
@@ -595,63 +610,63 @@ func UpdateDismissOrg(db *database.Database, orgId, advId bson.ObjectID,
 		return
 	}
 
-	update := adv.buildDismissUpdate(dismiss, restore, dismissals, restores)
-	if update == nil {
+	changed, err := updateDismiss(
+		db, adv, dismiss, restore, dismissals, restores)
+	if err != nil {
 		return
 	}
-
-	coll := db.Advisories()
-
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id":          advId,
-		"organization": orgId,
-	}, update)
-	if err != nil {
-		err = database.ParseError(err)
+	if !changed {
 		return
 	}
 
 	if dismiss || restore {
-		for _, ndeId := range adv.Nodes {
-			err = UpdateNode(db, ndeId)
-			if err != nil {
-				return
-			}
+		err = updateResources(db, adv)
+		if err != nil {
+			return
 		}
-		for _, instId := range adv.Instances {
-			err = UpdateInstance(db, instId)
-			if err != nil {
-				return
-			}
+
+		return
+	}
+
+	for _, resourceId := range dismissals {
+		err = UpdateResourceOrg(db, resourceId, orgId)
+		if err != nil {
+			return
 		}
 	}
 
-	if len(dismissals) > 0 {
-		for _, resourceId := range dismissals {
-			err = UpdateResourceOrg(db, resourceId, orgId)
-			if err != nil {
-				return
-			}
-		}
-	}
-
-	if len(restores) > 0 {
-		for _, resourceId := range restores {
-			err = UpdateResourceOrg(db, resourceId, orgId)
-			if err != nil {
-				return
-			}
+	for _, resourceId := range restores {
+		err = UpdateResourceOrg(db, resourceId, orgId)
+		if err != nil {
+			return
 		}
 	}
 
 	return
 }
 
-func UpdateMulti(db *database.Database, advIds []bson.ObjectID,
-	dismiss, restore bool) (err error) {
+func updateMulti(db *database.Database, query *bson.M,
+	dismiss bool) (err error) {
 
-	if !dismiss && !restore {
+	(*query)["dismissed"] = &bson.M{
+		"$ne": dismiss,
+	}
+
+	advs, err := GetAll(db, query, options.Find().SetProjection(&bson.M{
+		"organization": 1,
+		"reference":    1,
+	}))
+	if err != nil {
 		return
+	}
+
+	if len(advs) == 0 {
+		return
+	}
+
+	advIds := make([]bson.ObjectID, 0, len(advs))
+	for _, adv := range advs {
+		advIds = append(advIds, adv.Id)
 	}
 
 	coll := db.Advisories()
@@ -667,6 +682,30 @@ func UpdateMulti(db *database.Database, advIds []bson.ObjectID,
 	})
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	err = updateResources(db, advs...)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func UpdateMulti(db *database.Database, advIds []bson.ObjectID,
+	dismiss, restore bool) (err error) {
+
+	if !dismiss && !restore {
+		return
+	}
+
+	err = updateMulti(db, &bson.M{
+		"_id": &bson.M{
+			"$in": advIds,
+		},
+	}, dismiss)
+	if err != nil {
 		return
 	}
 
@@ -680,20 +719,13 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
 		return
 	}
 
-	coll := db.Advisories()
-
-	_, err = coll.UpdateMany(db, &bson.M{
+	err = updateMulti(db, &bson.M{
 		"_id": &bson.M{
 			"$in": advIds,
 		},
 		"organization": orgId,
-	}, &bson.M{
-		"$set": &bson.M{
-			"dismissed": dismiss,
-		},
-	})
+	}, dismiss)
 	if err != nil {
-		err = database.ParseError(err)
 		return
 	}
 
@@ -703,14 +735,7 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
 func refreshVulnerability(db *database.Database, adv *Advisory,
 	cveId string) (err error) {
 
-	idx := -1
-	for i, vuln := range adv.Vulnerabilities {
-		if vuln != nil && vuln.Id == cveId {
-			idx = i
-			break
-		}
-	}
-	if idx < 0 {
+	if !slices.Contains(adv.Vulnerabilities, cveId) {
 		err = &errortypes.NotFoundError{
 			errors.New("advisory: Vulnerability not found in advisory"),
 		}
@@ -728,8 +753,14 @@ func refreshVulnerability(db *database.Database, adv *Advisory,
 		return
 	}
 
+	vulns, err := vulnerability.GetMini(db, adv.Vulnerabilities)
+	if err != nil {
+		return
+	}
+
 	prevScore := adv.Score
-	adv.Vulnerabilities[idx] = vuln
+	prevComplete := adv.Complete
+	adv.SetVulnerabilities(vulns)
 	adv.UpdateScore()
 
 	coll := db.Advisories()
@@ -738,8 +769,9 @@ func refreshVulnerability(db *database.Database, adv *Advisory,
 		"_id": adv.Id,
 	}, &bson.M{
 		"$set": &bson.M{
-			"vulnerabilities": adv.Vulnerabilities,
-			"score":           adv.Score,
+			"score":    adv.Score,
+			"pending":  adv.Pending,
+			"complete": adv.Complete,
 		},
 	})
 	if err != nil {
@@ -747,18 +779,10 @@ func refreshVulnerability(db *database.Database, adv *Advisory,
 		return
 	}
 
-	if adv.Score != prevScore {
-		for _, ndeId := range adv.Nodes {
-			err = UpdateNode(db, ndeId)
-			if err != nil {
-				return
-			}
-		}
-		for _, instId := range adv.Instances {
-			err = UpdateInstance(db, instId)
-			if err != nil {
-				return
-			}
+	if adv.Score != prevScore || adv.Complete != prevComplete {
+		err = updateResources(db, adv)
+		if err != nil {
+			return
 		}
 	}
 
