@@ -7,6 +7,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -17,23 +18,27 @@ import (
 )
 
 type Advisory struct {
-	Id                   bson.ObjectID                  `bson:"_id" json:"id"`
-	Organization         bson.ObjectID                  `bson:"organization" json:"organization"`
-	Reference            string                         `bson:"reference" json:"reference"`
-	Dismissed            bool                           `bson:"dismissed" json:"dismissed"`
-	Type                 string                         `bson:"type" json:"type"`
-	Updated              time.Time                      `bson:"updated" json:"updated"`
-	Severity             string                         `bson:"severity" json:"severity"`
-	Description          string                         `bson:"description" json:"description"`
-	Score                int                            `bson:"score" json:"score"`
-	Packages             []string                       `bson:"packages" json:"packages"`
-	Vuxmls               []string                       `bson:"vuxmls" json:"vuxmls"`
-	Vulnerabilities      []*vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
-	Instances            []bson.ObjectID                `bson:"instances" json:"instances"`
-	Nodes                []bson.ObjectID                `bson:"nodes" json:"nodes"`
-	UnreachableResources []bson.ObjectID                `bson:"unreachable_resources" json:"unreachable_resources"`
-	DismissedResources   []bson.ObjectID                `bson:"dismissed_resources" json:"dismissed_resources"`
-	ExclusionResources   map[string][]bson.ObjectID     `bson:"exclusion_resources" json:"exclusion_resources"`
+	Id              bson.ObjectID `bson:"_id" json:"id"`
+	Organization    bson.ObjectID `bson:"organization" json:"organization"`
+	Reference       string        `bson:"reference" json:"reference"`
+	Dismissed       bool          `bson:"dismissed" json:"dismissed"`
+	Type            string        `bson:"type" json:"type"`
+	Updated         time.Time     `bson:"updated" json:"updated"`
+	Severity        string        `bson:"severity" json:"severity"`
+	Description     string        `bson:"description" json:"description"`
+	Score           int           `bson:"score" json:"score"`
+	Packages        []string      `bson:"packages" json:"packages"`
+	Vuxmls          []string      `bson:"vuxmls" json:"vuxmls"`
+	Vulnerabilities []string      `bson:"vulnerabilities" json:"vulnerabilities"`
+	Pending         int           `bson:"pending" json:"pending"`
+	Complete        bool          `bson:"complete" json:"complete"`
+	InstanceCount   int           `bson:"instance_count" json:"instance_count"`
+	NodeCount       int           `bson:"node_count" json:"node_count"`
+
+	vulns     []*vulnerability.VulnerabilityMini `bson:"-" json:"-"`
+	vulnsSet  set.Set                            `bson:"-" json:"-"`
+	vuxmlsSet set.Set                            `bson:"-" json:"-"`
+	pkgsSet   set.Set                            `bson:"-" json:"-"`
 }
 
 func (a *Advisory) Validate(db *database.Database) (
@@ -89,64 +94,33 @@ func (a *Advisory) Validate(db *database.Database) (
 		a.Vuxmls = []string{}
 	}
 	if a.Vulnerabilities == nil {
-		a.Vulnerabilities = []*vulnerability.Vulnerability{}
-	}
-	if a.Instances == nil {
-		a.Instances = []bson.ObjectID{}
-	}
-	if a.Nodes == nil {
-		a.Nodes = []bson.ObjectID{}
-	}
-	if a.DismissedResources == nil {
-		a.DismissedResources = []bson.ObjectID{}
-	}
-	if a.UnreachableResources == nil {
-		a.UnreachableResources = []bson.ObjectID{}
-	}
-	if a.ExclusionResources == nil {
-		a.ExclusionResources = map[string][]bson.ObjectID{}
+		a.Vulnerabilities = []string{}
 	}
 
-	for _, vuln := range a.Vulnerabilities {
-		if vuln == nil {
-			continue
-		}
-
-		errData, err = vuln.Validate(db)
-		if err != nil {
-			return
-		}
-		if errData != nil {
-			return
-		}
-	}
+	a.Complete = a.Pending == 0
 
 	return
 }
 
-func scoreAnalysis(analysis *vulnerability.Analysis) int {
-	score := analysis.Score
+func (a *Advisory) scoreVulnerability(
+	vuln *vulnerability.VulnerabilityMini) int {
 
-	if score >= 9.0 {
-		return Critical
-	}
-	if score >= 6.0 {
-		return High
-	}
-	if score >= 3.0 {
-		return Medium
-	}
-
-	return Low
-}
-
-func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
 	if vuln == nil {
 		return Low
 	}
 
 	if vuln.Analysis != nil {
-		return scoreAnalysis(vuln.Analysis)
+		score := vuln.Analysis.Score
+		if score >= 9.0 {
+			return Critical
+		}
+		if score >= 6.0 {
+			return High
+		}
+		if score >= 3.0 {
+			return Medium
+		}
+		return Low
 	}
 
 	isNetwork := vuln.Vector == vulnerability.Network
@@ -206,13 +180,59 @@ func (a *Advisory) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
 	return Low
 }
 
-func (a *Advisory) Reachable(components *telemetry.ComponentData) bool {
-	if len(a.Vulnerabilities) == 0 {
+func (a *Advisory) AddVulnerabilities(cveIds []string,
+	vulns map[string]*vulnerability.VulnerabilityMini) {
+
+	if a.vulnsSet == nil {
+		a.vulnsSet = set.NewSet()
+		for _, cveId := range a.Vulnerabilities {
+			a.vulnsSet.Add(cveId)
+		}
+	}
+
+	for _, cveId := range cveIds {
+		cveId = strings.ToUpper(cveId)
+		if !vulnerability.ValidId(cveId) {
+			continue
+		}
+		if a.vulnsSet.Contains(cveId) {
+			continue
+		}
+		a.vulnsSet.Add(cveId)
+
+		a.Vulnerabilities = append(a.Vulnerabilities, cveId)
+
+		vuln := vulns[cveId]
+		if vuln.HasData() {
+			a.vulns = append(a.vulns, vuln)
+		} else if vuln.IsPending() {
+			a.Pending += 1
+		}
+	}
+
+	a.Complete = a.Pending == 0
+}
+
+func (a *Advisory) SetVulnerabilities(
+	vulns map[string]*vulnerability.VulnerabilityMini) {
+
+	cveIds := a.Vulnerabilities
+
+	a.Vulnerabilities = []string{}
+	a.vulns = nil
+	a.vulnsSet = set.NewSet()
+	a.Pending = 0
+
+	a.AddVulnerabilities(cveIds, vulns)
+}
+
+func (a *Advisory) Reachable(components *vulnerability.Components) bool {
+	if a.Pending > 0 || len(a.vulns) == 0 {
 		return true
 	}
 
-	for _, vuln := range a.Vulnerabilities {
-		if vuln == nil || vuln.Analysis.Reachable(components) {
+	for _, vuln := range a.vulns {
+		if vuln.Analysis.Reachable(components) {
 			return true
 		}
 	}
@@ -220,83 +240,31 @@ func (a *Advisory) Reachable(components *telemetry.ComponentData) bool {
 	return false
 }
 
-func (a *Advisory) UpdateUnreachable(resourceId bson.ObjectID,
-	components *telemetry.ComponentData) {
+func (a *Advisory) ResourceState(components *vulnerability.Components) (
+	state string, exclusions []string) {
 
-	if a.ExclusionResources == nil {
-		a.ExclusionResources = map[string][]bson.ObjectID{}
-	}
+	exclusions = []string{}
 
-	for _, vuln := range a.Vulnerabilities {
-		if vuln == nil {
-			continue
-		}
-
-		cveId := vuln.Id
-		resources := a.ExclusionResources[cveId]
-		idx := slices.Index(resources, resourceId)
-
-		if vuln.Analysis.Reachable(components) {
-			if idx >= 0 {
-				resources = slices.Delete(resources, idx, idx+1)
-			}
-		} else if idx < 0 {
-			resources = append(resources, resourceId)
-		}
-
-		if len(resources) == 0 {
-			delete(a.ExclusionResources, cveId)
-		} else {
-			a.ExclusionResources[cveId] = resources
+	for _, vuln := range a.vulns {
+		if !vuln.Analysis.Reachable(components) {
+			exclusions = append(exclusions, vuln.Id)
 		}
 	}
 
-	reachable := a.Reachable(components)
-
-	idx := slices.Index(a.UnreachableResources, resourceId)
-	if reachable {
-		if idx >= 0 {
-			a.UnreachableResources = slices.Delete(
-				a.UnreachableResources, idx, idx+1)
-		}
-	} else if idx < 0 {
-		a.UnreachableResources = append(
-			a.UnreachableResources, resourceId)
-	}
-}
-
-func (a *Advisory) PruneUnreachable() {
-	resources := set.NewSet()
-	for _, resourceId := range a.Instances {
-		resources.Add(resourceId)
-	}
-	for _, resourceId := range a.Nodes {
-		resources.Add(resourceId)
+	if a.Reachable(components) {
+		state = Affected
+	} else {
+		state = Unreachable
 	}
 
-	a.UnreachableResources = slices.DeleteFunc(a.UnreachableResources,
-		func(resourceId bson.ObjectID) bool {
-			return !resources.Contains(resourceId)
-		})
-
-	for cveId, cveResources := range a.ExclusionResources {
-		cveResources = slices.DeleteFunc(cveResources,
-			func(resourceId bson.ObjectID) bool {
-				return !resources.Contains(resourceId)
-			})
-
-		if len(cveResources) == 0 {
-			delete(a.ExclusionResources, cveId)
-		} else {
-			a.ExclusionResources[cveId] = cveResources
-		}
-	}
+	return
 }
 
 func (a *Advisory) UpdateScore() {
+	a.Complete = a.Pending == 0
 	top := Low
-	for _, vuln := range a.Vulnerabilities {
-		score := a.scoreAdvisory(vuln)
+	for _, vuln := range a.vulns {
+		score := a.scoreVulnerability(vuln)
 		if score > top {
 			top = score
 		}
@@ -304,25 +272,90 @@ func (a *Advisory) UpdateScore() {
 	a.Score = top
 }
 
+func (a *Advisory) UpsertModel() mongo.WriteModel {
+	return mongo.NewUpdateOneModel().
+		SetFilter(&bson.M{
+			"organization": a.Organization,
+			"reference":    a.Reference,
+		}).
+		SetUpdate(&bson.M{
+			"$set": &bson.M{
+				"organization":    a.Organization,
+				"reference":       a.Reference,
+				"type":            a.Type,
+				"updated":         a.Updated,
+				"severity":        a.Severity,
+				"description":     a.Description,
+				"score":           a.Score,
+				"packages":        a.Packages,
+				"vuxmls":          a.Vuxmls,
+				"vulnerabilities": a.Vulnerabilities,
+				"pending":         a.Pending,
+				"complete":        a.Complete,
+				"instance_count":  a.InstanceCount,
+				"node_count":      a.NodeCount,
+			},
+			"$setOnInsert": &bson.M{
+				"dismissed": false,
+			},
+			"$unset": &bson.M{
+				"instances":             "",
+				"nodes":                 "",
+				"unreachable_resources": "",
+				"dismissed_resources":   "",
+				"exclusion_resources":   "",
+			},
+		}).
+		SetUpsert(true)
+}
+
 func (a *Advisory) MergePackages(pkgs []string) {
-	merged := slices.Concat(a.Packages, pkgs)
-	slices.Sort(merged)
-	a.Packages = slices.Compact(merged)
+	if a.pkgsSet == nil {
+		a.pkgsSet = set.NewSet()
+
+		curPkgs := a.Packages
+		a.Packages = make([]string, 0, len(curPkgs))
+		for _, pkg := range curPkgs {
+			if a.pkgsSet.Contains(pkg) {
+				continue
+			}
+			a.pkgsSet.Add(pkg)
+			a.Packages = append(a.Packages, pkg)
+		}
+		slices.Sort(a.Packages)
+	}
+
+	added := false
+	for _, pkg := range pkgs {
+		if a.pkgsSet.Contains(pkg) {
+			continue
+		}
+		a.pkgsSet.Add(pkg)
+		a.Packages = append(a.Packages, pkg)
+		added = true
+	}
+
+	if added {
+		slices.Sort(a.Packages)
+	}
 }
 
 func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
-	vulns []*vulnerability.Vulnerability) {
+	cveIds []string, vulns map[string]*vulnerability.VulnerabilityMini) {
 
 	a.MergePackages([]string{pkg})
 
-	vuxmlsSet := set.NewSet()
-	for _, vid := range a.Vuxmls {
-		vuxmlsSet.Add(vid)
+	if a.vuxmlsSet == nil {
+		a.vuxmlsSet = set.NewSet()
+		for _, vid := range a.Vuxmls {
+			a.vuxmlsSet.Add(vid)
+		}
 	}
 
-	if vuxmlsSet.Contains(entry.Vid) {
+	if a.vuxmlsSet.Contains(entry.Vid) {
 		return
 	}
+	a.vuxmlsSet.Add(entry.Vid)
 	a.Vuxmls = append(a.Vuxmls, entry.Vid)
 	slices.Sort(a.Vuxmls)
 
@@ -337,141 +370,43 @@ func (a *Advisory) MergeVuxml(pkg string, entry *vuxml.VuxmlEntry,
 			a.Description, settings.Telemetry.DescriptionLimit)
 	}
 
-	vulnsSet := set.NewSet()
-	for _, vuln := range a.Vulnerabilities {
-		vulnsSet.Add(vuln.Id)
-	}
-
-	for _, vuln := range vulns {
-		if vuln == nil || vulnsSet.Contains(vuln.Id) {
-			continue
-		}
-		vulnsSet.Add(vuln.Id)
-
-		a.Vulnerabilities = append(a.Vulnerabilities, vuln)
-	}
-}
-
-func (a *Advisory) buildDismissUpdate(dismiss, restore bool,
-	dismissals, restores []bson.ObjectID) (update bson.M) {
-
-	setDoc := bson.M{}
-
-	if dismiss {
-		a.Dismissed = true
-		setDoc["dismissed"] = true
-	} else if restore {
-		a.Dismissed = false
-		setDoc["dismissed"] = false
-	}
-
-	addDismissals := []bson.ObjectID{}
-	if len(dismissals) > 0 {
-		known := set.NewSet()
-		for _, instId := range a.Instances {
-			known.Add(instId)
-		}
-		for _, nodeId := range a.Nodes {
-			known.Add(nodeId)
-		}
-
-		for _, resourceId := range dismissals {
-			if known.Contains(resourceId) {
-				addDismissals = append(addDismissals, resourceId)
-			}
-		}
-	}
-
-	update = bson.M{}
-
-	if len(setDoc) > 0 {
-		update["$set"] = setDoc
-	}
-
-	if len(addDismissals) > 0 {
-		update["$addToSet"] = bson.M{
-			"dismissed_resources": bson.M{
-				"$each": addDismissals,
-			},
-		}
-
-		existing := set.NewSet()
-		for _, resourceId := range a.DismissedResources {
-			existing.Add(resourceId)
-		}
-		for _, resourceId := range addDismissals {
-			if !existing.Contains(resourceId) {
-				existing.Add(resourceId)
-				a.DismissedResources = append(
-					a.DismissedResources, resourceId)
-			}
-		}
-	}
-
-	if len(restores) > 0 {
-		update["$pull"] = bson.M{
-			"dismissed_resources": bson.M{
-				"$in": restores,
-			},
-		}
-
-		restoreSet := set.NewSet()
-		for _, resourceId := range restores {
-			restoreSet.Add(resourceId)
-		}
-		filtered := []bson.ObjectID{}
-		for _, resourceId := range a.DismissedResources {
-			if !restoreSet.Contains(resourceId) {
-				filtered = append(filtered, resourceId)
-			}
-		}
-		a.DismissedResources = filtered
-	}
-
-	if len(update) == 0 {
-		update = nil
-		return
-	}
-
-	return
+	a.AddVulnerabilities(cveIds, vulns)
 }
 
 func FromUpdate(updt *telemetry.Update, orgId bson.ObjectID, now time.Time,
-	vulns []*vulnerability.Vulnerability) *Advisory {
+	vulns map[string]*vulnerability.VulnerabilityMini) *Advisory {
 
-	return &Advisory{
-		Organization:         orgId,
-		Reference:            updt.Id,
-		Type:                 RedHat,
-		Updated:              now,
-		Severity:             updt.Severity,
-		Description:          updt.Description,
-		Packages:             updt.Packages,
-		Vulnerabilities:      vulns,
-		Instances:            []bson.ObjectID{},
-		Nodes:                []bson.ObjectID{},
-		DismissedResources:   []bson.ObjectID{},
-		UnreachableResources: []bson.ObjectID{},
-		ExclusionResources:   map[string][]bson.ObjectID{},
+	adv := &Advisory{
+		Organization:    orgId,
+		Reference:       updt.Id,
+		Type:            RedHat,
+		Updated:         now,
+		Severity:        updt.Severity,
+		Description:     updt.Description,
+		Packages:        updt.Packages,
+		Vuxmls:          []string{},
+		Vulnerabilities: []string{},
+		Complete:        true,
 	}
+
+	adv.AddVulnerabilities(updt.Vulnerabilities, vulns)
+
+	return adv
 }
 
 func NewUpdate(ref string, typ string, orgId bson.ObjectID,
 	now time.Time) *Advisory {
 
 	return &Advisory{
-		Organization:         orgId,
-		Reference:            ref,
-		Type:                 typ,
-		Updated:              now,
-		Severity:             "",
-		Description:          "",
-		Packages:             []string{},
-		Vulnerabilities:      []*vulnerability.Vulnerability{},
-		Instances:            []bson.ObjectID{},
-		Nodes:                []bson.ObjectID{},
-		DismissedResources:   []bson.ObjectID{},
-		UnreachableResources: []bson.ObjectID{},
-		ExclusionResources:   map[string][]bson.ObjectID{},
+		Organization:    orgId,
+		Reference:       ref,
+		Type:            typ,
+		Updated:         now,
+		Severity:        "",
+		Description:     "",
+		Packages:        []string{},
+		Vuxmls:          []string{},
+		Vulnerabilities: []string{},
+		Complete:        true,
 	}
 }
