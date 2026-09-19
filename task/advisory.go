@@ -69,6 +69,7 @@ func (a *advisoryProcessor) Run(db *database.Database) (err error) {
 			for _, resourceId := range adv.Nodes {
 				adv.UpdateUnreachable(resourceId, a.components[resourceId])
 			}
+			adv.PruneUnreachable()
 
 			_, err = coll.UpdateOne(db, &bson.M{
 				"organization": orgId,
@@ -88,6 +89,7 @@ func (a *advisoryProcessor) Run(db *database.Database) (err error) {
 					"instances":             adv.Instances,
 					"nodes":                 adv.Nodes,
 					"unreachable_resources": adv.UnreachableResources,
+					"exclusion_resources":   adv.ExclusionResources,
 				},
 				"$setOnInsert": &bson.M{
 					"dismissed":           false,
