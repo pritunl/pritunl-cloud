@@ -14,6 +14,12 @@ const (
 	High     = 3
 	Critical = 4
 
+	Affected    = "affected"
+	Unreachable = "unreachable"
+
+	Instance = "instance"
+	Node     = "node"
+
 	moderate  = "moderate"
 	important = "important"
 	critical  = "critical"
