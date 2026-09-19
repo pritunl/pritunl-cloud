@@ -404,6 +404,10 @@ func Connect() (err error) {
 	opts.SetTimeout(90 * time.Second)
 	opts.SetWriteConcern(writeconcern.Majority())
 	opts.SetReadConcern(readconcern.Local())
+	if len(mongoUrl.Compressors) == 0 {
+		opts.SetCompressors([]string{"zstd", "snappy"})
+		opts.SetZstdLevel(3)
+	}
 
 	client, err := mongo.Connect(opts)
 	if err != nil {
