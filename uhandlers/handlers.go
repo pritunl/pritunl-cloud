@@ -108,6 +108,8 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/advisory/:advisory_id", advisoryGet)
 	orgGroup.PUT("/advisory", advisoriesPut)
 	orgGroup.PUT("/advisory/:advisory_id", advisoryPut)
+	orgGroup.PUT("/advisory/:advisory_id/vulnerability/:vulnerability_id",
+		advisoryVulnerabilityPut)
 	orgGroup.DELETE("/advisory", advisoriesDelete)
 	orgGroup.DELETE("/advisory/:advisory_id", advisoryDelete)
 

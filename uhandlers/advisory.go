@@ -197,6 +197,39 @@ func advisoriesPut(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+var cveIdRe = regexp.MustCompile(`^CVE-\d{4}-\d{4,}$`)
+
+func advisoryVulnerabilityPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+
+	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	cveId := strings.ToUpper(strings.TrimSpace(c.Param("vulnerability_id")))
+	if !cveIdRe.MatchString(cveId) {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := advisory.RefreshVulnerabilityOrg(db, userOrg, advisoryId, cveId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "advisory.change")
+
+	c.JSON(200, nil)
+}
+
 func advisoryDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
