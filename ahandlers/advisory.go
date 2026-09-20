@@ -18,13 +18,13 @@ import (
 )
 
 type advisoriesData struct {
-	Advisories []*aggregate.AdvisoryAggregate `json:"advisories"`
-	Count      int64                          `json:"count"`
+	Advisories []*advisory.Advisory `json:"advisories"`
+	Count      int64                `json:"count"`
 }
 
 func advisoryGet(c *gin.Context) {
 	if demo.IsDemo() {
-		adv := demo.Advisories[0].Advisory
+		adv := demo.Advisories[0]
 		c.JSON(200, adv)
 		return
 	}
@@ -44,6 +44,44 @@ func advisoryGet(c *gin.Context) {
 	}
 
 	c.JSON(200, adv)
+}
+
+func advisoryDetailGet(c *gin.Context) {
+	advisoryId, ok := utils.ParseObjectId(c.Param("advisory_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	if demo.IsDemo() {
+		detail := demo.GetAdvisoryDetail(advisoryId)
+		if detail == nil {
+			utils.AbortWithStatus(c, 404)
+			return
+		}
+
+		c.JSON(200, detail)
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	adv, err := advisory.Get(db, advisoryId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	detail, err := aggregate.GetAdvisoryDetail(db, adv, page, pageCount)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, detail)
 }
 
 func advisoriesGet(c *gin.Context) {
@@ -79,7 +117,7 @@ func advisoriesGet(c *gin.Context) {
 
 	cve := strings.TrimSpace(c.Query("cve"))
 	if cve != "" {
-		query["vulnerabilities._id"] = &bson.M{
+		query["vulnerabilities"] = &bson.M{
 			"$regex":   regexp.QuoteMeta(cve),
 			"$options": "i",
 		}
@@ -104,7 +142,7 @@ func advisoriesGet(c *gin.Context) {
 		query["dismissed"] = false
 	}
 
-	advisories, count, err := aggregate.GetAdvisoryPaged(
+	advisories, count, err := advisory.GetAllPaged(
 		db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
