@@ -10,9 +10,12 @@ import (
 type Job struct {
 	Id        string        `bson:"_id"`
 	Name      string        `bson:"name"`
+	Type      string        `bson:"type,omitempty"`
 	State     string        `bson:"state"`
 	Retry     bool          `bson:"retry"`
 	Node      bson.ObjectID `bson:"node"`
+	Token     bson.ObjectID `bson:"token,omitempty"`
+	Started   time.Time     `bson:"started,omitempty"`
 	Timestamp time.Time     `bson:"timestamp"`
 }
 
