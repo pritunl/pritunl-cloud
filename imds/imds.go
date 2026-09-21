@@ -200,31 +200,7 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		if ste.Updates != nil {
-			updts := []*telemetry.Update{}
-
-			var errData *errortypes.ErrorData
-			for _, updt := range ste.Updates {
-				errData, err = updt.Validate(db)
-				if err != nil || errData != nil {
-					continue
-				}
-
-				updts = append(updts, updt)
-			}
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"instance": instId.Hex(),
-					"error":    err,
-				}).Error("imds: Invalid update")
-				err = nil
-			}
-			if errData != nil {
-				logrus.WithFields(logrus.Fields{
-					"instance": instId.Hex(),
-					"error":    errData.GetError(),
-				}).Error("imds: Invalid update")
-				errData = nil
-			}
+			updts := validateUpdates(db, instId, ste.Updates)
 
 			err = manifest.UpsertInstanceUpdates(
 				db, instId, orgId, updts, components)
@@ -661,8 +637,10 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 		}
 
 		if ste.Updates != nil {
+			updts := validateUpdates(db, instId, ste.Updates)
+
 			err = manifest.UpsertInstanceUpdates(
-				db, instId, orgId, ste.Updates, components)
+				db, instId, orgId, updts, components)
 			if err != nil {
 				return
 			}
@@ -819,6 +797,45 @@ func State(db *database.Database, instId bson.ObjectID,
 			errors.Wrap(err, "agent: Failed to decode imds host sync resp"),
 		}
 		return
+	}
+
+	return
+}
+
+func validateUpdates(db *database.Database, instId bson.ObjectID,
+	updates []*telemetry.Update) (updts []*telemetry.Update) {
+
+	updts = []*telemetry.Update{}
+	invalid := 0
+	var lastErr error
+
+	for _, updt := range updates {
+		if updt == nil {
+			invalid += 1
+			continue
+		}
+
+		errData, err := updt.Validate(db)
+		if err != nil {
+			invalid += 1
+			lastErr = err
+			continue
+		}
+		if errData != nil {
+			invalid += 1
+			lastErr = errData.GetError()
+			continue
+		}
+
+		updts = append(updts, updt)
+	}
+
+	if invalid > 0 {
+		logrus.WithFields(logrus.Fields{
+			"instance": instId.Hex(),
+			"count":    invalid,
+			"error":    lastErr,
+		}).Warn("imds: Skipped invalid updates")
 	}
 
 	return
