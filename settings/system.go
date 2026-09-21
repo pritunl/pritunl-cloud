@@ -22,6 +22,10 @@ type system struct {
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
 	PlannerBatchSize     int    `bson:"planner_batch_size" default:"10"`
 	NoMigrateRefresh     bool   `bson:"no_migrate_refresh"`
+	TaskRunnerCheck      int    `bson:"task_runner_check" default:"60"`
+	TaskRunnerHeartbeat  int    `bson:"task_runner_heartbeat" default:"20"`
+	TaskRunnerTtl        int    `bson:"task_runner_ttl" default:"60"`
+	TaskRunnerCooldown   int    `bson:"task_runner_cooldown" default:"65"`
 	NtpServer            string `bson:"ntp_server" default:"time.cloudflare.com:123"`
 	NtpMaxSkew           int    `bson:"ntp_max_skew" default:"3"`
 	OracleApiRetryRate   int    `bson:"oracle_api_retry_rate" default:"1"`
