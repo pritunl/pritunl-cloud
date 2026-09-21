@@ -409,9 +409,8 @@ func GetAdvisoryDetail(db *database.Database, adv *advisory.Advisory,
 		counts.DismissedInstances
 
 	if pageCount <= 0 {
-		pageCount = 50
+		pageCount = 20
 	}
-	pageCount = utils.Min64(pageCount, 500)
 	maxPage := count / pageCount
 	if count > 0 && count%pageCount == 0 {
 		maxPage -= 1
