@@ -11,7 +11,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/pritunl-cloud/advisory"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -929,17 +929,7 @@ func instanceAdvisoryGet(c *gin.Context) {
 	}
 
 	if demo.IsDemo() {
-		advisories := []*advisory.Advisory{}
-		for _, adv := range demo.Advisories {
-			for _, instId := range adv.Instances {
-				if instId == instanceId {
-					advisories = append(advisories, &adv.Advisory)
-					break
-				}
-			}
-		}
-
-		c.JSON(200, advisories)
+		c.JSON(200, demo.GetResourceAdvisories(instanceId))
 		return
 	}
 
@@ -949,7 +939,7 @@ func instanceAdvisoryGet(c *gin.Context) {
 		return
 	}
 
-	advisories, err := advisory.GetInstance(db, inst.Id)
+	advisories, err := aggregate.GetResourceAdvisories(db, inst.Id)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
