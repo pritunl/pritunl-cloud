@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/systemd"
@@ -23,158 +24,224 @@ var Advisory = relations.Query{
 		Key:   "severity",
 		Label: "Severity",
 	}, {
-		Key: "instances",
+		Key:   "score",
+		Label: "Score",
+		Format: func(vals ...any) any {
+			switch score := vals[0].(type) {
+			case int32:
+				return advisoryScoreLabel(int(score))
+			case int64:
+				return advisoryScoreLabel(int(score))
+			case int:
+				return advisoryScoreLabel(score)
+			}
+			return "Unknown"
+		},
 	}, {
-		Key: "nodes",
+		Key:   "pending",
+		Label: "Pending Vulnerabilities",
+	}, {
+		Key:   "instance_count",
+		Label: "Affected Instances",
+	}, {
+		Key:   "node_count",
+		Label: "Affected Nodes",
+	}, {
+		Key: "organization",
+	}, {
+		Key: "updated",
 	}},
 	Relations: []relations.Relation{{
-		Key:          "instances",
-		Label:        "Instance",
-		From:         "instances",
-		LocalField:   "instances",
-		ForeignField: "_id",
-		Sort: map[string]int{
-			"name": 1,
+		Key:          "advisory_resources",
+		Label:        "Resource",
+		From:         "advisory_resources",
+		LocalField:   "reference",
+		ForeignField: "reference",
+		Let: bson.M{
+			"organization": "$organization",
+			"updated":      "$updated",
 		},
+		Match: bson.M{
+			"$expr": bson.M{
+				"$and": bson.A{
+					bson.M{"$eq": bson.A{"$organization", "$$organization"}},
+					bson.M{"$gte": bson.A{"$timestamp", "$$updated"}},
+				},
+			},
+		},
+		Sort: map[string]int{
+			"kind": -1,
+		},
+		Limit: 100,
 		Project: []relations.Project{{
-			Key:   "name",
-			Label: "Name",
+			Key:   "kind",
+			Label: "Kind",
 		}, {
-			Keys: []string{
-				"action",
-				"state",
-			},
-			Label: "Status",
-			Format: func(vals ...any) any {
-				action, _ := vals[0].(string)
-				state, _ := vals[1].(string)
-
-				switch action {
-				case instance.Start:
-					switch state {
-					case vm.Starting:
-						return "Starting"
-					case vm.Running:
-						return "Running"
-					case vm.Stopped:
-						return "Starting"
-					case vm.Failed:
-						return "Starting"
-					case vm.Updating:
-						return "Updating"
-					case vm.Provisioning:
-						return "Provisioning"
-					case "":
-						return "Provisioning"
-					}
-				case instance.Cleanup:
-					switch state {
-					case vm.Starting:
-						return "Stopping"
-					case vm.Running:
-						return "Stopping"
-					case vm.Stopped:
-						return "Stopping"
-					case vm.Failed:
-						return "Stopping"
-					case vm.Updating:
-						return "Updating"
-					case vm.Provisioning:
-						return "Stopping"
-					case "":
-						return "Stopping"
-					}
-				case instance.Stop:
-					switch state {
-					case vm.Starting:
-						return "Stopping"
-					case vm.Running:
-						return "Stopping"
-					case vm.Stopped:
-						return "Stopped"
-					case vm.Failed:
-						return "Failed"
-					case vm.Updating:
-						return "Updating"
-					case vm.Provisioning:
-						return "Stopped"
-					case "":
-						return "Stopped"
-					}
-				case instance.Restart:
-					return "Restarting"
-				case instance.Destroy:
-					return "Destroying"
-				}
-
-				return state
-			},
+			Key:   "state",
+			Label: "State",
 		}, {
-			Keys: []string{
-				"timestamp",
-				"action",
-				"state",
-			},
-			Label: "Uptime",
-			Format: func(vals ...any) any {
-				val := vals[0]
-				action, _ := vals[1].(string)
-				state, _ := vals[2].(string)
-				isActive := action == instance.Start ||
-					state == vm.Running || state == vm.Starting ||
-					state == vm.Provisioning
-
-				if !isActive {
-					return "-"
-				}
-
-				if mongoTime, ok := val.(bson.DateTime); ok {
-					valTime := mongoTime.Time()
-					return systemd.FormatUptimeShort(valTime)
-				}
-
-				if goTime, ok := val.(time.Time); ok {
-					return systemd.FormatUptimeShort(goTime)
-				}
-
-				return "-"
-			},
+			Key:   "dismissed",
+			Label: "Dismissed",
 		}, {
-			Key:   "processors",
-			Label: "Processors",
-		}, {
-			Key:   "memory",
-			Label: "Memory",
-		}, {
-			Key:   "private_ips",
-			Label: "Private IPv4",
-		}, {
-			Key:   "public_ips",
-			Label: "Public IPv4",
+			Key: "resource",
 		}},
-	}, {
-		Key:          "nodes",
-		Label:        "Node",
-		From:         "nodes",
-		LocalField:   "nodes",
-		ForeignField: "_id",
-		Sort: map[string]int{
-			"name": 1,
-		},
-		Project: []relations.Project{{
-			Key:   "name",
-			Label: "Name",
+		Relations: []relations.Relation{{
+			Key:          "instances",
+			Label:        "Instance",
+			From:         "instances",
+			LocalField:   "resource",
+			ForeignField: "_id",
+			Project: []relations.Project{{
+				Key:   "name",
+				Label: "Name",
+			}, {
+				Keys: []string{
+					"action",
+					"state",
+				},
+				Label: "Status",
+				Format: func(vals ...any) any {
+					action, _ := vals[0].(string)
+					state, _ := vals[1].(string)
+
+					switch action {
+					case instance.Start:
+						switch state {
+						case vm.Starting:
+							return "Starting"
+						case vm.Running:
+							return "Running"
+						case vm.Stopped:
+							return "Starting"
+						case vm.Failed:
+							return "Starting"
+						case vm.Updating:
+							return "Updating"
+						case vm.Provisioning:
+							return "Provisioning"
+						case "":
+							return "Provisioning"
+						}
+					case instance.Cleanup:
+						switch state {
+						case vm.Starting:
+							return "Stopping"
+						case vm.Running:
+							return "Stopping"
+						case vm.Stopped:
+							return "Stopping"
+						case vm.Failed:
+							return "Stopping"
+						case vm.Updating:
+							return "Updating"
+						case vm.Provisioning:
+							return "Stopping"
+						case "":
+							return "Stopping"
+						}
+					case instance.Stop:
+						switch state {
+						case vm.Starting:
+							return "Stopping"
+						case vm.Running:
+							return "Stopping"
+						case vm.Stopped:
+							return "Stopped"
+						case vm.Failed:
+							return "Failed"
+						case vm.Updating:
+							return "Updating"
+						case vm.Provisioning:
+							return "Stopped"
+						case "":
+							return "Stopped"
+						}
+					case instance.Restart:
+						return "Restarting"
+					case instance.Destroy:
+						return "Destroying"
+					}
+
+					return state
+				},
+			}, {
+				Keys: []string{
+					"timestamp",
+					"action",
+					"state",
+				},
+				Label: "Uptime",
+				Format: func(vals ...any) any {
+					val := vals[0]
+					action, _ := vals[1].(string)
+					state, _ := vals[2].(string)
+					isActive := action == instance.Start ||
+						state == vm.Running || state == vm.Starting ||
+						state == vm.Provisioning
+
+					if !isActive {
+						return "-"
+					}
+
+					if mongoTime, ok := val.(bson.DateTime); ok {
+						valTime := mongoTime.Time()
+						return systemd.FormatUptimeShort(valTime)
+					}
+
+					if goTime, ok := val.(time.Time); ok {
+						return systemd.FormatUptimeShort(goTime)
+					}
+
+					return "-"
+				},
+			}, {
+				Key:   "processors",
+				Label: "Processors",
+			}, {
+				Key:   "memory",
+				Label: "Memory",
+			}, {
+				Key:   "private_ips",
+				Label: "Private IPv4",
+			}, {
+				Key:   "public_ips",
+				Label: "Public IPv4",
+			}},
 		}, {
-			Key:   "types",
-			Label: "Modes",
-		}, {
-			Key:   "network_mode",
-			Label: "Network Mode IPv4",
-		}, {
-			Key:   "network_mode6",
-			Label: "Network Mode IPv6",
+			Key:          "nodes",
+			Label:        "Node",
+			From:         "nodes",
+			LocalField:   "resource",
+			ForeignField: "_id",
+			Project: []relations.Project{{
+				Key:   "name",
+				Label: "Name",
+			}, {
+				Key:   "types",
+				Label: "Modes",
+			}, {
+				Key:   "network_mode",
+				Label: "Network Mode IPv4",
+			}, {
+				Key:   "network_mode6",
+				Label: "Network Mode IPv6",
+			}},
 		}},
 	}},
+}
+
+func advisoryScoreLabel(score int) string {
+	switch score {
+	case advisory.Critical:
+		return "Critical"
+	case advisory.High:
+		return "High"
+	case advisory.Medium:
+		return "Medium"
+	case advisory.Low:
+		return "Low"
+	}
+	return "Unknown"
 }
 
 func init() {
