@@ -121,6 +121,7 @@ type Node struct {
 	AdvertiseAddress        string             `bson:"advertise_address" json:"advertise_address"`
 	AdvisoryCount           int                `bson:"advisory_count" json:"advisory_count"`
 	AdvisoryMax             int                `bson:"advisory_max" json:"advisory_max"`
+	AdvisoryPending         int                `bson:"advisory_pending" json:"advisory_pending"`
 	SoftwareVersion         string             `bson:"software_version" json:"software_version"`
 	Hostname                string             `bson:"hostname" json:"hostname"`
 	Version                 int                `bson:"version" json:"-"`
@@ -282,6 +283,7 @@ func (n *Node) Copy() *Node {
 		AdvertiseAddress:        n.AdvertiseAddress,
 		AdvisoryCount:           n.AdvisoryCount,
 		AdvisoryMax:             n.AdvisoryMax,
+		AdvisoryPending:         n.AdvisoryPending,
 		SoftwareVersion:         n.SoftwareVersion,
 		Hostname:                n.Hostname,
 		Version:                 n.Version,
@@ -1434,6 +1436,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.AdvertiseAddress = nde.AdvertiseAddress
 	n.AdvisoryCount = nde.AdvisoryCount
 	n.AdvisoryMax = nde.AdvisoryMax
+	n.AdvisoryPending = nde.AdvisoryPending
 	n.Shares = nde.Shares
 	n.InstanceDrives = nde.InstanceDrives
 	n.NoHostNetwork = nde.NoHostNetwork
