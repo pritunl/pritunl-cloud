@@ -73,6 +73,10 @@ func (u *Update) Validate(db *database.Database) (
 		return
 	}
 
+	if len(u.Vulnerabilities) > settings.Telemetry.UpdateCveLimit {
+		u.Vulnerabilities = u.Vulnerabilities[:settings.Telemetry.UpdateCveLimit]
+	}
+
 	for i, cve := range u.Vulnerabilities {
 		u.Vulnerabilities[i] = utils.FilterId(cve)
 	}
