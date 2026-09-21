@@ -14,8 +14,14 @@ type telemetry struct {
 	RedhatTtl         int    `bson:"redhat_ttl" default:"21600"`
 	RedhatFinalTtl    int    `bson:"redhat_final_ttl" default:"604800"`
 	RedhatApiLimit    int    `bson:"redhat_api_limit" default:"1"`
-	AnalysisTtl       int    `bson:"analysis_ttl" default:"600"`
+	AnalysisTtl       int    `bson:"analysis_ttl" default:"1200"`
+	SyncMaxAttempts   int    `bson:"sync_max_attempts" default:"8"`
+	SyncRetryTtl      int    `bson:"sync_retry_ttl" default:"3600"`
+	SyncMissingTtl    int    `bson:"sync_missing_ttl" default:"86400"`
+	SyncFetchTimeout  int    `bson:"sync_fetch_timeout" default:"600"`
+	SyncReferenceTtl  int    `bson:"sync_reference_ttl" default:"172800"`
 	DescriptionLimit  int    `bson:"description_limit" default:"10000"`
+	UpdateCveLimit    int    `bson:"update_cve_limit" default:"5000"`
 	VuxmlSizeLimit    int    `bson:"vuxml_size_limit" default:"67108864"`
 }
 
