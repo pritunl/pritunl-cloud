@@ -21,8 +21,10 @@ type Relation struct {
 	From         string
 	LocalField   string
 	ForeignField string
+	Let          bson.M
 	Match        bson.M
 	Sort         map[string]int
+	Limit        int
 	Project      []Project
 	Relations    []Relation
 	BlockDelete  bool
@@ -43,8 +45,13 @@ func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
 		"as":           relation.From,
 	}
 
+	if len(relation.Let) > 0 {
+		lookup["let"] = relation.Let
+	}
+
 	if len(relation.Project) > 0 || len(relation.Sort) > 0 ||
-		len(relation.Relations) > 0 || len(relation.Match) > 0 {
+		len(relation.Relations) > 0 || len(relation.Match) > 0 ||
+		relation.Limit > 0 {
 
 		nestedPipeline := []bson.M{}
 		if len(relation.Match) > 0 {
@@ -74,6 +81,12 @@ func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
 		if len(relation.Sort) > 0 {
 			nestedPipeline = append(nestedPipeline, bson.M{
 				"$sort": relation.Sort,
+			})
+		}
+
+		if relation.Limit > 0 {
+			nestedPipeline = append(nestedPipeline, bson.M{
+				"$limit": relation.Limit,
 			})
 		}
 
