@@ -29,6 +29,7 @@ type Updates struct {
 	Ports        []string            `bson:"ports" json:"ports"`
 	Count        int                 `bson:"count" json:"count"`
 	Max          int                 `bson:"max" json:"max"`
+	Pending      int                 `bson:"pending" json:"pending"`
 }
 
 func (u *Updates) Components() *telemetry.ComponentData {
@@ -75,8 +76,9 @@ func (u *Updates) Upsert(db *database.Database) (err error) {
 			"ports":        u.Ports,
 		},
 		"$setOnInsert": &bson.M{
-			"count": 0,
-			"max":   0,
+			"count":   0,
+			"max":     0,
+			"pending": 0,
 		},
 	}, options.UpdateOne().SetUpsert(true))
 	if err != nil {
