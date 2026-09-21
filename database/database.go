@@ -246,6 +246,11 @@ func (d *Database) Advisories() (coll *Collection) {
 	return
 }
 
+func (d *Database) AdvisoryResources() (coll *Collection) {
+	coll = d.GetCollection("advisory_resources")
+	return
+}
+
 func (d *Database) Vulnerabilities() (coll *Collection) {
 	coll = d.GetCollection("vulnerabilities")
 	return
@@ -1249,7 +1254,10 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Advisories(),
 		Keys: &bson.D{
-			{"instances", 1},
+			{"dismissed", 1},
+		},
+		Partial: &bson.M{
+			"dismissed": true,
 		},
 	}
 	err = index.Create()
@@ -1258,9 +1266,73 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
-		Collection: db.Advisories(),
+		Collection: db.AdvisoryResources(),
 		Keys: &bson.D{
-			{"nodes", 1},
+			{"reference", 1},
+			{"resource", 1},
+		},
+		Unique: true,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.AdvisoryResources(),
+		Keys: &bson.D{
+			{"timestamp", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.AdvisoryResources(),
+		Keys: &bson.D{
+			{"organization", 1},
+			{"reference", 1},
+			{"state", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.AdvisoryResources(),
+		Keys: &bson.D{
+			{"resource", 1},
+			{"state", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.AdvisoryResources(),
+		Keys: &bson.D{
+			{"dismissed", 1},
+		},
+		Partial: &bson.M{
+			"dismissed": true,
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.Vulnerabilities(),
+		Keys: &bson.D{
+			{"sync", 1},
+			{"refreshed", 1},
 		},
 	}
 	err = index.Create()
