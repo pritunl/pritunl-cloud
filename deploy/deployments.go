@@ -58,6 +58,25 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			return
 		}
 
+		if deply.NewSpec.IsZero() {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   deply.Spec.Hex(),
+			}).Error("deploy: Migrate missing new spec, clearing action")
+
+			deply.Action = ""
+			err := deply.CommitFields(db, set.NewSet("action"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   deply.Spec.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to commit deployment")
+			}
+
+			return
+		}
+
 		inst, err := instance.Get(db, deply.Instance)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -102,9 +121,9 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 				"error_data":    errData,
 			}).Error("deploy: Incompatible migrate")
 
-			deply.State = deployment.Deployed
+			deply.Action = ""
 			deply.NewSpec = bson.NilObjectID
-			err = deply.CommitFields(db, set.NewSet("state", "new_spec"))
+			err = deply.CommitFields(db, set.NewSet("action", "new_spec"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"deployment_id": deply.Id.Hex(),
