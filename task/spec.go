@@ -52,6 +52,8 @@ func specsHandler(db *database.Database) (err error) {
 			err = e
 
 			logrus.WithFields(logrus.Fields{
+				"pod_id":     spec.Pod.Hex(),
+				"unit_id":    spec.Unit.Hex(),
 				"spec_id":    spec.Id.Hex(),
 				"error":      err,
 				"error_data": errData,
