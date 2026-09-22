@@ -20,6 +20,8 @@ type telemetry struct {
 	SyncMissingTtl    int    `bson:"sync_missing_ttl" default:"86400"`
 	SyncFetchTimeout  int    `bson:"sync_fetch_timeout" default:"600"`
 	SyncReferenceTtl  int    `bson:"sync_reference_ttl" default:"172800"`
+	SyncThreads       int    `bson:"sync_threads" default:"8"`
+	SyncWorkers       int    `bson:"sync_workers" default:"2"`
 	DescriptionLimit  int    `bson:"description_limit" default:"10000"`
 	UpdateCveLimit    int    `bson:"update_cve_limit" default:"5000"`
 	VuxmlSizeLimit    int    `bson:"vuxml_size_limit" default:"67108864"`
