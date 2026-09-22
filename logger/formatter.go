@@ -29,7 +29,9 @@ func format(entry *logrus.Entry) (output []byte) {
 	var errStr string
 	for key, val := range entry.Data {
 		if key == "error" {
-			errStr = fmt.Sprintf("%s", val)
+			if !isNil(val) {
+				errStr = fmt.Sprintf("%s", val)
+			}
 			continue
 		} else if key == "error_data" {
 			if val != nil && !reflect.ValueOf(val).IsNil() {
@@ -78,7 +80,9 @@ func formatPlain(entry *logrus.Entry) (output []byte) {
 	var errStr string
 	for key, val := range entry.Data {
 		if key == "error" {
-			errStr = fmt.Sprintf("%s", val)
+			if !isNil(val) {
+				errStr = fmt.Sprintf("%s", val)
+			}
 			continue
 		} else if key == "error_data" {
 			if val != nil && !reflect.ValueOf(val).IsNil() {
@@ -166,6 +170,21 @@ func formatLevelPlain(lvl logrus.Level) string {
 	}
 
 	return ""
+}
+
+func isNil(val interface{}) bool {
+	if val == nil {
+		return true
+	}
+
+	switch reflect.TypeOf(val).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Slice, reflect.Interface,
+		reflect.Func, reflect.Chan:
+
+		return reflect.ValueOf(val).IsNil()
+	}
+
+	return false
 }
 
 type formatter struct{}
