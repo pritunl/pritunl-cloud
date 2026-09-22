@@ -325,36 +325,53 @@ func (a *advisoryProcessor) parseUpdates(db *database.Database,
 		return
 	}
 
-	if counter.Count != updts.Count || counter.Max != updts.Max ||
-		counter.Pending != updts.Pending {
+	var resourceColl *database.Collection
+	switch updts.Variant {
+	case manifest.InstanceVariant:
+		resourceColl = db.Instances()
+	case manifest.NodeVariant:
+		resourceColl = db.Nodes()
+	}
 
-		var resourceColl *database.Collection
-		switch updts.Variant {
-		case manifest.InstanceVariant:
-			resourceColl = db.Instances()
-		case manifest.NodeVariant:
-			resourceColl = db.Nodes()
-		}
-
-		if resourceColl != nil {
-			_, err = resourceColl.UpdateOne(db, &bson.M{
-				"_id": updts.Resource,
-			}, &bson.M{
-				"$set": &bson.M{
-					"advisory_count":   counter.Count,
-					"advisory_max":     counter.Max,
-					"advisory_pending": counter.Pending,
+	if resourceColl != nil {
+		_, err = resourceColl.UpdateOne(db, &bson.M{
+			"_id": updts.Resource,
+			"$or": []*bson.M{
+				&bson.M{
+					"advisory_count": &bson.M{
+						"$ne": counter.Count,
+					},
 				},
-			})
-			if err != nil {
-				err = database.ParseError(err)
-				if _, ok := err.(*database.NotFoundError); ok {
-					err = nil
-				} else {
-					return
-				}
+				&bson.M{
+					"advisory_max": &bson.M{
+						"$ne": counter.Max,
+					},
+				},
+				&bson.M{
+					"advisory_pending": &bson.M{
+						"$ne": counter.Pending,
+					},
+				},
+			},
+		}, &bson.M{
+			"$set": &bson.M{
+				"advisory_count":   counter.Count,
+				"advisory_max":     counter.Max,
+				"advisory_pending": counter.Pending,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
 			}
 		}
+	}
+
+	if counter.Count != updts.Count || counter.Max != updts.Max ||
+		counter.Pending != updts.Pending {
 
 		updts.Count = counter.Count
 		updts.Max = counter.Max
@@ -414,8 +431,9 @@ func advisoriesUpdateHandler(db *database.Database) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"advisories":      advCount,
 		"vulnerabilities": len(advProc.vulnerabilities),
-		"duration":        time.Since(advProc.now).String(),
-	}).Info("task: Advisory task complete")
+		"duration": time.Since(advProc.now).Round(
+			time.Millisecond).String(),
+	}).Info("task: Advisory sync")
 
 	return
 }
