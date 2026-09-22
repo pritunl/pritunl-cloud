@@ -3,14 +3,21 @@ package form
 import (
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/pritunl/pritunl-cloud/cli/widget"
 )
 
 // Area is a multiline text input, the up and down keys leave the input
-// at the first and last line.
+// at the first and last line. A copy button beside the label shows the
+// text for copying with the terminal selection.
 type Area struct {
 	Base
 	model   textarea.Model
 	initial string
+
+	// Position of the copy button in the label row of the last view
+	copyX     int
+	copyWidth int
 }
 
 func NewArea(label, placeholder, value string, rows int) *Area {
@@ -48,6 +55,21 @@ func (a *Area) Blur() {
 	a.model.Blur()
 }
 
+// copyCmd shows the text on a plain screen for selecting and copying
+// with the terminal.
+func (a *Area) copyCmd() tea.Cmd {
+	if a.Value() == "" {
+		return nil
+	}
+	return widget.SelectText(a.Label, a.Value())
+}
+
+// copyAt returns true when the position is on the copy button.
+func (a *Area) copyAt(x, y int) bool {
+	return y == 0 && a.copyWidth > 0 &&
+		x >= a.copyX && x < a.copyX+a.copyWidth
+}
+
 func (a *Area) Next(reverse bool) (tea.Cmd, bool) {
 	return nil, false
 }
@@ -56,6 +78,8 @@ func (a *Area) Update(msg tea.Msg) (tea.Cmd, bool) {
 	keyMsg, isKey := msg.(tea.KeyPressMsg)
 	if isKey {
 		switch {
+		case keyIs(keyMsg, "ctrl+y"):
+			return a.copyCmd(), true
 		case keyIs(keyMsg, "tab", "shift+tab", "esc"):
 			return nil, false
 		case keyIs(keyMsg, "up") && a.model.Line() == 0:
@@ -72,10 +96,32 @@ func (a *Area) Update(msg tea.Msg) (tea.Cmd, bool) {
 }
 
 func (a *Area) Click(x, y int) tea.Cmd {
+	if a.copyAt(x, y) {
+		return a.copyCmd()
+	}
 	return nil
+}
+
+func (a *Area) copyButton() string {
+	switch {
+	case a.Value() == "":
+		return ""
+	case a.Focused():
+		return copyButtonStyle.Render("[ctrl+y] Copy")
+	}
+	return copyButtonStyle.Render("Copy")
 }
 
 func (a *Area) View(width int) string {
 	a.model.SetWidth(max(width, 10))
-	return renderLabel(a.Label, a.Focused()) + "\n" + a.model.View()
+
+	label := renderLabel(a.Label, a.Focused())
+	button := a.copyButton()
+	a.copyX = lipgloss.Width(label) + 2
+	a.copyWidth = lipgloss.Width(button)
+	if button != "" {
+		label += "  " + button
+	}
+
+	return label + "\n" + a.model.View()
 }

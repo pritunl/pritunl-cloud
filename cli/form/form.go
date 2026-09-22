@@ -260,6 +260,14 @@ func (f *Form) Click(x, y int) tea.Cmd {
 		if y < sp.y || y >= sp.y+sp.h {
 			continue
 		}
+
+		// The copy button copies without focusing the input and is
+		// available on read only inputs
+		area, ok := f.inputs[sp.index].(*Area)
+		if ok && area.copyAt(x, y-sp.y) {
+			return area.copyCmd()
+		}
+
 		if f.inputs[sp.index].ReadOnly() {
 			return nil
 		}

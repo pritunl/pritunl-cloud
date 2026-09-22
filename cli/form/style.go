@@ -61,6 +61,10 @@ var (
 				Foreground(widget.ColorWhite).
 				Background(widget.ColorRed).
 				Padding(0, 1)
+	copyButtonStyle = lipgloss.NewStyle().
+			Foreground(widget.ColorWhite).
+			Background(widget.ColorGray).
+			Padding(0, 1)
 	buttonFocusStyle = lipgloss.NewStyle().
 				Foreground(widget.ColorPrimary).
 				Background(widget.ColorWhite).
