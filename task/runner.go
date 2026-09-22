@@ -38,6 +38,17 @@ func (t *Task) runnerSlotId(slot int) string {
 	return fmt.Sprintf("%s-runner-%d", t.Name, slot)
 }
 
+func (t *Task) runnerWorkers() (workers int) {
+	if t.Workers != nil {
+		workers = t.Workers()
+	}
+	if workers < 1 {
+		workers = 1
+	}
+
+	return
+}
+
 func (t *Task) runnerFindSlots(db *database.Database, now time.Time) (
 	slots []int, err error) {
 
@@ -45,7 +56,7 @@ func (t *Task) runnerFindSlots(db *database.Database, now time.Time) (
 	slots = []int{}
 
 	slotIds := []string{}
-	for i := 0; i < t.Workers; i++ {
+	for i := 0; i < t.runnerWorkers(); i++ {
 		slotIds = append(slotIds, t.runnerSlotId(i))
 	}
 
