@@ -43,6 +43,14 @@ type Spec struct {
 	Firewall     *Firewall     `bson:"firewall,omitempty" json:"-"`
 	Domain       *Domain       `bson:"domain,omitempty" json:"-"`
 	Journal      *Journal      `bson:"journal,omitempty" json:"-"`
+	resource     string        `bson:"-" json:"-"`
+}
+
+func (s *Spec) errMsg(msg string) string {
+	if s.resource != "" {
+		return msg + " (" + s.resource + ")"
+	}
+	return msg
 }
 
 func (s *Spec) GetAllNodes(db *database.Database, rlm *Realm) (ndes Nodes,
@@ -55,7 +63,7 @@ func (s *Spec) GetAllNodes(db *database.Database, rlm *Realm) (ndes Nodes,
 
 	if s.Instance.Shape.IsZero() {
 		err = &errortypes.ParseError{
-			errors.New("spec: Missing instance shape"),
+			errors.New(s.errMsg("spec: Missing instance shape")),
 		}
 		return
 	}
@@ -193,15 +201,16 @@ func (s *Spec) parseFirewall(db *database.Database,
 	if dataYaml.Name == "" {
 		errData = &errortypes.ErrorData{
 			Error:   "firewall_name_missing",
-			Message: "Firewall name is missing",
+			Message: s.errMsg("Firewall name is missing"),
 		}
 		return
 	}
+	s.resource = dataYaml.Name
 
 	if dataYaml.Kind != finder.FirewallKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
-			Message: "Unit kind unexpected",
+			Message: s.errMsg("Unit kind unexpected"),
 		}
 		return
 	}
@@ -276,10 +285,11 @@ func (s *Spec) parseInstance(db *database.Database,
 	if dataYaml.Name == "" {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_name_missing",
-			Message: "Unit name is missing",
+			Message: s.errMsg("Unit name is missing"),
 		}
 		return
 	}
+	s.resource = dataYaml.Name
 
 	switch dataYaml.Kind {
 	case finder.InstanceKind:
@@ -289,7 +299,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
-			Message: "Unit kind unexpected",
+			Message: s.errMsg("Unit kind unexpected"),
 		}
 		return
 	}
@@ -302,7 +312,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "unit_failover_invalid",
-			Message: "Unit failover invalid",
+			Message: s.errMsg("Unit failover invalid"),
 		}
 		return
 	}
@@ -330,8 +340,9 @@ func (s *Spec) parseInstance(db *database.Database,
 
 			errData = &errortypes.ErrorData{
 				Error: "unit_realm_conflict",
-				Message: "Unit datacenter, zone, node, vpc and " +
-					"subnet cannot be set with realms",
+				Message: s.errMsg(
+					"Unit datacenter, zone, node, vpc and " +
+						"subnet cannot be set with realms"),
 			}
 			return
 		}
@@ -346,7 +357,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			if rlmYaml.Name == "" {
 				errData = &errortypes.ErrorData{
 					Error:   "realm_name_missing",
-					Message: "Realm name is missing",
+					Message: s.errMsg("Realm name is missing"),
 				}
 				return
 			}
@@ -377,8 +388,9 @@ func (s *Spec) parseInstance(db *database.Database,
 
 						errData = &errortypes.ErrorData{
 							Error: "unit_datacenter_zone_invalid",
-							Message: "Unit realm zone is not in " +
-								"provided datacenter",
+							Message: s.errMsg(
+								"Unit realm zone is not in " +
+									"provided datacenter"),
 						}
 						return
 					}
@@ -390,8 +402,9 @@ func (s *Spec) parseInstance(db *database.Database,
 
 			if rlm.Datacenter.IsZero() {
 				errData = &errortypes.ErrorData{
-					Error:   "unit_realm_datacenter_missing",
-					Message: "Unit realm datacenter or zone is missing",
+					Error: "unit_realm_datacenter_missing",
+					Message: s.errMsg(
+						"Unit realm datacenter or zone is missing"),
 				}
 				return
 			}
@@ -407,8 +420,9 @@ func (s *Spec) parseInstance(db *database.Database,
 						if rlmRes.Node.Zone != rlm.Zone {
 							errData = &errortypes.ErrorData{
 								Error: "unit_node_zone_invalid",
-								Message: "Unit realm node is not in " +
-									"provided zone",
+								Message: s.errMsg(
+									"Unit realm node is not in " +
+										"provided zone"),
 							}
 							return
 						}
@@ -422,8 +436,9 @@ func (s *Spec) parseInstance(db *database.Database,
 						if ndeDc != rlm.Datacenter {
 							errData = &errortypes.ErrorData{
 								Error: "unit_node_datacenter_invalid",
-								Message: "Unit realm node is not in " +
-									"provided datacenter",
+								Message: s.errMsg(
+									"Unit realm node is not in " +
+										"provided datacenter"),
 							}
 							return
 						}
@@ -447,7 +462,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			if rlm.Vpc.IsZero() {
 				errData = &errortypes.ErrorData{
 					Error:   "unit_realm_vpc_missing",
-					Message: "Unit realm VPC is missing",
+					Message: s.errMsg("Unit realm VPC is missing"),
 				}
 				return
 			}
@@ -466,7 +481,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			if rlm.Subnet.IsZero() {
 				errData = &errortypes.ErrorData{
 					Error:   "unit_realm_subnet_missing",
-					Message: "Unit realm subnet is missing",
+					Message: s.errMsg("Unit realm subnet is missing"),
 				}
 				return
 			}
@@ -499,8 +514,9 @@ func (s *Spec) parseInstance(db *database.Database,
 				data.Datacenter != resources.Datacenter.Id {
 
 				errData = &errortypes.ErrorData{
-					Error:   "unit_datacenter_zone_invalid",
-					Message: "Unit zone is not in provided datacenter",
+					Error: "unit_datacenter_zone_invalid",
+					Message: s.errMsg(
+						"Unit zone is not in provided datacenter"),
 				}
 				return
 			}
@@ -513,7 +529,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	if !hasRealms && data.Datacenter.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_datacenter_missing",
-			Message: "Unit datacenter or zone is missing",
+			Message: s.errMsg("Unit datacenter or zone is missing"),
 		}
 		return
 	}
@@ -529,7 +545,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				if resources.Node.Zone != data.Zone {
 					errData = &errortypes.ErrorData{
 						Error:   "unit_node_zone_invalid",
-						Message: "Unit node is not in provided zone",
+						Message: s.errMsg("Unit node is not in provided zone"),
 					}
 					return
 				}
@@ -542,8 +558,9 @@ func (s *Spec) parseInstance(db *database.Database,
 
 				if ndeDc != data.Datacenter {
 					errData = &errortypes.ErrorData{
-						Error:   "unit_node_datacenter_invalid",
-						Message: "Unit node is not in provided datacenter",
+						Error: "unit_node_datacenter_invalid",
+						Message: s.errMsg(
+							"Unit node is not in provided datacenter"),
 					}
 					return
 				}
@@ -569,8 +586,9 @@ func (s *Spec) parseInstance(db *database.Database,
 			for _, rlm := range data.Realms {
 				if rlm.Node.IsZero() {
 					errData = &errortypes.ErrorData{
-						Error:   "unit_node_missing",
-						Message: "Unit realm node or shape is missing",
+						Error: "unit_node_missing",
+						Message: s.errMsg(
+							"Unit realm node or shape is missing"),
 					}
 					return
 				}
@@ -579,7 +597,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	} else if data.Node.IsZero() && data.Shape.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_node_missing",
-			Message: "Unit node or shape is missing",
+			Message: s.errMsg("Unit node or shape is missing"),
 		}
 		return
 	}
@@ -598,7 +616,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	if !hasRealms && data.Vpc.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_vpc_missing",
-			Message: "Unit VPC is missing",
+			Message: s.errMsg("Unit VPC is missing"),
 		}
 		return
 	}
@@ -617,7 +635,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	if !hasRealms && data.Subnet.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_subnet_missing",
-			Message: "Unit subnet is missing",
+			Message: s.errMsg("Unit subnet is missing"),
 		}
 		return
 	}
@@ -651,7 +669,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			if mountYaml.Name == "" {
 				errData = &errortypes.ErrorData{
 					Error:   "mount_name_missing",
-					Message: "Mount name is missing",
+					Message: s.errMsg("Mount name is missing"),
 				}
 				return
 			}
@@ -659,7 +677,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			if mnt.Path == "" {
 				errData = &errortypes.ErrorData{
 					Error:   "mount_path_missing",
-					Message: "Unit mount path is missing",
+					Message: s.errMsg("Unit mount path is missing"),
 				}
 				return
 			}
@@ -672,7 +690,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				if mnt.Name == "" {
 					errData = &errortypes.ErrorData{
 						Error:   "mount_name_missing",
-						Message: "Unit mount name is missing",
+						Message: s.errMsg("Unit mount name is missing"),
 					}
 					return
 				}
@@ -680,7 +698,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				if mnt.HostPath == "" {
 					errData = &errortypes.ErrorData{
 						Error:   "mount_host_path_missing",
-						Message: "Unit mount hostPath is missing",
+						Message: s.errMsg("Unit mount hostPath is missing"),
 					}
 					return
 				}
@@ -690,7 +708,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				if mnt.Path == "" {
 					errData = &errortypes.ErrorData{
 						Error:   "mount_path_missing",
-						Message: "Unit mount path is missing",
+						Message: s.errMsg("Unit mount path is missing"),
 					}
 					return
 				}
@@ -710,7 +728,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			} else {
 				errData = &errortypes.ErrorData{
 					Error:   "mount_type_invalid",
-					Message: "Unit mount type is invalid",
+					Message: s.errMsg("Unit mount type is invalid"),
 				}
 				return
 			}
@@ -734,7 +752,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			if externalNodePorts.Contains(extPortKey) {
 				errData = &errortypes.ErrorData{
 					Error:   "node_port_external_duplicate",
-					Message: "Duplicate external node port",
+					Message: s.errMsg("Duplicate external node port"),
 				}
 				return
 			}
@@ -800,7 +818,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	if data.Node.IsZero() && data.Shape.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_image_missing",
-			Message: "Unit image is missing",
+			Message: s.errMsg("Unit image is missing"),
 		}
 		return
 	}
@@ -839,7 +857,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_unit_cloud_type",
-			Message: "Unit instance cloud type is invalid",
+			Message: s.errMsg("Unit instance cloud type is invalid"),
 		}
 		return
 	}
@@ -856,7 +874,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_unit_cloud_interface",
-			Message: "Unit instance cloud interface is invalid",
+			Message: s.errMsg("Unit instance cloud interface is invalid"),
 		}
 		return
 	}
@@ -884,7 +902,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	if s.Kind == finder.ImageKind && s.Count != 0 {
 		errData = &errortypes.ErrorData{
 			Error:   "count_invalid",
-			Message: "Count not valid for image kind",
+			Message: s.errMsg("Count not valid for image kind"),
 		}
 		return
 	}
@@ -904,15 +922,16 @@ func (s *Spec) parseDomain(db *database.Database,
 	if dataYaml.Name == "" {
 		errData = &errortypes.ErrorData{
 			Error:   "domain_name_missing",
-			Message: "Domain name is missing",
+			Message: s.errMsg("Domain name is missing"),
 		}
 		return
 	}
+	s.resource = dataYaml.Name
 
 	if dataYaml.Kind != finder.DomainKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
-			Message: "Unit kind unexpected",
+			Message: s.errMsg("Unit kind unexpected"),
 		}
 		return
 	}
@@ -926,7 +945,7 @@ func (s *Spec) parseDomain(db *database.Database,
 		if recordYaml.Name == "" {
 			errData = &errortypes.ErrorData{
 				Error:   "domain_record_name_missing",
-				Message: "Domain record name is missing",
+				Message: s.errMsg("Domain record name is missing"),
 			}
 			return
 		}
@@ -976,7 +995,7 @@ func (s *Spec) parseJournal(db *database.Database,
 	if dataYaml.Name == "" {
 		errData = &errortypes.ErrorData{
 			Error:   "journal_name_missing",
-			Message: "Journal name is missing",
+			Message: s.errMsg("Journal name is missing"),
 		}
 		return
 	}
@@ -984,7 +1003,7 @@ func (s *Spec) parseJournal(db *database.Database,
 	if dataYaml.Kind != finder.JournalKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
-			Message: "Unit kind unexpected",
+			Message: s.errMsg("Unit kind unexpected"),
 		}
 		return
 	}
@@ -1001,7 +1020,7 @@ func (s *Spec) parseJournal(db *database.Database,
 		if inputYaml.Key == "" {
 			errData = &errortypes.ErrorData{
 				Error:   "journal_input_key_missing",
-				Message: "Journal input key is missing",
+				Message: s.errMsg("Journal input key is missing"),
 			}
 			return
 		}
@@ -1024,7 +1043,7 @@ func (s *Spec) parseJournal(db *database.Database,
 		if inputKeys.Contains(input.Key) {
 			errData = &errortypes.ErrorData{
 				Error:   "journal_duplicate_key",
-				Message: "Journal has duplicate key",
+				Message: s.errMsg("Journal has duplicate key"),
 			}
 			return
 		}
@@ -1035,7 +1054,7 @@ func (s *Spec) parseJournal(db *database.Database,
 			if jrnlKindGen == nil {
 				errData = &errortypes.ErrorData{
 					Error:   "journal_missing_index",
-					Message: "Journal missing index",
+					Message: s.errMsg("Journal missing index"),
 				}
 				return
 			}
@@ -1088,7 +1107,7 @@ func (s *Spec) Parse(db *database.Database,
 	if resourcesSpec == "" {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_resources_block_missing",
-			Message: "Unit missing yaml resources block",
+			Message: s.errMsg("Unit missing yaml resources block"),
 		}
 		return
 	}
@@ -1106,7 +1125,7 @@ func (s *Spec) Parse(db *database.Database,
 			}
 
 			err = &errortypes.ParseError{
-				errors.Wrap(err, "spec: Failed to decode yaml doc"),
+				errors.Wrap(err, s.errMsg("spec: Failed to decode yaml doc")),
 			}
 			return
 		}
@@ -1119,7 +1138,7 @@ func (s *Spec) Parse(db *database.Database,
 			if err != nil {
 				err = &errortypes.ParseError{
 					errors.Wrap(err,
-						"spec: Failed to decode instance yaml doc"),
+						s.errMsg("spec: Failed to decode instance yaml doc")),
 				}
 				return
 			}
@@ -1135,7 +1154,7 @@ func (s *Spec) Parse(db *database.Database,
 			if err != nil {
 				err = &errortypes.ParseError{
 					errors.Wrap(err,
-						"spec: Failed to decode firewall yaml doc"),
+						s.errMsg("spec: Failed to decode firewall yaml doc")),
 				}
 				return
 			}
@@ -1151,7 +1170,7 @@ func (s *Spec) Parse(db *database.Database,
 			if err != nil {
 				err = &errortypes.ParseError{
 					errors.Wrap(err,
-						"spec: Failed to decode domain yaml doc"),
+						s.errMsg("spec: Failed to decode domain yaml doc")),
 				}
 				return
 			}
@@ -1167,7 +1186,7 @@ func (s *Spec) Parse(db *database.Database,
 			if err != nil {
 				err = &errortypes.ParseError{
 					errors.Wrap(err,
-						"spec: Failed to decode domain yaml doc"),
+						s.errMsg("spec: Failed to decode domain yaml doc")),
 				}
 				return
 			}
@@ -1179,7 +1198,7 @@ func (s *Spec) Parse(db *database.Database,
 		default:
 			errData = &errortypes.ErrorData{
 				Error:   "unit_kind_invalid",
-				Message: "Unit kind is invalid",
+				Message: s.errMsg("Unit kind is invalid"),
 			}
 			return
 		}
@@ -1214,7 +1233,7 @@ func (s *Spec) CanMigrate(db *database.Database,
 
 	if s.Pod != spc.Pod || s.Unit != spc.Unit {
 		err = &errortypes.ParseError{
-			errors.Newf("spec: Invalid unit"),
+			errors.New(s.errMsg("spec: Invalid unit")),
 		}
 		return
 	}
@@ -1222,14 +1241,14 @@ func (s *Spec) CanMigrate(db *database.Database,
 	if s.Kind != spc.Kind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_conflict",
-			Message: "Cannot migrate to different kind",
+			Message: s.errMsg("Cannot migrate to different kind"),
 		}
 		return
 	}
 
 	if s.Instance == nil || spc.Instance == nil {
 		err = &errortypes.ParseError{
-			errors.Newf("spec: Instance not found"),
+			errors.New(s.errMsg("spec: Instance not found")),
 		}
 		return
 	}
@@ -1288,16 +1307,18 @@ func (s *Spec) CanMigrate(db *database.Database,
 
 		if !matched {
 			errData = &errortypes.ErrorData{
-				Error:   "instance_realm_conflict",
-				Message: "Cannot migrate deployment outside of realms",
+				Error: "instance_realm_conflict",
+				Message: s.errMsg(
+					"Cannot migrate deployment outside of realms"),
 			}
 			return
 		}
 	} else {
 		if spc.Instance.Datacenter != deplyDc {
 			errData = &errortypes.ErrorData{
-				Error:   "instance_datacenter_conflict",
-				Message: "Cannot migrate to different instance datacenter",
+				Error: "instance_datacenter_conflict",
+				Message: s.errMsg(
+					"Cannot migrate to different instance datacenter"),
 			}
 			return
 		}
@@ -1305,7 +1326,7 @@ func (s *Spec) CanMigrate(db *database.Database,
 		if !spc.Instance.Zone.IsZero() && deplyZone != spc.Instance.Zone {
 			errData = &errortypes.ErrorData{
 				Error:   "instance_zone_conflict",
-				Message: "Cannot migrate to different instance zone",
+				Message: s.errMsg("Cannot migrate to different instance zone"),
 			}
 			return
 		}
@@ -1316,15 +1337,16 @@ func (s *Spec) CanMigrate(db *database.Database,
 
 			errData = &errortypes.ErrorData{
 				Error:   "instance_node_coflict",
-				Message: "Cannot migrate to different instance node",
+				Message: s.errMsg("Cannot migrate to different instance node"),
 			}
 			return
 		}
 
 		if deplySubnet != spc.Instance.Subnet {
 			errData = &errortypes.ErrorData{
-				Error:   "instance_subnet_coflict",
-				Message: "Cannot migrate to different instance subnet",
+				Error: "instance_subnet_coflict",
+				Message: s.errMsg(
+					"Cannot migrate to different instance subnet"),
 			}
 			return
 		}
@@ -1349,7 +1371,7 @@ func (s *Spec) CanMigrate(db *database.Database,
 	if !curMountPaths.IsEqual(newMountPaths) {
 		errData = &errortypes.ErrorData{
 			Error:   "instance_mount_coflict",
-			Message: "Cannot migrate to different instance mounts",
+			Message: s.errMsg("Cannot migrate to different instance mounts"),
 		}
 		return
 	}
