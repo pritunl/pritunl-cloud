@@ -28,7 +28,7 @@ type Task struct {
 	Retry         bool
 	Handler       func(*database.Database) error
 	Duration      time.Duration
-	Workers       int
+	Workers       func() int
 	RunnerHandler func(context.Context, *database.Database) error
 	RunOnStart    bool
 	Local         bool
@@ -280,9 +280,6 @@ func register(task *Task) {
 	if task.Type == Runner {
 		if task.RunnerHandler == nil || task.Duration <= 0 {
 			panic(fmt.Sprintf("task: Invalid runner task '%s'", task.Name))
-		}
-		if task.Workers < 1 {
-			task.Workers = 1
 		}
 	}
 
