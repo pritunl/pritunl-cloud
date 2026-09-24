@@ -739,6 +739,39 @@ func nodeAdvisoryGet(c *gin.Context) {
 	c.JSON(200, advisories)
 }
 
+func nodeMetricGet(c *gin.Context) {
+	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	if demo.IsDemo() {
+		nde := demo.GetNode(nodeId)
+		if nde == nil {
+			utils.AbortWithStatus(c, 404)
+			return
+		}
+
+		metric := nde.Metric
+		if metric == nil {
+			metric = &node.MetricData{}
+		}
+		c.JSON(200, metric)
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+
+	metric, err := node.GetMetric(db, nodeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, metric)
+}
+
 func nodesGet(c *gin.Context) {
 	if demo.IsDemo() {
 		for _, nde := range demo.Nodes {
