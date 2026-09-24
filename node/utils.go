@@ -239,6 +239,11 @@ func GetAllPaged(db *database.Database, query *bson.M,
 			SetSort(&bson.D{
 				{"name", 1},
 			}).
+			SetProjection(&bson.D{
+				{"metric.processes", 0},
+				{"metric.modules", 0},
+				{"metric.ports", 0},
+			}).
 			SetSkip(skip).
 			SetLimit(pageCount),
 	)
