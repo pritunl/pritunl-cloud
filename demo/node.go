@@ -1,6 +1,7 @@
 package demo
 
 import (
+	"sort"
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -15,6 +16,25 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
+var nodeProcesses = nodeExtend(guestProcesses, "pritunl-cloud", "qemu-kvm")
+
+var nodeModules = nodeExtend(guestModules, "bridge", "nf_tables",
+	"nft_meta_bridge")
+
+var nodePorts = []string{
+	"tcp/22",
+	"tcp/80",
+	"tcp/443",
+	"udp/323",
+}
+
+func nodeExtend(base []string, extra ...string) []string {
+	items := append([]string{}, base...)
+	items = append(items, extra...)
+	sort.Strings(items)
+	return items
+}
+
 var Nodes = []*node.Node{
 	{
 		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea0a"),
@@ -24,6 +44,8 @@ var Nodes = []*node.Node{
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
 		Timestamp:            time.Now(),
+		AdvisoryCount:        1,
+		AdvisoryMax:          4,
 		Port:                 443,
 		NoRedirectServer:     false,
 		Protocol:             "https",
@@ -156,6 +178,9 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 				{Name: "bond0.2"},
 				{Name: "bond0.4"},
 			},
+			Processes: nodeProcesses,
+			Modules:   nodeModules,
+			Ports:     nodePorts,
 		},
 	},
 	{
@@ -166,6 +191,8 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
 		Timestamp:            time.Now(),
+		AdvisoryCount:        1,
+		AdvisoryMax:          4,
 		Port:                 443,
 		NoRedirectServer:     false,
 		Protocol:             "https",
@@ -298,6 +325,9 @@ PwIDAQAB
 				{Name: "bond0.2"},
 				{Name: "bond0.4"},
 			},
+			Processes: nodeProcesses,
+			Modules:   nodeModules,
+			Ports:     nodePorts,
 		},
 	},
 	{
@@ -308,6 +338,8 @@ PwIDAQAB
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
 		Timestamp:            time.Now(),
+		AdvisoryCount:        1,
+		AdvisoryMax:          4,
 		Port:                 443,
 		NoRedirectServer:     false,
 		Protocol:             "https",
@@ -440,6 +472,9 @@ KwIDAQAB
 				{Name: "bond0.2"},
 				{Name: "bond0.4"},
 			},
+			Processes: nodeProcesses,
+			Modules:   nodeModules,
+			Ports:     nodePorts,
 		},
 	},
 	{
@@ -450,6 +485,8 @@ KwIDAQAB
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
 		Timestamp:            time.Now(),
+		AdvisoryCount:        1,
+		AdvisoryMax:          4,
 		Port:                 443,
 		NoRedirectServer:     false,
 		Protocol:             "https",
@@ -582,6 +619,9 @@ FwIDAQAB
 				{Name: "bond0.2"},
 				{Name: "bond0.4"},
 			},
+			Processes: nodeProcesses,
+			Modules:   nodeModules,
+			Ports:     nodePorts,
 		},
 	},
 	{
@@ -609,7 +649,7 @@ FwIDAQAB
 		RequestsMin:          76,
 		ForwardedForHeader:   "",
 		ForwardedProtoHeader: "",
-		AdvisoryCount:        3,
+		AdvisoryCount:        1,
 		AdvisoryMax:          4,
 		ExternalInterfaces:   []string{},
 		ExternalInterfaces6:  []string{},
@@ -726,6 +766,9 @@ RwIDAQAB
 				{Name: "bond0.2"},
 				{Name: "bond0.4"},
 			},
+			Processes: nodeProcesses,
+			Modules:   nodeModules,
+			Ports:     nodePorts,
 		},
 	},
 	{
@@ -753,7 +796,7 @@ RwIDAQAB
 		RequestsMin:          12,
 		ForwardedForHeader:   "",
 		ForwardedProtoHeader: "",
-		AdvisoryCount:        3,
+		AdvisoryCount:        1,
 		AdvisoryMax:          4,
 		ExternalInterfaces:   []string{},
 		ExternalInterfaces6:  []string{},
@@ -870,6 +913,18 @@ TwIDAQAB
 				{Name: "bond0.2"},
 				{Name: "bond0.4"},
 			},
+			Processes: nodeProcesses,
+			Modules:   nodeModules,
+			Ports:     nodePorts,
 		},
 	},
+}
+
+func GetNode(ndeId bson.ObjectID) *node.Node {
+	for _, nde := range Nodes {
+		if nde.Id == ndeId {
+			return nde
+		}
+	}
+	return nil
 }
