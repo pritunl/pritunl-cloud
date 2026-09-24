@@ -171,8 +171,22 @@ func imagesGet(c *gin.Context) {
 
 	dcId, _ := utils.ParseObjectId(c.Query("datacenter"))
 	if !dcId.IsZero() {
+		if demo.IsDemo() {
+			images, err := image.GetAllNames(db, &bson.M{
+				"organization": image.Global,
+			})
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+
+			c.JSON(200, images)
+			return
+		}
+
 		dc, err := datacenter.Get(db, dcId)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 
@@ -191,11 +205,6 @@ func imagesGet(c *gin.Context) {
 			"storage": &bson.M{
 				"$in": dc.PublicStorages,
 			},
-		}
-		if demo.IsDemo() {
-			query = &bson.M{
-				"organization": image.Global,
-			}
 		}
 
 		images, err := image.GetAllNames(db, query)
