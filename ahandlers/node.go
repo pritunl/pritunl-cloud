@@ -692,20 +692,25 @@ func nodeDelete(c *gin.Context) {
 }
 
 func nodeGet(c *gin.Context) {
+	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
 	if demo.IsDemo() {
-		nde := demo.Nodes[0]
+		nde := demo.GetNode(nodeId)
+		if nde == nil {
+			utils.AbortWithStatus(c, 404)
+			return
+		}
+
 		nde.Timestamp = time.Now()
 		c.JSON(200, nde)
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
-
-	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
 
 	nde, err := node.Get(db, nodeId)
 	if err != nil {
@@ -776,6 +781,21 @@ func nodesGet(c *gin.Context) {
 	if demo.IsDemo() {
 		for _, nde := range demo.Nodes {
 			nde.Timestamp = time.Now()
+		}
+
+		if c.Query("names") == "true" {
+			zone, _ := utils.ParseObjectId(c.Query("zone"))
+
+			nodes := []*node.Node{}
+			for _, nde := range demo.Nodes {
+				if nde.Zone != zone || !nde.IsHypervisor() {
+					continue
+				}
+				nodes = append(nodes, nde)
+			}
+
+			c.JSON(200, nodes)
+			return
 		}
 
 		data := &nodesData{
