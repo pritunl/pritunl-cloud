@@ -22,6 +22,34 @@ func Get(db *database.Database, nodeId bson.ObjectID) (
 	return
 }
 
+func GetMetric(db *database.Database, nodeId bson.ObjectID) (
+	metric *MetricData, err error) {
+
+	coll := db.Nodes()
+	nde := &Node{}
+
+	err = coll.FindOne(
+		db,
+		&bson.M{
+			"_id": nodeId,
+		},
+		options.FindOne().SetProjection(&bson.D{
+			{"metric", 1},
+		}),
+	).Decode(nde)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	metric = nde.Metric
+	if metric == nil {
+		metric = &MetricData{}
+	}
+
+	return
+}
+
 func GetAll(db *database.Database) (nodes []*Node, err error) {
 	coll := db.Nodes()
 	nodes = []*Node{}
