@@ -43,8 +43,8 @@ var Updates = &Telemetry[[]*Update]{
 	Relay:        true,
 	Refresher:    UpdatesRefresh,
 	Validate: func(data []*Update) []*Update {
-		if len(data) > 50 {
-			return data[:50]
+		if len(data) > 300 {
+			return data[:300]
 		}
 		return data
 	},
