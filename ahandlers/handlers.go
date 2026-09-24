@@ -169,6 +169,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.PUT("/node/:node_id", nodePut)
 	csrfGroup.PUT("/node/:node_id/:operation", nodeOperationPut)
 	csrfGroup.GET("/node/:node_id/chart", nodeChartGet)
+	csrfGroup.GET("/node/:node_id/metric", nodeMetricGet)
 	csrfGroup.POST("/node/:node_id/init", nodeInitPost)
 	csrfGroup.DELETE("/node/:node_id", nodeDelete)
 
