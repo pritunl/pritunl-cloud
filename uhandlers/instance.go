@@ -626,22 +626,29 @@ func instancesDelete(c *gin.Context) {
 }
 
 func instanceGet(c *gin.Context) {
+	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
 	if demo.IsDemo() {
-		inst := demo.Instances[0]
-		inst.Guest.Timestamp = time.Now()
-		inst.Guest.Heartbeat = time.Now()
+		inst := demo.GetInstance(instanceId)
+		if inst == nil {
+			utils.AbortWithStatus(c, 404)
+			return
+		}
+
+		if inst.Guest != nil {
+			inst.Guest.Timestamp = time.Now()
+			inst.Guest.Heartbeat = time.Now()
+		}
 		c.JSON(200, inst)
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
-
-	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
 
 	inst, err := instance.GetOrg(db, userOrg, instanceId)
 	if err != nil {
@@ -949,8 +956,20 @@ func instanceAdvisoryGet(c *gin.Context) {
 }
 
 func instanceGuestGet(c *gin.Context) {
+	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
 	if demo.IsDemo() {
-		guest := demo.Instances[0].Guest
+		inst := demo.GetInstance(instanceId)
+		if inst == nil {
+			utils.AbortWithStatus(c, 404)
+			return
+		}
+
+		guest := inst.Guest
 		if guest == nil {
 			guest = &instance.GuestData{}
 		}
@@ -960,12 +979,6 @@ func instanceGuestGet(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
-
-	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
 
 	guest, err := instance.GetGuestOrg(db, userOrg, instanceId)
 	if err != nil {
