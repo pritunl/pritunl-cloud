@@ -5,6 +5,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -22,6 +23,19 @@ func nodesGet(c *gin.Context) {
 
 	zneId, _ := utils.ParseObjectId(zoneStr)
 
+	if demo.IsDemo() {
+		nodes := []*node.Node{}
+		for _, nde := range demo.Nodes {
+			if nde.Zone != zneId || !nde.IsHypervisor() {
+				continue
+			}
+			nodes = append(nodes, nde)
+		}
+
+		c.JSON(200, nodes)
+		return
+	}
+
 	zne, err := zone.Get(db, zneId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -30,6 +44,7 @@ func nodesGet(c *gin.Context) {
 
 	exists, err := datacenter.ExistsOrg(db, userOrg, zne.Datacenter)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 	if !exists {
