@@ -47,6 +47,7 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
@@ -395,6 +396,7 @@ func (d *Deployments) destroy(deply *deployment.Deployment) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
@@ -505,6 +507,7 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
@@ -608,6 +611,7 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
@@ -849,6 +853,7 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
@@ -949,6 +954,7 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
