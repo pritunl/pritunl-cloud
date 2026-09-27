@@ -1774,6 +1774,11 @@ func init() {
 		for {
 			e := Connect()
 			if e != nil {
+				if _, ok := e.(*VersionError); ok {
+					err = e
+					return
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"error": e,
 				}).Error("database: Connection error")
