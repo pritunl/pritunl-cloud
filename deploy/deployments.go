@@ -492,6 +492,71 @@ func (d *Deployments) destroy(deply *deployment.Deployment) {
 	}()
 }
 
+func (d *Deployments) clearAction(db *database.Database,
+	deply *deployment.Deployment) (err error) {
+
+	deply.Action = ""
+	err = deply.CommitFields(db, set.NewSet("action"))
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"deployment_id": deply.Id.Hex(),
+			"error":         err,
+		}).Error("deploy: Failed to commit deployment")
+		return
+	}
+
+	event.PublishDispatch(db, "pod.change")
+
+	return
+}
+
+func (d *Deployments) missingInstance(db *database.Database,
+	deply *deployment.Deployment) (err error) {
+
+	if deply.Kind == deployment.Instance {
+		logrus.WithFields(logrus.Fields{
+			"deployment_id": deply.Id.Hex(),
+			"instance_id":   deply.Instance.Hex(),
+			"action":        deply.Action,
+		}).Info("deploy: Removing deployment for destroyed instance")
+
+		err = deployment.Remove(db, deply.Id)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to remove deployment")
+			return
+		}
+
+		event.PublishDispatch(db, "pod.change")
+
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"deployment_id": deply.Id.Hex(),
+		"kind":          deply.Kind,
+		"action":        deply.Action,
+	}).Warning("deploy: Deployment action missing instance, clearing action")
+
+	err = d.clearAction(db, deply)
+	return
+}
+
+func (d *Deployments) missingSpec(db *database.Database,
+	deply *deployment.Deployment) (err error) {
+
+	logrus.WithFields(logrus.Fields{
+		"deployment_id": deply.Id.Hex(),
+		"spec_id":       deply.Spec.Hex(),
+		"action":        deply.Action,
+	}).Error("deploy: Deployment action missing spec, clearing action")
+
+	err = d.clearAction(db, deply)
+	return
+}
+
 func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 	inst := d.stat.GetInstace(deply.Instance)
 	disks := d.stat.GetDeploymentDisks(deply.Id)
@@ -514,6 +579,16 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 		defer db.Close()
 
 		if deply.Node != nodeId {
+			return
+		}
+
+		if inst == nil {
+			err = d.missingInstance(db, deply)
+			return
+		}
+
+		if spc == nil || spc.Instance == nil {
+			err = d.missingSpec(db, deply)
 			return
 		}
 
@@ -618,6 +693,16 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 		defer db.Close()
 
 		if deply.Node != nodeId {
+			return
+		}
+
+		if inst == nil {
+			err = d.missingInstance(db, deply)
+			return
+		}
+
+		if spc == nil || spc.Instance == nil {
+			err = d.missingSpec(db, deply)
 			return
 		}
 
