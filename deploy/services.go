@@ -40,6 +40,7 @@ func (s *Pods) processSchedule(schd *scheduler.Scheduler) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in deployment action")
 		defer func() {
 			time.Sleep(1 * time.Second)
 			podsLock.Unlock(schd.Id.Hex(), lockId)
