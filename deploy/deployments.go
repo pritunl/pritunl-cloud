@@ -235,22 +235,20 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 					return
 				}
 
-				if inst != nil {
-					inst.Processors = shpe.Processors
-					instFields.Add("processors")
-					inst.Memory = shpe.Memory
-					instFields.Add("memory")
+				inst.Processors = shpe.Processors
+				instFields.Add("processors")
+				inst.Memory = shpe.Memory
+				instFields.Add("memory")
 
-					if shpe.Flexible {
-						if newSpec.Instance.Processors != 0 {
-							inst.Processors = newSpec.Instance.Processors
-						}
-						if newSpec.Instance.Memory != 0 {
-							inst.Memory = newSpec.Instance.Memory
-						}
+				if shpe.Flexible {
+					if newSpec.Instance.Processors != 0 {
+						inst.Processors = newSpec.Instance.Processors
+					}
+					if newSpec.Instance.Memory != 0 {
+						inst.Memory = newSpec.Instance.Memory
 					}
 				}
-			} else if inst != nil {
+			} else {
 				inst.Processors = newSpec.Instance.Processors
 				instFields.Add("processors")
 				inst.Memory = newSpec.Instance.Memory
