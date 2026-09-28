@@ -30,19 +30,6 @@ type Record struct {
 	Operation       string        `bson:"-" json:"operation"`
 }
 
-func (r *Record) Priority() int {
-	switch r.Operation {
-	case INSERT:
-		return 3
-	case UPDATE:
-		return 2
-	case DELETE:
-		return 1
-	default:
-		return 0
-	}
-}
-
 func (r *Record) IsDeleted() bool {
 	return !r.DeleteTimestamp.IsZero()
 }
