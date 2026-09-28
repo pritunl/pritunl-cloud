@@ -99,6 +99,11 @@ export function handleBeforeMount(
 							type: "string",
 							description: "Instance shape specification",
 						},
+						failover: {
+							type: "string",
+							enum: ["primary"],
+							description: "Failover mode",
+						},
 						vpc: {
 							type: "string",
 							description: "VPC identifier",
