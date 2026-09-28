@@ -13,6 +13,7 @@ import PageTextArea from "./PageTextArea";
 import DomainRecord from "./DomainRecord";
 import * as Constants from "../Constants";
 import * as SecretTypes from "../types/SecretTypes";
+import Relations from './Relations';
 import Help from "./Help";
 
 interface Props {
@@ -393,6 +394,7 @@ export default class DomainDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="domain" id={this.props.domain.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
