@@ -19,6 +19,7 @@ export interface Domain {
 export interface Record {
 	id?: string;
 	domain?: string;
+	deployment?: string;
 	timestamp?: string;
 	sub_domain?: string;
 	type?: string;
