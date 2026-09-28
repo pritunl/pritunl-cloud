@@ -41,8 +41,7 @@ func (m *Imds) SetPrimary() (err error) {
 		}
 
 		err = &errortypes.RequestError{
-			errors.Newf(
-				"agent: Imds server set primary error %d - %s",
+			errors.Newf("agent: Imds server set primary error %d - %s",
 				resp.StatusCode, body),
 		}
 		return
