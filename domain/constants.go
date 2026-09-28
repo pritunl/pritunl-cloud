@@ -1,6 +1,8 @@
 package domain
 
-import "github.com/pritunl/mongo-go-driver/v2/bson"
+import (
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+)
 
 const (
 	Local       = "local"
