@@ -314,6 +314,11 @@ export function handleBeforeMount(
 										],
 										description: "Record type",
 									},
+									select: {
+										type: "string",
+										enum: ["primary"],
+										description: "Record selection mode",
+									},
 								},
 								required: ["name", "domain", "type"],
 								description: "DNS record configuration",
