@@ -34,11 +34,13 @@ export default class DomainRecord extends React.Component<Props, {}> {
 
 	render(): JSX.Element {
 		let record = this.props.record;
+		let locked = !!record.deployment;
 
 		return <div className="bp5-control-group" style={css.group}>
 			<div className="bp5-select" style={css.type}>
 				<select
 					value={record.type}
+					disabled={locked}
 					onChange={(evt): void => {
 						let state = this.clone();
 						state.type = evt.target.value;
@@ -62,6 +64,7 @@ export default class DomainRecord extends React.Component<Props, {}> {
 					spellCheck={false}
 					placeholder="Sub Domain"
 					value={record.sub_domain || ''}
+					disabled={locked}
 					onChange={(evt): void => {
 						let state = this.clone();
 						state.sub_domain = evt.target.value;
@@ -81,6 +84,7 @@ export default class DomainRecord extends React.Component<Props, {}> {
 					spellCheck={false}
 					placeholder="IP Address"
 					value={record.value || ''}
+					disabled={locked}
 					onChange={(evt): void => {
 						let state = this.clone();
 						state.value = evt.target.value;
