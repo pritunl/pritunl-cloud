@@ -20,6 +20,7 @@ export interface Record {
 	id?: string;
 	domain?: string;
 	deployment?: string;
+	select?: string;
 	timestamp?: string;
 	sub_domain?: string;
 	type?: string;
