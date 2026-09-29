@@ -4,7 +4,6 @@ import * as Constants from '../Constants';
 import * as ShapeTypes from '../types/ShapeTypes';
 import * as ShapeActions from '../actions/ShapeActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as PoolTypes from "../types/PoolTypes";
 import PageInput from './PageInput';
@@ -20,7 +19,6 @@ import PageSwitch from "./PageSwitch";
 import PageNumInput from "./PageNumInput";
 
 interface Props {
-	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	pools: PoolTypes.PoolsRo;
 	shape: ShapeTypes.ShapeRo;
@@ -35,7 +33,6 @@ interface State {
 	message: string;
 	addRole: string;
 	shape: ShapeTypes.Shape;
-	datacenter: string;
 	zone: string;
 }
 
@@ -116,7 +113,6 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 			message: '',
 			shape: null,
 			addRole: '',
-			datacenter: '',
 			zone: '',
 		};
 	}
@@ -276,25 +272,6 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 		let shape: ShapeTypes.Shape = this.state.shape ||
 			this.props.shape;
 
-		let hasDatacenters = false;
-		let datacentersSelect: JSX.Element[] = [];
-		if (this.props.datacenters.length) {
-			hasDatacenters = true;
-			for (let datacenter of this.props.datacenters) {
-				datacentersSelect.push(
-					<option
-						key={datacenter.id}
-						value={datacenter.id}
-					>{datacenter.name}</option>,
-				);
-			}
-		}
-
-		if (!hasDatacenters) {
-			datacentersSelect.push(
-				<option key="null" value="">No Datacenters</option>);
-		}
-
 		let hasPools = false;
 		let poolsSelect: JSX.Element[] = [];
 		if (this.props.pools.length) {
@@ -409,17 +386,6 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 							this.set('comment', val);
 						}}
 					/>
-					<PageSelect
-						disabled={!!shape.datacenter || this.state.disabled || !hasDatacenters}
-						label="Datacenter"
-						help="Shape datacenter, cannot be changed once set."
-						value={shape.datacenter}
-						onChange={(val): void => {
-							this.set('datacenter', val);
-						}}
-					>
-						{datacentersSelect}
-					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
 						label="Disk Type"
