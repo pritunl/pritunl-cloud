@@ -10,7 +10,6 @@ export interface Shape {
 	comment?: string;
 	type?: string;
 	delete_protection?: boolean;
-	datacenter?: string;
 	roles?: string[];
 	flexible?: boolean;
 	disk_type?: string;
