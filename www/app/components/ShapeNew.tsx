@@ -2,7 +2,6 @@
 import * as React from 'react';
 import * as ShapeTypes from '../types/ShapeTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as ImageTypes from '../types/ImageTypes';
@@ -25,7 +24,6 @@ import PageTextArea from "./PageTextArea";
 import * as PoolTypes from "../types/PoolTypes";
 
 interface Props {
-	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	pools: PoolTypes.PoolsRo;
 	onClose: () => void;
@@ -37,7 +35,6 @@ interface State {
 	changed: boolean;
 	message: string;
 	shape: ShapeTypes.Shape;
-	datacenter: string;
 	zone: string;
 	addRole: string;
 }
@@ -111,7 +108,6 @@ export default class ShapeNew extends React.Component<Props, State> {
 				processors: 1,
 				flexible: true,
 			},
-			datacenter: '',
 			zone: '',
 			addRole: '',
 		};
@@ -140,11 +136,6 @@ export default class ShapeNew extends React.Component<Props, State> {
 		let shape: any = {
 			...this.state.shape,
 		};
-
-		if (!shape.datacenter && this.props.datacenters.length) {
-			shape.datacenter = this.state.datacenter ||
-				this.props.datacenters[0].id;
-		}
 
 		ShapeActions.create(shape).then((): void => {
 			this.setState({
@@ -231,52 +222,6 @@ export default class ShapeNew extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let shape = this.state.shape;
 
-		let defaultDatacenter = '';
-		let hasDatacenters = false;
-		let datacentersSelect: JSX.Element[] = [];
-		if (this.props.datacenters.length) {
-			hasDatacenters = true;
-			defaultDatacenter = this.props.datacenters[0].id;
-			for (let datacenter of this.props.datacenters) {
-				datacentersSelect.push(
-					<option
-						key={datacenter.id}
-						value={datacenter.id}
-					>{datacenter.name}</option>,
-				);
-			}
-		}
-
-		if (!hasDatacenters) {
-			datacentersSelect.push(
-				<option key="null" value="">No Datacenters</option>);
-		}
-
-		let datacenter = this.state.datacenter || defaultDatacenter;
-		let hasZones = false;
-		let zonesSelect: JSX.Element[] = [];
-		if (this.props.zones.length) {
-			zonesSelect.push(<option key="null" value="">Select Zone</option>);
-
-			for (let zone of this.props.zones) {
-				if (!this.state.zone && zone.datacenter !== datacenter) {
-					continue;
-				}
-				hasZones = true;
-
-				zonesSelect.push(
-					<option
-						key={zone.id}
-						value={zone.id}
-					>{zone.name}</option>,
-				);
-			}
-		}
-
-		if (!hasZones) {
-			zonesSelect = [<option key="null" value="">No Zones</option>];
-		}
-
 		let hasPools = false;
 		let poolsSelect: JSX.Element[] = [];
 		if (this.props.pools.length) {
@@ -354,17 +299,6 @@ export default class ShapeNew extends React.Component<Props, State> {
 								this.set('comment', val);
 							}}
 						/>
-						<PageSelect
-							disabled={this.state.disabled || !hasDatacenters}
-							label="Datacenter"
-							help="Shape datacenter, cannot be changed once set."
-							value={this.state.datacenter}
-							onChange={(val): void => {
-								this.set('datacenter', val);
-							}}
-						>
-							{datacentersSelect}
-						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
 							label="Disk Type"
