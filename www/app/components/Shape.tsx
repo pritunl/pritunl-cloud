@@ -2,15 +2,12 @@
 import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as ShapeTypes from '../types/ShapeTypes';
-import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import ShapeDetailed from './ShapeDetailed';
 import ZonesStore from "../stores/ZonesStore";
 import * as PoolTypes from "../types/PoolTypes";
-import DatacentersStore from "../stores/DatacentersStore";
 
 interface Props {
-	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	pools: PoolTypes.PoolsRo;
 	shape: ShapeTypes.ShapeRo;
@@ -91,7 +88,6 @@ export default class Shape extends React.Component<Props, {}> {
 				style={css.cardOpen}
 			>
 				<ShapeDetailed
-					datacenters={this.props.datacenters}
 					zones={this.props.zones}
 					pools={this.props.pools}
 					shape={this.props.shape}
@@ -107,9 +103,6 @@ export default class Shape extends React.Component<Props, {}> {
 		let cardStyle = {
 			...css.card,
 		};
-
-		let datacenter = DatacentersStore.datacenter(this.props.shape.datacenter);
-		let datacenterName = datacenter ? datacenter.name : null;
 
 		return <div
 			className="bp5-card bp5-row"
@@ -147,14 +140,7 @@ export default class Shape extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className="bp5-cell" style={css.item}>
-				<span
-					style={css.icon}
-					hidden={!datacenterName}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-cloud"
-				/>
-				{datacenterName}
-			</div>
+			<div className="bp5-cell" style={css.item}/>
 		</div>;
 	}
 }
