@@ -658,9 +658,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 			shapesSelect.push(<option key="null" value="">Select Shape</option>);
 
 			for (let shape of this.props.shapes) {
-				if (shape.datacenter !== datacenter) {
-					continue;
-				}
 				hasShapes = true;
 
 				shapesSelect.push(
