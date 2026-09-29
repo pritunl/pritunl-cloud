@@ -390,6 +390,7 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Disk Type"
 						help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
+						hidden={true}
 						value={shape.disk_type}
 						onChange={(val): void => {
 							this.set('disk_type', val);
