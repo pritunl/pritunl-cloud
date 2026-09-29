@@ -11,7 +11,6 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
-import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as PoolTypes from "../types/PoolTypes";
 import CompletionStore from "../stores/CompletionStore";
@@ -28,7 +27,6 @@ interface Opened {
 interface State {
 	shapes: ShapeTypes.ShapesRo;
 	filter: ShapeTypes.Filter;
-	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	pools: PoolTypes.PoolsRo;
 	selected: Selected;
@@ -74,7 +72,6 @@ export default class Shapes extends React.Component<{}, State> {
 		this.state = {
 			shapes: ShapesStore.shapes,
 			filter: ShapesStore.filter,
-			datacenters: CompletionStore.datacenters,
 			zones: CompletionStore.zones,
 			pools: CompletionStore.pools,
 			selected: {},
@@ -125,7 +122,6 @@ export default class Shapes extends React.Component<{}, State> {
 			...this.state,
 			shapes: shapes,
 			filter: ShapesStore.filter,
-			datacenters: CompletionStore.datacenters,
 			zones: CompletionStore.zones,
 			pools: CompletionStore.pools,
 			selected: selected,
@@ -161,7 +157,6 @@ export default class Shapes extends React.Component<{}, State> {
 			shapesDom.push(<Shape
 				key={shape.id}
 				shape={shape}
-				datacenters={this.state.datacenters}
 				zones={this.state.zones}
 				pools={this.state.pools}
 				selected={!!this.state.selected[shape.id]}
@@ -254,7 +249,6 @@ export default class Shapes extends React.Component<{}, State> {
 		let newShapeDom: JSX.Element;
 		if (this.state.newOpened) {
 			newShapeDom = <ShapeNew
-				datacenters={this.state.datacenters}
 				zones={this.state.zones}
 				pools={this.state.pools}
 				onClose={(): void => {
