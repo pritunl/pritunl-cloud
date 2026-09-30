@@ -116,6 +116,35 @@ export function handleBeforeMount(
 							type: "string",
 							description: "Subnet identifier",
 						},
+						realms: {
+							type: "array",
+							items: {
+								type: "object",
+								properties: {
+									datacenter: {
+										type: "string",
+										description: "Realm datacenter",
+									},
+									zone: {
+										type: "string",
+										description: "Realm availability zone",
+									},
+									vpc: {
+										type: "string",
+										description: "Realm VPC identifier",
+									},
+									subnet: {
+										type: "string",
+										description: "Realm subnet identifier",
+									},
+								},
+								required: ["vpc", "subnet"],
+								description: "Realm placement configuration",
+							},
+							description: "Realms for multi-datacenter placement, " +
+								"cannot be set with datacenter, zone, node, " +
+								"vpc or subnet",
+						},
 						roles: {
 							type: "array",
 							items: {
