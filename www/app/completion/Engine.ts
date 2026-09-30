@@ -87,6 +87,10 @@ export function handleBeforeMount(
 							type: "string",
 							description: "Instance plan",
 						},
+						datacenter: {
+							type: "string",
+							description: "Datacenter",
+						},
 						zone: {
 							type: "string",
 							description: "Availability zone",
