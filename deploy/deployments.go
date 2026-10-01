@@ -964,6 +964,10 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 		if inst.IsActive() && inst.Guest.Status == types.Imaged &&
 			inst.Action != instance.Stop {
 
+			if virt == nil {
+				return
+			}
+
 			d.imageShutdown(db, spc, deply, virt)
 			return
 		}
