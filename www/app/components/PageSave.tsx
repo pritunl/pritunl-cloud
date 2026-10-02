@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import ConfirmButton from './ConfirmButton';
 
 interface Props {
 	children?: React.ReactNode
@@ -10,6 +11,8 @@ interface Props {
 	wrap?: boolean;
 	hidden?: boolean;
 	light?: boolean;
+	cancelConfirm?: boolean;
+	cancelConfirmMsg?: string;
 	onCancel: () => void;
 	onSave: () => void;
 }
@@ -51,7 +54,6 @@ export default class PageSave extends React.Component<Props, {}> {
 			};
 		}
 
-		let containerClass = 'layout horizontal';
 		let buttonStyle: React.CSSProperties;
 		let buttonStyleFirst: React.CSSProperties;
 		let messageStyle: React.CSSProperties;
@@ -63,6 +65,34 @@ export default class PageSave extends React.Component<Props, {}> {
 			buttonStyle = css.button;
 			buttonStyleFirst = css.button;
 			messageStyle = css.message;
+		}
+
+		let cancelElem: JSX.Element;
+		if (this.props.cancelConfirm) {
+			cancelElem = <ConfirmButton
+				safe={true}
+				className="bp5-icon-cross"
+				dialogClassName="bp5-intent-danger bp5-icon-cross"
+				label="Cancel"
+				dialogLabel="Clear Changes"
+				confirmMsg={this.props.cancelConfirmMsg || "Clear unsaved changes?"}
+				confirmInput={false}
+				style={buttonStyleFirst}
+				hidden={this.props.hidden}
+				disabled={!this.props.changed || this.props.disabled}
+				onConfirm={this.props.onCancel}
+			/>;
+		} else {
+			cancelElem = <button
+				className="bp5-button bp5-icon-cross"
+				style={buttonStyleFirst}
+				hidden={this.props.hidden}
+				type="button"
+				disabled={!this.props.changed || this.props.disabled}
+				onClick={this.props.onCancel}
+			>
+				Cancel
+			</button>;
 		}
 
 		return <div
@@ -77,16 +107,7 @@ export default class PageSave extends React.Component<Props, {}> {
 					{this.props.message}
 				</span>
 				<div style={css.buttons}>
-					<button
-						className="bp5-button bp5-icon-cross"
-						style={buttonStyleFirst}
-						hidden={this.props.hidden}
-						type="button"
-						disabled={!this.props.changed || this.props.disabled}
-						onClick={this.props.onCancel}
-					>
-						Cancel
-					</button>
+					{cancelElem}
 					<button
 						className="bp5-button bp5-intent-success bp5-icon-tick"
 						style={buttonStyle}
