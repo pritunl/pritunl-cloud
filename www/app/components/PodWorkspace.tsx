@@ -122,6 +122,9 @@ const css = {
 		maxHeight: '400px',
 		overflowY: "auto",
 	} as React.CSSProperties,
+	menuName: {
+		fontWeight: "bold",
+	} as React.CSSProperties,
 	navButtons: {
 		height: '52px',
 	} as React.CSSProperties,
@@ -684,7 +687,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				onClick={(): void => {
 					this.onUnitSelect(unit.id)
 				}}
-				text={unit.name}
+				text={<span style={css.menuName}>{unit.name}</span>}
 				textClassName={className}
 				labelElement={<span
 					className={className ? className : "bp5-text-muted"}
