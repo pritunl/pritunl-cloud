@@ -301,7 +301,7 @@ export function handleBeforeMount(
 							description: "Size of disk in GB",
 						},
 					},
-					required: ["name", "kind", "zone", "vpc", "subnet", "image"],
+					required: ["name", "kind", "image"],
 					description: "Instance configuration",
 				},
 				uri: "https://todo.pritunl.com/instance-schema.json",
