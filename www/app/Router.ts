@@ -254,7 +254,8 @@ export function refresh(callback?: () => void) {
 				callback()
 			}
 		});
-	} else if (pathname === '/instances') {
+	} else if (pathname === '/instances' ||
+			pathname.startsWith('/instances/')) {
 		InstanceActions.sync().then((): void => {
 			if (callback) {
 				callback()
