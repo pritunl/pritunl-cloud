@@ -24,6 +24,10 @@ import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
 
+interface Props {
+	instanceId?: string;
+}
+
 interface Selected {
 	[key: string]: boolean;
 }
@@ -92,7 +96,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Instances extends React.Component<{}, State> {
+export default class Instances extends React.Component<Props, State> {
 	sync: MiscUtils.SyncInterval;
 
 	constructor(props: any, context: any) {
@@ -128,13 +132,28 @@ export default class Instances extends React.Component<{}, State> {
 	componentDidMount(): void {
 		InstancesStore.addChangeListener(this.onChange);
 		CompletionStore.addChangeListener(this.onChange);
-		InstanceActions.sync();
+		if (this.props.instanceId) {
+			InstanceActions.filter({
+				id: this.props.instanceId,
+			});
+		} else {
+			InstanceActions.sync();
+		}
 		CompletionActions.sync();
 
 		this.sync = new MiscUtils.SyncInterval(
 			() => InstanceActions.sync(true),
 			3000,
 		)
+	}
+
+	componentDidUpdate(prevProps: Props): void {
+		if (this.props.instanceId &&
+				this.props.instanceId !== prevProps.instanceId) {
+			InstanceActions.filter({
+				id: this.props.instanceId,
+			});
+		}
 	}
 
 	componentWillUnmount(): void {
