@@ -129,6 +129,10 @@ export function handleBeforeMount(
 										type: "string",
 										description: "Realm availability zone",
 									},
+									node: {
+										type: "string",
+										description: "Realm specific node",
+									},
 									vpc: {
 										type: "string",
 										description: "Realm VPC identifier",
