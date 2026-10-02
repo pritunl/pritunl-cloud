@@ -500,6 +500,8 @@ export default class PodDetailed extends React.Component<Props, State> {
 				changed={this.state.changed || hasDrafts}
 				disabled={this.state.disabled}
 				light={true}
+				cancelConfirm={true}
+				cancelConfirmMsg="Clear unsaved pod changes?"
 				onCancel={(): void => {
 					PodsStore.setDrafts(this.props.pod.id, [])
 					PodActions.commitDrafts({
