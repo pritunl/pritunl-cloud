@@ -508,8 +508,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			...(this.props.pod.units || []),
 		]
 
+		let unitId = MiscUtils.objectId()
 		units.push({
-			id: MiscUtils.objectId(),
+			id: unitId,
 			name: "new-unit",
 			spec: "",
 			new: true,
@@ -517,6 +518,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 
 		this.setState({
 			...this.state,
+			activeUnitId: unitId,
+			diffCommit: null,
+			diffChanged: false,
 			expandLeft: false,
 			expandRight: true,
 		})
