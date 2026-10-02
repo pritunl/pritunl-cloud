@@ -142,7 +142,7 @@ export default class Node extends React.Component<Props, {}> {
 		}
 
 		let memoryStyle: React.CSSProperties = {
-			width: (node.memory || 0) + '%',
+			width: (node.metric?.memory || 0) + '%',
 		};
 		let hugepagesStyle: React.CSSProperties = {
 			width: (node.metric?.hugepages || 0) + '%',
