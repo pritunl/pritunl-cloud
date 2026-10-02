@@ -71,10 +71,6 @@ const css = {
 		width: "18px",
 		padding: "0 0 0 1px",
 	} as React.CSSProperties,
-	tab: {
-		fontWeight: "bold",
-		marginRight: "10px",
-	} as React.CSSProperties,
 	documentIcon: {
 		margin: "2px 0 0 0",
 		fontSize: "12px",
@@ -119,10 +115,12 @@ const css = {
 		width: '100%',
 		maxWidth: '280px',
 	} as React.CSSProperties,
-	tabsBox: {
-		overflowX: 'auto',
-		overflowY: 'hidden',
-		scrollbarWidth: 'thin',
+	unitsBox: {
+		height: '52px',
+	} as React.CSSProperties,
+	unitsMenu: {
+		maxHeight: '400px',
+		overflowY: "auto",
 	} as React.CSSProperties,
 	navButtons: {
 		height: '52px',
@@ -586,6 +584,24 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		this.syncCommit(unit.id, commit.id)
 	}
 
+	onUnitSelect = (unitId: string): void => {
+		let units = [
+			...(this.props.pod.units || []),
+		]
+		let activeUnit = units.find(unit => unit.id === unitId)
+
+		this.setState({
+			...this.state,
+			activeUnitId: unitId,
+			diffCommit: null,
+			diffChanged: false,
+		})
+
+		if (activeUnit && !activeUnit.new) {
+			this.syncUnit(unitId)
+		}
+	}
+
 	render(): JSX.Element {
 		let units = [
 			...(this.props.pod.units || []),
@@ -631,16 +647,73 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			expandIconClass = "bp5-button bp5-minimal bp5-icon-minimize"
 		}
 
-		let tabsElem: JSX.Element[] = []
+		let unitMenuItems: JSX.Element[] = []
 		for (let i = 0; i < units.length; ++i) {
 			let unit = units[i]
 			if (unit.delete) {
 				continue
 			}
 
-			tabsElem.push(<Blueprint.Tab id={unit.id} style={css.tab} key={unit.id}>
-				{unit.name}
-			</Blueprint.Tab>)
+			let className = ""
+			let selected = false
+			if (activeUnit && unit.id === activeUnit.id) {
+				className = "bp5-text-intent-primary bp5-intent-primary"
+				selected = true
+			}
+
+			let unitIcon: JSX.Element
+			let unitLabel: string
+			if (unit.kind === "image") {
+				unitIcon = <Icons.Compressed
+					className={className}
+				/>
+				unitLabel = "image"
+			} else {
+				unitIcon = <Icons.Server
+					className={className}
+				/>
+				unitLabel = "instance"
+			}
+
+			unitMenuItems.push(<Blueprint.MenuItem
+				key={unit.id}
+				disabled={this.state.disabled}
+				selected={selected}
+				roleStructure="listoption"
+				icon={unitIcon}
+				onClick={(): void => {
+					this.onUnitSelect(unit.id)
+				}}
+				text={unit.name}
+				textClassName={className}
+				labelElement={<span
+					className={className ? className : "bp5-text-muted"}
+				>{unit.new ? "new" : unitLabel}</span>}
+			/>)
+		}
+
+		let unitsMenu: JSX.Element
+		if (!noUnits) {
+			let activeUnitIcon: JSX.Element
+			if (activeUnit && activeUnit.kind === "image") {
+				activeUnitIcon = <Icons.Compressed/>
+			} else {
+				activeUnitIcon = <Icons.Server/>
+			}
+
+			unitsMenu = <Blueprint.Popover
+				content={<Blueprint.Menu style={css.unitsMenu}>
+					{unitMenuItems}
+				</Blueprint.Menu>}
+				placement="bottom-start"
+			>
+				<Blueprint.Button
+					alignText="left"
+					icon={activeUnitIcon}
+					rightIcon={<Icons.CaretDown/>}
+					text={activeUnit ? activeUnit.name : "Select Unit"}
+				/>
+			</Blueprint.Popover>
 		}
 
 		let menuItems: JSX.Element[] = []
@@ -1168,32 +1241,11 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		>
 			<Blueprint.Navbar className="layout horizontal" style={css.navbar}>
 				<Blueprint.NavbarGroup
-					className="flex thin-scroll"
-					style={css.tabsBox}
+					className="flex"
+					style={css.unitsBox}
 					align={"left"}
 				>
-					<Blueprint.Tabs
-						id={this.props.pod.id}
-						selectedTabId={activeUnit ? activeUnit.id : null}
-						fill={true}
-						onChange={(newTabId): void => {
-							let activeUnitId = newTabId.valueOf() as string
-							let activeUnit = units.find(unit => unit.id === activeUnitId)
-
-							this.setState({
-								...this.state,
-								activeUnitId: activeUnitId,
-								diffCommit: null,
-								diffChanged: false,
-							})
-
-							if (activeUnit && !activeUnit.new) {
-								this.syncUnit(activeUnitId)
-							}
-						}}
-					>
-						{tabsElem}
-					</Blueprint.Tabs>
+					{unitsMenu}
 				</Blueprint.NavbarGroup>
 				<Blueprint.NavbarGroup style={css.navButtons} align={"right"}>
 					<Blueprint.NavbarDivider
