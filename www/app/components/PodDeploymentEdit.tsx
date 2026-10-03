@@ -5,6 +5,7 @@ import * as Theme from '../Theme';
 import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
 import PageInput from './PageInput';
+import ConfirmButton from './ConfirmButton';
 import PageSave from './PageSave';
 import PageInputButton from './PageInputButton';
 import Help from "./Help"
@@ -43,6 +44,10 @@ const css = {
 	checkBox: {
 		display: "flex",
 		paddingBottom: "2px",
+	} as React.CSSProperties,
+	controlButton: {
+		marginRight: '10px',
+		marginBottom: '10px',
 	} as React.CSSProperties,
 	info: {
 		marginBottom: "0px",
@@ -251,6 +256,17 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 						});
 					}}
 					onSubmit={this.onAddTag}
+				/>
+				<ConfirmButton
+					label="Make Primary"
+					className="bp5-intent-primary bp5-icon-endorsed"
+					progressClassName="bp5-intent-primary"
+					style={css.controlButton}
+					hidden={false}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+
+					}}
 				/>
 			</div>
 			<PageSave
