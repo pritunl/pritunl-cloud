@@ -66,6 +66,10 @@ const css = {
 	editorBox: {
 		marginTop: "10px",
 	} as React.CSSProperties,
+	items: {
+		maxHeight: "350px",
+		overflowY: "auto",
+	} as React.CSSProperties,
 };
 
 export default class PodMigrate extends React.Component<Props, State> {
@@ -349,7 +353,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 			for (let item in this.props.selectedDeployments) {
 				items.push(<li key={item}>{item}</li>);
 			}
-			itemsList = <ul>{items}</ul>;
+			itemsList = <ul style={css.items}>{items}</ul>;
 		}
 
 		let editor: JSX.Element
