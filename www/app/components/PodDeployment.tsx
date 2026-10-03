@@ -6,12 +6,10 @@ import * as Icons from '@blueprintjs/icons';
 import * as Theme from '../Theme';
 import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
-import * as InstanceActions from '../actions/InstanceActions';
 import * as MiscUtils from '../utils/MiscUtils';
 import PodDeploymentEdit from "./PodDeploymentEdit";
 import PageInfo from "./PageInfo"
 import Editor from "./Editor"
-import * as Router from "../Router";
 import * as PageInfos from './PageInfo';
 
 interface Props {
@@ -733,16 +731,11 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.info}
 								bars={resourceBars}
 							/>
-							<button
+							<a
 								className="bp5-button bp5-small"
 								style={css.cardButtonRight}
-								onClick={(): void => {
-									InstanceActions.filter({
-										id: deployment.instance
-									})
-									Router.setLocation("/instances")
-								}}
-							>View Instance</button>
+								href={"#/instances/" + deployment.instance}
+							>View Instance</a>
 						</div>
 					</div>
 					<div className="layout horizontal flex">
