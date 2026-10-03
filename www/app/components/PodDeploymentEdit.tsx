@@ -78,6 +78,10 @@ const css = {
 		margin: '9px 5px 0 5px',
 		minHeight: '20px',
 	} as React.CSSProperties,
+	group: {
+		flex: 1,
+		minWidth: '290px',
+	} as React.CSSProperties,
 }
 
 export default class PodDeploymentEdit extends React.Component<Props, State> {
@@ -230,8 +234,8 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 			);
 		}
 
-		return <div style={css.settings}>
-			<div className="layout vertical wrap">
+		return <div className="bp5-card" style={css.settings}>
+			<div className="layout vertical wrap" style={css.group}>
 				<label className="bp5-label">
 					Tags
 					<Help
@@ -257,17 +261,19 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 					}}
 					onSubmit={this.onAddTag}
 				/>
-				<ConfirmButton
-					label="Make Primary"
-					className="bp5-intent-primary bp5-icon-endorsed"
-					progressClassName="bp5-intent-primary"
-					style={css.controlButton}
-					hidden={false}
-					disabled={this.state.disabled}
-					onConfirm={(): void => {
+				<div>
+					<ConfirmButton
+						label="Make Primary"
+						className="bp5-intent-primary bp5-icon-endorsed"
+						progressClassName="bp5-intent-primary"
+						style={css.controlButton}
+						hidden={false}
+						disabled={this.state.disabled}
+						onConfirm={(): void => {
 
-					}}
-				/>
+						}}
+					/>
+				</div>
 			</div>
 			<PageSave
 				style={css.save}
