@@ -1079,6 +1079,18 @@ export default class InstanceNew extends React.Component<Props, State> {
 							<option key="bsd" value="bsd">BSD</option>,
 							<option key="linux_legacy" value="linux_legacy">Linux Legacy</option>,
 						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="Guest Interface Mode"
+							help="Network interface configuration for cloud init. Bridge will configure a br0 bridge on the primary interface."
+							value={instance.cloud_interface}
+							onChange={(val): void => {
+								this.set('cloud_interface', val);
+							}}
+						>
+							<option key="default" value="default">Default</option>,
+							<option key="bridge" value="bridge">Bridge</option>,
+						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
 							label="Startup script"
