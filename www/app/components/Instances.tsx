@@ -15,6 +15,7 @@ import InstancesStore from '../stores/InstancesStore';
 import CompletionStore from '../stores/CompletionStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as CompletionActions from '../actions/CompletionActions';
+import * as Router from '../Router';
 import Instance from './Instance';
 import InstanceNew from './InstanceNew';
 import InstancesFilter from './InstancesFilter';
@@ -444,6 +445,9 @@ export default class Instances extends React.Component<Props, State> {
 									InstanceActions.filter({});
 								} else {
 									InstanceActions.filter(null);
+									if (this.props.instanceId) {
+										Router.setLocation("/instances");
+									}
 								}
 							}}
 						>
