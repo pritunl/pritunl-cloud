@@ -427,49 +427,56 @@ export default class PodDeployment extends React.Component<Props, State> {
 			/>
 		}
 
-		let logsSelect = <BpSelect.Select<PodTypes.Journal>
-			items={this.props.deployment.journals || []}
-			itemRenderer={this.renderJournal}
-			popoverTargetProps={{
-				style: css.select,
-			}}
-			filterable={false}
-			itemListRenderer={({items, itemsParentRef,
-					query, renderItem, menuProps}) => {
-
-				const renderedItems = items.map(renderItem).filter(
-					item => item != null)
-				return <Blueprint.Menu
-					role="listbox"
-					ulRef={itemsParentRef}
-					{...menuProps}
-				>
-					{renderedItems}
-				</Blueprint.Menu>
-			}}
-			onItemSelect={(jrnl) => {
-				if (this.state.logsResource === jrnl.key) {
+		let logsSelect: JSX.Element
+		if (this.state.logsResource) {
+			logsSelect = <button
+				className="bp5-button bp5-small bp5-active bp5-intent-danger"
+				style={css.cardButton}
+				onClick={(): void => {
 					this.setState({
 						...this.state,
 						logsResource: "",
 					})
-				} else {
+				}}
+			>Logs</button>
+		} else {
+			logsSelect = <BpSelect.Select<PodTypes.Journal>
+				items={this.props.deployment.journals || []}
+				itemRenderer={this.renderJournal}
+				popoverTargetProps={{
+					style: css.select,
+				}}
+				filterable={false}
+				itemListRenderer={({items, itemsParentRef,
+						query, renderItem, menuProps}) => {
+
+					const renderedItems = items.map(renderItem).filter(
+						item => item != null)
+					return <Blueprint.Menu
+						role="listbox"
+						ulRef={itemsParentRef}
+						{...menuProps}
+					>
+						{renderedItems}
+					</Blueprint.Menu>
+				}}
+				onItemSelect={(jrnl) => {
 					this.setState({
 						...this.state,
 						logsResource: jrnl.key,
 					}, () => {
 						this.editorRef?.current?.refresh()
 					})
-				}
-			}}
-		>
-			<Blueprint.Button
-				style={css.cardButton}
-				alignText="left"
-				small={true}
-				rightIcon={<Icons.CaretDown/>}
-			>Logs</Blueprint.Button>
-		</BpSelect.Select>
+				}}
+			>
+				<Blueprint.Button
+					style={css.cardButton}
+					alignText="left"
+					small={true}
+					rightIcon={<Icons.CaretDown/>}
+				>Logs</Blueprint.Button>
+			</BpSelect.Select>
+		}
 
 		if (deployment.kind === "image" && deployment.image_id) {
 			return <Blueprint.Card
