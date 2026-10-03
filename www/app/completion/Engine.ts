@@ -176,6 +176,11 @@ export function handleBeforeMount(
 							type: "string",
 							description: "Cloud provider type",
 						},
+						cloudInterface: {
+							type: "string",
+							enum: ["default", "bridge"],
+							description: "Cloud init network interface mode",
+						},
 						tpm: {
 							type: "boolean",
 							description: "Enable Trusted Platform Module",
