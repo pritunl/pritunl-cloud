@@ -427,6 +427,9 @@ export default class Main extends React.Component<{}, State> {
 					<RouterRoute path="/instances" render={() => (
 						<Instances/>
 					)}/>
+					<RouterRoute path="/instances/:instance" render={(data) => (
+						<Instances instanceId={data.params.instance}/>
+					)}/>
 					<RouterRoute path="/pods" render={() => (
 						<Pods/>
 					)}/>
