@@ -33,6 +33,7 @@ export interface Instance {
 	reset_firmware?: boolean;
 	cloud_type?: string;
 	cloud_script?: string;
+	cloud_interface?: string;
 	delete_protection?: boolean;
 	skip_source_dest_check?: boolean;
 	qemu_version?: string;
