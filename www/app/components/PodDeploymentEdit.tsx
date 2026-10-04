@@ -298,6 +298,28 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 							}}
 						/>
 						<ConfirmButton
+							label="Start"
+							className="bp5-intent-success bp5-icon-power"
+							progressClassName="bp5-intent-success"
+							style={css.controlButton}
+							hidden={this.props.deployment.instance_action !== 'stop'}
+							disabled={this.state.disabled}
+							onConfirm={(): void => {
+								this.update('start');
+							}}
+						/>
+						<ConfirmButton
+							label="Stop"
+							className="bp5-intent-danger bp5-icon-power"
+							progressClassName="bp5-intent-danger"
+							style={css.controlButton}
+							hidden={this.props.deployment.instance_action !== 'start' && this.props.deployment.instance_action !== 'restart'}
+							disabled={this.state.disabled}
+							onConfirm={(): void => {
+								this.update('stop');
+							}}
+						/>
+						<ConfirmButton
 							label="Restart"
 							className="bp5-intent-danger bp5-icon-reset"
 							progressClassName="bp5-intent-danger"
