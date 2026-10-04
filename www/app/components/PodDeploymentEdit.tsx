@@ -4,6 +4,7 @@ import * as Blueprint from "@blueprintjs/core"
 import * as Theme from '../Theme';
 import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
+import * as InstanceActions from '../actions/InstanceActions';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import ConfirmButton from './ConfirmButton';
@@ -208,6 +209,27 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 		});
 	}
 
+	update(action: string): void {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		InstanceActions.updateMulti([this.props.deployment.instance],
+				action).then((): void => {
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}, 250);
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		if (!this.props.open) {
 			return <div></div>
@@ -273,6 +295,17 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 							disabled={this.state.disabled}
 							onConfirm={(): void => {
 
+							}}
+						/>
+						<ConfirmButton
+							label="Restart"
+							className="bp5-intent-danger bp5-icon-reset"
+							progressClassName="bp5-intent-danger"
+							style={css.controlButton}
+							hidden={this.props.deployment.instance_action !== 'start'}
+							disabled={this.state.disabled}
+							onConfirm={(): void => {
+								this.update('restart');
 							}}
 						/>
 					</div>
