@@ -283,7 +283,7 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'Instance Size',
-								value: deployment.instance_processors,
+								value: `${deployment.instance_processors} vCPU - ${deployment.instance_memory} MB`,
 							},
 							{
 								label: 'Host IPv4',
