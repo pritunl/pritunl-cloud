@@ -5,6 +5,7 @@ import * as Theme from '../Theme';
 import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
 import PageInput from './PageInput';
+import PageInfo from './PageInfo';
 import ConfirmButton from './ConfirmButton';
 import PageSave from './PageSave';
 import PageInputButton from './PageInputButton';
@@ -235,43 +236,61 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 		}
 
 		return <div className="bp5-card" style={css.settings}>
-			<div className="layout vertical wrap" style={css.group}>
-				<label className="bp5-label">
-					Tags
-					<Help
-						title="Tags"
-						content="Deployment tags."
+			<div className="layout horizontal wrap">
+				<div className="layout vertical wrap" style={css.group}>
+					<label className="bp5-label">
+						Tags
+						<Help
+							title="Tags"
+							content="Deployment tags."
+						/>
+						<div>
+							{tags}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						buttonClass="bp5-intent-success bp5-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add role"
+						value={this.state.addTag}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								addTag: val,
+							});
+						}}
+						onSubmit={this.onAddTag}
 					/>
 					<div>
-						{tags}
-					</div>
-				</label>
-				<PageInputButton
-					disabled={this.state.disabled}
-					buttonClass="bp5-intent-success bp5-icon-add"
-					label="Add"
-					type="text"
-					placeholder="Add role"
-					value={this.state.addTag}
-					onChange={(val): void => {
-						this.setState({
-							...this.state,
-							addTag: val,
-						});
-					}}
-					onSubmit={this.onAddTag}
-				/>
-				<div>
-					<ConfirmButton
-						label="Make Primary"
-						className="bp5-intent-primary bp5-icon-endorsed"
-						progressClassName="bp5-intent-primary"
-						style={css.controlButton}
-						hidden={false}
-						disabled={this.state.disabled}
-						onConfirm={(): void => {
+						<ConfirmButton
+							label="Make Primary"
+							className="bp5-intent-primary bp5-icon-endorsed"
+							progressClassName="bp5-intent-primary"
+							style={css.controlButton}
+							hidden={false}
+							disabled={this.state.disabled}
+							onConfirm={(): void => {
 
-						}}
+							}}
+						/>
+					</div>
+				</div>
+				<div className="layout vertical wrap" style={css.group}>
+					<PageInfo
+						style={css.info}
+						fields={[
+							{
+								label: 'Instance Size',
+								value: deployment.instance_processors,
+							},
+							{
+								label: 'Host IPv4',
+								value: deployment.instance_data.host_ips,
+								copy: true,
+							},
+						]}
 					/>
 				</div>
 			</div>
