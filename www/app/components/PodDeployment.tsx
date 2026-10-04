@@ -315,22 +315,24 @@ export default class PodDeployment extends React.Component<Props, State> {
 				})
 			}
 
-			let domainHover = <div
-				className="bp5-content-popover"
-				style={css.hoverInfo}
-			>
-				<PageInfo
-					compact={true}
-					style={css.info}
-					fields={domainFields}
-				/>
-			</div>
+			if (domainFields.length) {
+				let domainHover = <div
+					className="bp5-content-popover"
+					style={css.hoverInfo}
+				>
+					<PageInfo
+						compact={true}
+						style={css.info}
+						fields={domainFields}
+					/>
+				</div>
 
-			domainInfo = {
-				label: "Domains",
-				value: "Registered",
-				valueClass: "bp5-text-intent-success",
-				hover: domainHover,
+				domainInfo = {
+					label: "Domains",
+					value: "Registered",
+					valueClass: "bp5-text-intent-success",
+					hover: domainHover,
+				}
 			}
 		}
 
