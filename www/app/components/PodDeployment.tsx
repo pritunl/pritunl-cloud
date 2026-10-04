@@ -18,6 +18,8 @@ interface Props {
 	selected: boolean
 	commitMap: Record<string, PodTypes.Commit>
 	deployment: PodTypes.Deployment
+	primary?: string
+	primaryTimestamp?: string
 	onSelect: (shift: boolean) => void
 }
 
@@ -364,6 +366,34 @@ export default class PodDeployment extends React.Component<Props, State> {
 				break
 		}
 
+		let deploymentIdClass = ""
+		let primaryHover: JSX.Element
+		if (deployment.id === this.props.primary) {
+			deploymentIdClass = "bp5-text-intent-primary"
+			primaryHover = <div
+				className="bp5-content-popover"
+				style={css.hoverInfo}
+			>
+				<PageInfo
+					compact={true}
+					style={css.info}
+					fields={[
+						{
+							label: "Primary",
+							value: "True",
+							valueClass: "bp5-text-intent-primary",
+						},
+						{
+							label: "Primary Timestamp",
+							value: MiscUtils.formatDateLocal(
+								this.props.primaryTimestamp) || "-",
+							valueClass: "bp5-text-intent-primary",
+						},
+					]}
+				/>
+			</div>
+		}
+
 		let heartbeatHover = <div
 			className="bp5-content-popover"
 			style={css.hoverInfo}
@@ -609,6 +639,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 									{
 										label: "Deployment ID",
 										value: deployment.id,
+										hover: primaryHover,
+										valueClass: deploymentIdClass,
 									},
 									{
 										label: "Instance",
