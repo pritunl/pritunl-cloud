@@ -98,6 +98,7 @@ export interface Deployment {
 }
 
 export interface InstanceData {
+	host_ips?: string[];
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: string[];
