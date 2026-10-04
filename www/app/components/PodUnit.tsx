@@ -142,6 +142,8 @@ export default class PodUnit extends React.Component<Props, State> {
 				selected={!!this.props.selected[deployment.id]}
 				commitMap={commitMap}
 				deployment={deployment}
+				primary={this.props.unit.primary}
+				primaryTimestamp={this.props.unit.primary_timestamp}
 				onSelect={(shift: boolean): void => {
 					let selected = {
 						...this.props.selected,
