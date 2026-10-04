@@ -209,6 +209,26 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 		});
 	}
 
+	onMakePrimary = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		PodActions.updateMultiUnitAction(this.props.deployment.pod,
+				this.props.deployment.unit, [this.props.deployment.id],
+				'primary').then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	update(action: string): void {
 		this.setState({
 			...this.state,
@@ -294,7 +314,7 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 							hidden={false}
 							disabled={this.state.disabled}
 							onConfirm={(): void => {
-
+								this.onMakePrimary();
 							}}
 						/>
 						<ConfirmButton
