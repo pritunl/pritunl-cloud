@@ -105,6 +105,7 @@ export interface InstanceData {
 	private_ips6?: string[];
 	cloud_private_ips?: string[];
 	cloud_public_ips?: string[];
+	cloud_public_ips6?: string[];
 }
 
 export interface DomainData {
