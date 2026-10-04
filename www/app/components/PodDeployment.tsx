@@ -60,6 +60,7 @@ const css = {
 		display: "inline",
 	} as React.CSSProperties,
 	info: {
+		textAlign: "left",
 		marginBottom: "0px",
 		fontSize: "11px",
 		fontFamily: Theme.monospaceFont,
@@ -95,6 +96,7 @@ const css = {
 		flex: "0 1 auto",
 		minWidth: "123px",
 		margin: " 0 5px",
+		textAlign: "center",
 	} as React.CSSProperties,
 	role: {
 		margin: '9px 5px 0 5px',
