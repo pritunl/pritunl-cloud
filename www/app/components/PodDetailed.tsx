@@ -21,6 +21,8 @@ import PageTextArea from "./PageTextArea";
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	pod: PodTypes.PodRo;
+	unitId?: string;
+	onUnitSelect?: (unitId: string) => void;
 	mode: string;
 	onMode: (mode: string) => void;
 	settings: boolean;
@@ -438,6 +440,9 @@ export default class PodDetailed extends React.Component<Props, State> {
 			<PodWorkspace
 				pod={pod}
 				podOrig={podOrig}
+				activeUnitId={this.props.unitId}
+				onActiveUnit={this.props.onUnitSelect}
+				sidebar={this.props.sidebar}
 				disabled={this.state.disabled}
 				unitChanged={this.state.unitChanged || hasDrafts}
 				mode={this.props.mode}
