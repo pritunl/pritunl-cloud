@@ -78,6 +78,7 @@ export interface Node {
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: Record<string, string>;
+	advertise_address?: string;
 	advisory_count?: number;
 	advisory_max?: number;
 	forwarded_for_header?: string;
