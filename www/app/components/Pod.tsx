@@ -1,9 +1,12 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from '@blueprintjs/core';
+import * as Icons from '@blueprintjs/icons';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import CompletionStore from '../stores/CompletionStore';
+import PodsStore from '../stores/PodsStore';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -12,6 +15,8 @@ interface Props {
 	onSelect: (shift: boolean) => void;
 	open: boolean;
 	onOpen: () => void;
+	unitId?: string;
+	onUnitSelect?: (unitId: string) => void;
 }
 
 const css = {
@@ -71,6 +76,13 @@ const css = {
 		margin: '8px 5px 0 5px',
 		minHeight: '20px',
 	} as React.CSSProperties,
+	units: {
+		margin: '0',
+		padding: '4px',
+		background: 'none',
+		boxShadow: 'none',
+		minWidth: 0,
+	} as React.CSSProperties,
 };
 
 export default class Pod extends React.Component<Props, {}> {
@@ -87,6 +99,60 @@ export default class Pod extends React.Component<Props, {}> {
 			orgName = org ? org.name : pod.organization;
 		} else {
 			orgName = 'Node Pod';
+		}
+
+		let unitsDom: JSX.Element;
+		let units = PodsStore.getDrafts(pod.id);
+		if (!units?.length) {
+			units = pod.units || [];
+		}
+
+		let unitItems: JSX.Element[] = [];
+		for (let unit of units) {
+			if (unit.delete) {
+				continue;
+			}
+
+			let selected = !!this.props.unitId &&
+				unit.id === this.props.unitId;
+			let className = selected ?
+				"bp5-text-intent-primary bp5-intent-primary" : "";
+
+			let unitIcon: JSX.Element;
+			if (unit.kind === "image") {
+				unitIcon = <Icons.Compressed
+					className={className}
+				/>;
+			} else {
+				unitIcon = <Icons.Server
+					className={className}
+				/>;
+			}
+
+			unitItems.push(<Blueprint.MenuItem
+				key={unit.id}
+				roleStructure="listoption"
+				icon={unitIcon}
+				onClick={(): void => {
+					if (this.props.onUnitSelect) {
+						this.props.onUnitSelect(unit.id);
+					}
+				}}
+				style={{paddingLeft: "7px"}}
+				text={unit.name}
+				textClassName={className}
+			/>);
+		}
+
+		if (unitItems.length) {
+			unitsDom = <Blueprint.Menu
+				style={css.units}
+				onClick={(evt): void => {
+					evt.stopPropagation();
+				}}
+			>
+				{unitItems}
+			</Blueprint.Menu>;
 		}
 
 		return <div
@@ -125,6 +191,7 @@ export default class Pod extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
+			{unitsDom}
 		</div>;
 	}
 }
