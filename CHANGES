@@ -5,6 +5,7 @@ pritunl-cloud changelog
 
 Add pod multi datacenter realms
 Add security advisories
+Add TUI interface
 Add instance and node metrics
 Add Google Cloud DNS support
 Add support to manual renew certificates
