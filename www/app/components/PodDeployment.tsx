@@ -370,6 +370,17 @@ export default class PodDeployment extends React.Component<Props, State> {
 		let primaryHover: JSX.Element
 		if (deployment.id === this.props.primary) {
 			deploymentIdClass = "bp5-text-intent-primary"
+
+			let primaryDomains: string[] = []
+			for (let rec of (deployment.domain_data?.records || [])) {
+				if (rec.select === "primary") {
+					primaryDomains.push(rec.domain)
+				}
+			}
+			if (!primaryDomains.length) {
+				primaryDomains = ["-"]
+			}
+
 			primaryHover = <div
 				className="bp5-content-popover"
 				style={css.hoverInfo}
@@ -379,8 +390,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 					style={css.info}
 					fields={[
 						{
-							label: "Primary",
-							value: "True",
+							label: "Primary Domains",
+							value: primaryDomains,
 							valueClass: "bp5-text-intent-primary",
 						},
 						{
