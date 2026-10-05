@@ -23,6 +23,8 @@ export interface Unit {
 	spec_index?: number
 	last_spec?: string;
 	deploy_spec?: string;
+	primary?: string;
+	primary_timestamp?: string;
 	delete?: boolean;
 	new?: boolean;
 }
