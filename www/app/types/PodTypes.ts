@@ -119,6 +119,7 @@ export interface DomainData {
 export interface RecordData {
 	domain?: string;
 	value?: string;
+	select?: string;
 }
 
 export interface Journal {
