@@ -27,6 +27,9 @@ import PageTextArea from "./PageTextArea";
 interface Props {
 	pod: PodTypes.PodRo;
 	podOrig: PodTypes.PodRo;
+	activeUnitId?: string;
+	onActiveUnit?: (unitId: string) => void;
+	sidebar?: boolean;
 	disabled: boolean;
 	unitChanged: boolean;
 	mode: string;
