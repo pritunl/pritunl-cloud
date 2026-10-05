@@ -2095,17 +2095,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						label="Advertise Address"
-						help="Address other nodes will use to connect to this node. Used for instance VNC connections. Leave empty to use the default interface address."
-						type="text"
-						placeholder="Enter advertise address"
-						value={node.advertise_address}
-						onChange={(val): void => {
-							this.set('advertise_address', val);
-						}}
-					/>
-					<PageInput
-						disabled={this.state.disabled}
 						hidden={node.network_mode !== 'cloud' &&
 							node.network_mode6 !== 'cloud'}
 						label="Oracle Cloud User OCID"
@@ -2200,6 +2189,18 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						checked={node.pci_passthrough}
 						onToggle={(): void => {
 							this.set('pci_passthrough', !node.pci_passthrough);
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
+						label="Advertise Address"
+						help="Address other nodes will use to connect to this node. Used for instance VNC connections. Leave empty to use the default interface address."
+						type="text"
+						placeholder="Enter advertise address"
+						value={node.advertise_address}
+						onChange={(val): void => {
+							this.set('advertise_address', val);
 						}}
 					/>
 					<PageSwitch
