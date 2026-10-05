@@ -2,6 +2,7 @@
 import * as React from "react"
 import * as Blueprint from "@blueprintjs/core"
 import * as Theme from '../Theme';
+import * as Alert from '../Alert';
 import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
 import * as InstanceActions from '../actions/InstanceActions';
@@ -217,6 +218,7 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 		PodActions.updateMultiUnitAction(this.props.deployment.pod,
 				this.props.deployment.unit, [this.props.deployment.id],
 				'primary').then((): void => {
+			Alert.success('Initiated deployment primary election');
 			this.setState({
 				...this.state,
 				disabled: false,
