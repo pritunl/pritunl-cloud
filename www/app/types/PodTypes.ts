@@ -34,6 +34,7 @@ export interface PodUnit {
 	kind?: string;
 	pod?: string;
 	primary?: string;
+	primary_timestamp?: string;
 	commits?: Commit[]
 	deployments?: Deployment[];
 }
