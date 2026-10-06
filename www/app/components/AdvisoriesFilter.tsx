@@ -19,6 +19,10 @@ const css = {
 		width: '200px',
 		margin: '5px',
 	} as React.CSSProperties,
+	cve: {
+		width: '145px',
+		margin: '5px',
+	} as React.CSSProperties,
 	type: {
 		margin: '5px',
 	} as React.CSSProperties,
@@ -79,6 +83,24 @@ export default class AdvisoriesFilter extends React.Component<Props, {}> {
 						filter.reference = val;
 					} else {
 						delete filter.reference;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.cve}
+				placeholder="CVE"
+				value={this.props.filter.cve}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.cve = val;
+					} else {
+						delete filter.cve;
 					}
 
 					this.props.onFilter(filter);
