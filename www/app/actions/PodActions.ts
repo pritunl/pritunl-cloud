@@ -337,7 +337,7 @@ export function syncUnit(podId?: string, unitId?: string): Promise<void> {
 }
 
 export function deployUnit(podId: string, unitId: string,
-	specId: string, count: number): Promise<void> {
+	specId: string, count: number, realm?: string): Promise<void> {
 
 	let loader = new Loader().loading();
 
@@ -347,6 +347,7 @@ export function deployUnit(podId: string, unitId: string,
 			.send({
 				count: count,
 				spec: specId,
+				realm: realm || "",
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
