@@ -24,6 +24,7 @@ interface Selected {
 
 interface State {
 	podId: string;
+	unitId: string;
 	pods: PodTypes.PodsRo;
 	filter: PodTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -88,6 +89,7 @@ export default class Pods extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			podId: null,
+			unitId: null,
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
 			organizations: CompletionStore.organizations,
@@ -192,6 +194,13 @@ export default class Pods extends React.Component<{}, State> {
 				organizations={this.state.organizations}
 				selected={!!this.state.selected[pod.id]}
 				open={activePod?.id === pod.id}
+				unitId={this.state.unitId}
+				onUnitSelect={(unitId: string): void => {
+					this.setState({
+						...this.state,
+						unitId: unitId,
+					});
+				}}
 				onSelect={(shift: boolean): void => {
 					let selected = {
 						...this.state.selected,
@@ -256,6 +265,8 @@ export default class Pods extends React.Component<{}, State> {
 					this.setState({
 						...this.state,
 						podId: pod.id,
+						unitId: pod.id === this.state.podId ?
+							this.state.unitId : null,
 						newOpened: false,
 						mode: newMode,
 					});
@@ -295,6 +306,13 @@ export default class Pods extends React.Component<{}, State> {
 				key={activePod?.id}
 				organizations={this.state.organizations}
 				pod={activePod}
+				unitId={this.state.unitId}
+				onUnitSelect={(unitId: string): void => {
+					this.setState({
+						...this.state,
+						unitId: unitId,
+					});
+				}}
 				mode={this.state.mode}
 				onMode={(mode: string) => {
 					this.setState({
