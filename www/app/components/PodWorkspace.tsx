@@ -731,7 +731,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		}
 
 		let unitsMenu: JSX.Element
-		if (!noUnits) {
+		if (!noUnits && !this.props.sidebar) {
 			let activeUnitIcon: JSX.Element
 			if (activeUnit && activeUnit.kind === "image") {
 				activeUnitIcon = <Icons.Compressed/>
