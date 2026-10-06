@@ -527,15 +527,23 @@ export function handleAfterMount(
 				endColumn: position.column,
 			})
 
+			const partialRange = (partial: string) => ({
+				startLineNumber: position.lineNumber,
+				endLineNumber: position.lineNumber,
+				startColumn: position.column - partial.length,
+				endColumn: position.column,
+			})
+
 			const selectorWithTagMatch = textBeforeCursor.match(
-				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):([a-zA-Z0-9-]*)\/$/);
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)$/);
 			const selectorDirectMatch = textBeforeCursor.match(
-				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)\/$/);
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)$/);
 
 			if (selectorWithTagMatch || selectorDirectMatch) {
 				const match = selectorWithTagMatch || selectorDirectMatch;
 				const kindName = match[1];
 				const resourceName = match[2];
+				const partial = match[match.length - 1];
 
 				let selectorKey = "";
 				switch (kindName) {
@@ -566,12 +574,7 @@ export function handleAfterMount(
 					return noMatch;
 				}
 
-				const range = {
-					startLineNumber: position.lineNumber,
-					endLineNumber: position.lineNumber,
-					startColumn: position.column,
-					endColumn: position.column,
-				}
+				const range = partialRange(partial)
 
 				let suggestions: Monaco.languages.CompletionItem[] = [];
 
@@ -593,7 +596,7 @@ export function handleAfterMount(
 			}
 
 			const tagMatch = textBeforeCursor.match(
-				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):$/);
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):([a-zA-Z0-9-]*)$/);
 			if (tagMatch) {
 				let kindName = tagMatch[1]
 				let resourceName = tagMatch[2]
@@ -602,12 +605,7 @@ export function handleAfterMount(
 					return noMatch
 				}
 
-				const range = {
-					startLineNumber: position.lineNumber,
-					endLineNumber: position.lineNumber,
-					startColumn: position.column,
-					endColumn: position.column,
-				}
+				const range = partialRange(tagMatch[3])
 
 				let suggestions: Monaco.languages.CompletionItem[] = []
 
@@ -627,19 +625,15 @@ export function handleAfterMount(
 				}
 			}
 
-			const resourceMatch = textBeforeCursor.match(/\+\/([a-zA-Z0-9-]*)\/$/)
+			const resourceMatch = textBeforeCursor.match(
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)$/)
 			if (resourceMatch) {
 				let kind = CompletionCache.kind(resourceMatch[1])
 				if (!kind) {
 					return noMatch
 				}
 
-				const range = {
-					startLineNumber: position.lineNumber,
-					endLineNumber: position.lineNumber,
-					startColumn: position.column,
-					endColumn: position.column,
-				}
+				const range = partialRange(resourceMatch[2])
 
 				let suggestions: Monaco.languages.CompletionItem[] = []
 
@@ -660,14 +654,9 @@ export function handleAfterMount(
 				}
 			}
 
-			const kindMatch = textBeforeCursor.match(/\+\/$/)
+			const kindMatch = textBeforeCursor.match(/\+\/([a-zA-Z0-9-]*)$/)
 			if (kindMatch) {
-				const range = {
-					startLineNumber: position.lineNumber,
-					endLineNumber: position.lineNumber,
-					startColumn: position.column,
-					endColumn: position.column,
-				}
+				const range = partialRange(kindMatch[1])
 
 				let suggestions: Monaco.languages.CompletionItem[] = []
 
