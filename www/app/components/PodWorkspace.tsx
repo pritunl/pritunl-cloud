@@ -122,7 +122,7 @@ const css = {
 		height: '52px',
 	} as React.CSSProperties,
 	unitsMenu: {
-		maxHeight: '400px',
+		maxHeight: '600px',
 		overflowY: "auto",
 	} as React.CSSProperties,
 	menuName: {
