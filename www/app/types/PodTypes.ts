@@ -50,6 +50,7 @@ export interface Commit {
 	count?: number
 	hash?: string
 	data?: string
+	realms?: Realm[]
 }
 
 export interface CommitData {
@@ -58,6 +59,15 @@ export interface CommitData {
 	count?: number;
 	page?: number;
 	page_count?: number;
+}
+
+export interface Realm {
+	name?: string
+	datacenter?: string
+	zone?: string
+	node?: string
+	vpc?: string
+	subnet?: string
 }
 
 export interface Deployment {
