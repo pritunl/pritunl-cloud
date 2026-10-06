@@ -430,6 +430,34 @@ export function handleAfterMount(
 		editor: Monaco.editor.IStandaloneCodeEditor,
 		monaco: MonacoEditor.Monaco): void {
 
+	const retriggerPattern = /\+\/[a-zA-Z0-9-]*(?:\/[a-zA-Z0-9-]*(?::[a-zA-Z0-9-]*)?(?:\/[a-zA-Z0-9-]*)?)?$/
+	editor.onDidChangeModelContent((e) => {
+		const deleted = e.changes.some(
+			(change) => change.text === "" && change.rangeLength > 0)
+		if (!deleted || !editor.hasTextFocus()) {
+			return
+		}
+
+		const model = editor.getModel()
+		const position = editor.getPosition()
+		if (!model || !position) {
+			return
+		}
+
+		const textBeforeCursor = model.getValueInRange({
+			startLineNumber: position.lineNumber,
+			startColumn: 1,
+			endLineNumber: position.lineNumber,
+			endColumn: position.column,
+		})
+
+		if (retriggerPattern.test(textBeforeCursor)) {
+			setTimeout(() => {
+				editor.trigger("completion", "editor.action.triggerSuggest", {})
+			}, 0)
+		}
+	})
+
 	if (registered) {
 		return
 	}
