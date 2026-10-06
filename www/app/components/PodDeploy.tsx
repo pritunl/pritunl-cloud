@@ -20,6 +20,7 @@ interface State {
 	disabled: boolean;
 	specId: string;
 	deployCommit: PodTypes.Commit;
+	deployRealm: string;
 	count: number;
 }
 
@@ -68,6 +69,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 			disabled: false,
 			specId: "",
 			deployCommit: null,
+			deployRealm: "",
 			count: 1,
 		};
 	}
@@ -84,6 +86,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 			...this.state,
 			dialog: false,
 			specId: "",
+			deployRealm: "",
 			count: 1,
 		});
 	}
@@ -99,7 +102,8 @@ export default class PodDeploy extends React.Component<Props, State> {
 
 		PodActions.deployUnit(
 				this.props.pod.id, this.props.unit.id,
-				deployCommit, this.state.count).then((): void => {
+				deployCommit, this.state.count,
+				this.state.deployRealm).then((): void => {
 
 			Alert.success('Successfully created deployments');
 
@@ -108,6 +112,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 				dialog: false,
 				disabled: false,
 				specId: "",
+				deployRealm: "",
 				count: 1,
 			});
 		}).catch((): void => {
@@ -120,6 +125,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 
 	renderDeploy(): JSX.Element {
 		let commitSelect: JSX.Element
+		let realmSelect: JSX.Element
 		if (this.props.commits) {
 			let deployCommit = this.state.deployCommit || this.props.commits?.[0]
 			let selectButtonClass = ""
@@ -161,6 +167,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 						this.setState({
 							...this.state,
 							deployCommit: commit,
+							deployRealm: "",
 						})
 					}}
 					text={commit.id.substring(12)}
@@ -196,6 +203,38 @@ export default class PodDeploy extends React.Component<Props, State> {
 					</span>
 				</Blueprint.Button>
 			</Blueprint.Popover>
+
+			if (deployCommit?.realms?.length) {
+				let realmOptions: JSX.Element[] = []
+				deployCommit.realms.forEach((realm): void => {
+					realmOptions.push(<option
+						key={realm.name}
+						value={realm.name}
+					>{realm.name}</option>)
+				})
+
+				realmSelect = <label
+					className="bp5-label no-select"
+					style={css.label}
+				>
+					Deployment Realm
+					<div className="bp5-select" style={css.input}>
+						<select
+							value={this.state.deployRealm}
+							disabled={this.state.disabled}
+							onChange={(evt): void => {
+								this.setState({
+									...this.state,
+									deployRealm: evt.target.value,
+								})
+							}}
+						>
+							<option value="">Automatic</option>
+							{realmOptions}
+						</select>
+					</div>
+				</label>
+			}
 		}
 
 		let dialogElem = <Blueprint.Dialog
@@ -220,6 +259,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 				>
 					{commitSelect}
 				</div>
+				{realmSelect}
 				<label
 					className="bp5-label no-select"
 					style={css.label}
