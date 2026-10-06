@@ -102,57 +102,59 @@ export default class Pod extends React.Component<Props, {}> {
 		}
 
 		let unitsDom: JSX.Element;
-		let units = PodsStore.getDrafts(pod.id);
-		if (!units?.length) {
-			units = pod.units || [];
-		}
-
-		let unitItems: JSX.Element[] = [];
-		for (let unit of units) {
-			if (unit.delete) {
-				continue;
+		if (this.props.open) {
+			let units = PodsStore.getDrafts(pod.id);
+			if (!units?.length) {
+				units = pod.units || [];
 			}
 
-			let selected = !!this.props.unitId &&
-				unit.id === this.props.unitId;
-			let className = selected ?
-				"bp5-text-intent-primary bp5-intent-primary" : "";
+			let unitItems: JSX.Element[] = [];
+			for (let unit of units) {
+				if (unit.delete) {
+					continue;
+				}
 
-			let unitIcon: JSX.Element;
-			if (unit.kind === "image") {
-				unitIcon = <Icons.Compressed
-					className={className}
-				/>;
-			} else {
-				unitIcon = <Icons.Server
-					className={className}
-				/>;
+				let selected = !!this.props.unitId &&
+					unit.id === this.props.unitId;
+				let className = selected ?
+					"bp5-text-intent-primary bp5-intent-primary" : "";
+
+				let unitIcon: JSX.Element;
+				if (unit.kind === "image") {
+					unitIcon = <Icons.Compressed
+						className={className}
+					/>;
+				} else {
+					unitIcon = <Icons.Server
+						className={className}
+					/>;
+				}
+
+				unitItems.push(<Blueprint.MenuItem
+					key={unit.id}
+					roleStructure="listoption"
+					icon={unitIcon}
+					onClick={(): void => {
+						if (this.props.onUnitSelect) {
+							this.props.onUnitSelect(unit.id);
+						}
+					}}
+					style={{paddingLeft: "7px"}}
+					text={unit.name}
+					textClassName={className}
+				/>);
 			}
 
-			unitItems.push(<Blueprint.MenuItem
-				key={unit.id}
-				roleStructure="listoption"
-				icon={unitIcon}
-				onClick={(): void => {
-					if (this.props.onUnitSelect) {
-						this.props.onUnitSelect(unit.id);
-					}
-				}}
-				style={{paddingLeft: "7px"}}
-				text={unit.name}
-				textClassName={className}
-			/>);
-		}
-
-		if (unitItems.length) {
-			unitsDom = <Blueprint.Menu
-				style={css.units}
-				onClick={(evt): void => {
-					evt.stopPropagation();
-				}}
-			>
-				{unitItems}
-			</Blueprint.Menu>;
+			if (unitItems.length) {
+				unitsDom = <Blueprint.Menu
+					style={css.units}
+					onClick={(evt): void => {
+						evt.stopPropagation();
+					}}
+				>
+					{unitItems}
+				</Blueprint.Menu>;
+			}
 		}
 
 		return <div
