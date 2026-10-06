@@ -198,7 +198,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			disabled: false,
 			expandLeft: null,
 			expandRight: null,
-			activeUnitId: "",
+			activeUnitId: props.activeUnitId || "",
 			selectedDeployments: {},
 			lastSelectedDeployment: null,
 			unit: null,
@@ -216,6 +216,16 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		let activeUnit = this.getActiveUnit()
 		if (activeUnit && !activeUnit.new) {
 			this.syncUnit(activeUnit.id)
+		}
+		if (activeUnit && activeUnit.id !== this.state.activeUnitId) {
+			this.setState({
+				...this.state,
+				activeUnitId: activeUnit.id,
+			})
+		}
+		if (activeUnit && this.props.onActiveUnit &&
+				activeUnit.id !== this.props.activeUnitId) {
+			this.props.onActiveUnit(activeUnit.id)
 		}
 
 		this.sync = new MiscUtils.SyncInterval(
@@ -251,6 +261,14 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		PodsUnitStore.removeChangeListener(this.onChange);
 		this.sync?.stop()
 		EventDispatcher.unregister(this.eventToken)
+	}
+
+	componentDidUpdate(prevProps: Props): void {
+		if (this.props.activeUnitId &&
+				this.props.activeUnitId !== prevProps.activeUnitId &&
+				this.props.activeUnitId !== this.state.activeUnitId) {
+			this.onUnitSelect(this.props.activeUnitId)
+		}
 	}
 
 	get selectedDeployments(): boolean {
@@ -527,6 +545,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			expandLeft: false,
 			expandRight: true,
 		})
+		if (this.props.onActiveUnit) {
+			this.props.onActiveUnit(unitId)
+		}
 		this.props.onEdit(units)
 	}
 
@@ -551,6 +572,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		this.props.onEdit(units)
 
 		let activeUnit = this.getActiveUnit()
+		if (this.props.onActiveUnit) {
+			this.props.onActiveUnit(activeUnit ? activeUnit.id : "")
+		}
 		if (activeUnit && !activeUnit.new) {
 			PodActions.syncUnit(this.props.pod.id, activeUnit.id);
 		}
@@ -606,6 +630,10 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			diffCommit: null,
 			diffChanged: false,
 		})
+
+		if (this.props.onActiveUnit && unitId !== this.props.activeUnitId) {
+			this.props.onActiveUnit(unitId)
+		}
 
 		if (activeUnit && !activeUnit.new) {
 			this.syncUnit(unitId)
