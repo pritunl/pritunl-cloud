@@ -5,6 +5,7 @@ import * as AdvisoryTypes from "../types/AdvisoryTypes";
 import * as AdvisoryActions from "../actions/AdvisoryActions";
 import * as MiscUtils from "../utils/MiscUtils";
 import ConfirmButton from "./ConfirmButton";
+import VulnerabilityAnalysis, * as Analysis from "./VulnerabilityAnalysis";
 
 interface CveDetail {
 	id: string;
@@ -23,6 +24,7 @@ interface UpdateEntry {
 	dismissed: boolean;
 	dismissedAll: boolean;
 	dismissedResource: boolean;
+	unreachable: boolean;
 	link?: string;
 }
 
@@ -37,6 +39,7 @@ interface State {
 	disabled: boolean;
 	showLowSeverity: boolean;
 	expandedDismissed: boolean;
+	expandedUnreachable: boolean;
 	expanded: {[key: string]: boolean};
 	expandedStatements: {[key: string]: boolean};
 	expandedCves: {[advisory: string]: boolean};
@@ -220,6 +223,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			disabled: false,
 			showLowSeverity: false,
 			expandedDismissed: false,
+			expandedUnreachable: false,
 			expanded: {},
 			expandedStatements: {},
 			expandedCves: {},
@@ -387,6 +391,9 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			let dismissedResource = !!resourceId &&
 				(advisory.dismissed_resources || []).indexOf(resourceId) !== -1;
 			let dismissed = dismissedAll || dismissedResource;
+			let unreachable = !!resourceId &&
+				(advisory.unreachable_resources || []).indexOf(
+					resourceId) !== -1;
 
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
@@ -400,17 +407,20 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			}
 
 			pairs.sort((a, b) => {
-				let rank = this.severityRank(b.detail.severity || "") -
-					this.severityRank(a.detail.severity || "");
+				let rank = this.severityRank(
+					Analysis.effectiveSeverity(b.detail)) -
+					this.severityRank(Analysis.effectiveSeverity(a.detail));
 				if (rank !== 0) {
 					return rank;
 				}
-				return (b.detail.score || 0) - (a.detail.score || 0);
+				return Analysis.effectiveScore(b.detail) -
+					Analysis.effectiveScore(a.detail);
 			});
 
-			let importantCves = pairs.filter(
-				(p): boolean => (p.detail.severity === "critical" ||
-					p.detail.severity === "high"));
+			let importantCves = pairs.filter((p): boolean => {
+				let severity = Analysis.effectiveSeverity(p.detail);
+				return severity === "critical" || severity === "high";
+			});
 
 			entries.push({
 				id: advisory.reference || "",
@@ -424,6 +434,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				dismissed: dismissed,
 				dismissedAll: dismissedAll,
 				dismissedResource: dismissedResource,
+				unreachable: unreachable,
 				link: this.advisoryLink(advisory.reference || ""),
 			});
 		}
@@ -622,6 +633,11 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				...cardStyle,
 				opacity: 0.5,
 			};
+		} else if (entry.unreachable) {
+			cardStyle = {
+				...cardStyle,
+				opacity: 0.7,
+			};
 		}
 
 		return <div key={update.id}
@@ -633,6 +649,10 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					intent={sevIntent}
 					icon="shield"
 					style={css.headerTag}>{sevLabel}</Blueprint.Tag>
+				{entry.unreachable ? <Blueprint.Tag
+					minimal={true}
+					icon="eye-off"
+					style={css.headerTag}>Unreachable</Blueprint.Tag> : null}
 				{primaryName && <span style={css.packageName}>
 					{primaryName}
 				</span>}
@@ -761,10 +781,13 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 
 		let important: UpdateEntry[] = [];
 		let other: UpdateEntry[] = [];
+		let unreachable: UpdateEntry[] = [];
 		let dismissed: UpdateEntry[] = [];
 		for (let entry of entries) {
 			if (entry.dismissed) {
 				dismissed.push(entry);
+			} else if (entry.unreachable) {
+				unreachable.push(entry);
 			} else if ((entry.score || 0) >= SCORE_HIGH) {
 				important.push(entry);
 			} else {
@@ -805,6 +828,28 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				</button>
 				{this.state.showLowSeverity ? <div>
 					{other.map((e): JSX.Element => this.renderUpdateCard(e))}
+				</div> : null}
+			</> : null}
+			{unreachable.length > 0 ? <>
+				<button
+					className={"bp5-button bp5-minimal " +
+						(this.state.expandedUnreachable ?
+							"bp5-icon-chevron-down" :
+							"bp5-icon-chevron-right")}
+					type="button"
+					style={{margin: "8px 0"}}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							expandedUnreachable: !this.state.expandedUnreachable,
+						});
+					}}
+				>
+					Unreachable ({unreachable.length})
+				</button>
+				{this.state.expandedUnreachable ? <div>
+					{unreachable.map((e): JSX.Element =>
+						this.renderUpdateCard(e))}
 				</div> : null}
 			</> : null}
 			{dismissed.length > 0 ? <>
