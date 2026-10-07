@@ -16,7 +16,7 @@ const css = {
 		margin: '-15px 0 5px 0',
 	} as React.CSSProperties,
 	input: {
-		width: '200px',
+		width: '180px',
 		margin: '5px',
 	} as React.CSSProperties,
 	cve: {
