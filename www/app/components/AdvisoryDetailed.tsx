@@ -868,6 +868,19 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				style={css.tagRow}>
 				{tags}
 			</div>}
+			{analysis ? <VulnerabilityAnalysis
+				analysis={analysis}
+				expanded={!!this.state.expanded[analysisKey]}
+				onToggle={(): void => {
+					this.setState({
+						...this.state,
+						expanded: {
+							...this.state.expanded,
+							[analysisKey]: !this.state.expanded[analysisKey],
+						},
+					});
+				}}
+			/> : null}
 			{this.renderDescription(vuln.id, vuln.description)}
 		</div>;
 	}
