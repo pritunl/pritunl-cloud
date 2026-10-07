@@ -13,6 +13,7 @@ import ConfirmButton from './ConfirmButton';
 import Relations from './Relations';
 import CompletionStore from '../stores/CompletionStore';
 import {scoreLabel} from './Advisory';
+import VulnerabilityAnalysis, * as Analysis from './VulnerabilityAnalysis';
 
 const DESC_MAX_HEIGHT = 400;
 
@@ -30,6 +31,8 @@ interface State {
 	expandedCves: boolean;
 	expandedDismissedNodes: boolean;
 	expandedDismissedInstances: boolean;
+	expandedUnreachableNodes: boolean;
+	expandedUnreachableInstances: boolean;
 	descHeight: number;
 	selected: {[key: string]: boolean};
 	lastSelected: string;
@@ -237,6 +240,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			expandedCves: false,
 			expandedDismissedNodes: false,
 			expandedDismissedInstances: false,
+			expandedUnreachableNodes: false,
+			expandedUnreachableInstances: false,
 			descHeight: DESC_MAX_HEIGHT,
 			selected: {},
 			lastSelected: null,
@@ -581,7 +586,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 	}
 
 	renderNodeCard(node: AdvisoryTypes.NodeInfo,
-			orderedIds: string[], dismissed?: boolean): JSX.Element {
+			orderedIds: string[], dismissed?: boolean,
+			unreachable?: boolean): JSX.Element {
 		let publicIps = node.public_ips && node.public_ips.length ?
 			node.public_ips : ['-'];
 		let publicIps6 = node.public_ips6 && node.public_ips6.length ?
@@ -664,7 +670,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 	}
 
 	renderInstanceCard(inst: AdvisoryTypes.InstanceInfo,
-			orderedIds: string[], dismissed?: boolean): JSX.Element {
+			orderedIds: string[], dismissed?: boolean,
+			unreachable?: boolean): JSX.Element {
 		let statusValue = inst.status || '-';
 		let statusClass = this.instanceStatusClass(inst.status || '');
 
@@ -817,15 +824,39 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let sevLabel = MiscUtils.capitalize(vuln.severity || "Unknown");
 		let scoreStr = vuln.score ? ` ${vuln.score.toFixed(1)}` : "";
 
+		let analysis = vuln.analysis;
+		let effSeverity = Analysis.effectiveSeverity(vuln);
+		let analysisKey = vuln.id + "|analysis";
+
+		let headerTags: JSX.Element;
+		if (analysis) {
+			let realScore = (analysis.real_score || 0).toFixed(1);
+			headerTags = <React.Fragment>
+				<Blueprint.Tag
+					intent={Analysis.severityIntent(effSeverity)}
+					icon="endorsed"
+					style={css.headerTag}
+				>{MiscUtils.capitalize(effSeverity)} {realScore}</Blueprint.Tag>
+				<Blueprint.Tag
+					minimal={true}
+					intent={sevIntent}
+					icon="shield"
+					style={css.headerTag}
+				>CVSS {sevLabel}{scoreStr}</Blueprint.Tag>
+			</React.Fragment>;
+		} else {
+			headerTags = <Blueprint.Tag intent={sevIntent} icon="shield"
+				style={css.headerTag}>{sevLabel}{scoreStr}</Blueprint.Tag>;
+		}
+
 		return <div key={vuln.id}
 			className="bp5-card bp5-elevation-0"
 			style={{
 				...css.itemCard,
-				borderLeftColor: this.severityBarColor(vuln.severity || ""),
+				borderLeftColor: Analysis.severityColor(effSeverity),
 			}}>
 			<div className="layout horizontal" style={css.itemHeader}>
-				<Blueprint.Tag intent={sevIntent} icon="shield"
-					style={css.headerTag}>{sevLabel}{scoreStr}</Blueprint.Tag>
+				{headerTags}
 				<a
 					href={nvdUrl}
 					target="_blank"
@@ -848,18 +879,20 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 
 		let sorted = [...vulns].sort((a, b) => {
-			let rank = this.severityRank(b.severity || "") -
-				this.severityRank(a.severity || "");
+			let rank = this.severityRank(Analysis.effectiveSeverity(b)) -
+				this.severityRank(Analysis.effectiveSeverity(a));
 			if (rank !== 0) {
 				return rank;
 			}
-			return (b.score || 0) - (a.score || 0);
+			return Analysis.effectiveScore(b) - Analysis.effectiveScore(a);
 		});
 
 		let important: AdvisoryTypes.Vulnerability[] = [];
 		let other: AdvisoryTypes.Vulnerability[] = [];
 		for (let vuln of sorted) {
-			if (vuln.severity === "critical" || vuln.severity === "high") {
+			let severity = Analysis.effectiveSeverity(vuln);
+			if (severity === "critical" || severity === "high" ||
+					severity === "medium") {
 				important.push(vuln);
 			} else {
 				other.push(vuln);
@@ -997,12 +1030,21 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 
 		let dismissals = new Set(advisory.dismissed_resources || []);
+		let unreachables = new Set(advisory.unreachable_resources || []);
 
 		let vulnerabilities = advisory.vulnerabilities || [];
 		let nodes = (advisory.nodes_info || []).filter(
-			(node): boolean => !dismissals.has(node.id));
+			(node): boolean => !dismissals.has(node.id) &&
+				!unreachables.has(node.id));
 		let instances = (advisory.instances_info || []).filter(
-			(inst): boolean => !dismissals.has(inst.id));
+			(inst): boolean => !dismissals.has(inst.id) &&
+				!unreachables.has(inst.id));
+		let unreachableNodes = (advisory.nodes_info || []).filter(
+			(node): boolean => !dismissals.has(node.id) &&
+				unreachables.has(node.id));
+		let unreachableInstances = (advisory.instances_info || []).filter(
+			(inst): boolean => !dismissals.has(inst.id) &&
+				unreachables.has(inst.id));
 		let dismissedNodes = (advisory.nodes_info || []).filter(
 			(node): boolean => dismissals.has(node.id));
 		let dismissedInstances = (advisory.instances_info || []).filter(
@@ -1010,6 +1052,10 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		let nodeIds = nodes.map((node): string => node.id);
 		let instanceIds = instances.map((inst): string => inst.id);
+		let unreachableNodeIds = unreachableNodes.map(
+			(node): string => node.id);
+		let unreachableInstanceIds = unreachableInstances.map(
+			(inst): string => inst.id);
 		let dismissedNodeIds = dismissedNodes.map((node): string => node.id);
 		let dismissedInstanceIds = dismissedInstances.map(
 			(inst): string => inst.id);
@@ -1018,6 +1064,12 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			(node): boolean => !!this.state.selected[node.id]).map(
 			(node): string => node.id);
 		let selectedInstances = instances.filter(
+			(inst): boolean => !!this.state.selected[inst.id]).map(
+			(inst): string => inst.id);
+		let selectedUnreachableNodes = unreachableNodes.filter(
+			(node): boolean => !!this.state.selected[node.id]).map(
+			(node): string => node.id);
+		let selectedUnreachableInstances = unreachableInstances.filter(
 			(inst): boolean => !!this.state.selected[inst.id]).map(
 			(inst): string => inst.id);
 		let selectedDismissedNodes = dismissedNodes.filter(
@@ -1152,28 +1204,69 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			</div> : null}
 			<div style={css.cards}>
 				{this.renderVulnerabilities(vulnerabilities)}
-				{(nodes.length > 0 || dismissedNodes.length > 0) ?
+				{(nodes.length > 0 || dismissedNodes.length > 0 ||
+						unreachableNodes.length > 0) ?
 						<React.Fragment>
-					<div style={css.section}>
-						<span
-							className="bp5-icon-standard bp5-icon-cloud"
-							style={css.sectionIcon}
-						/>
-						Effected Nodes
-						<span style={css.count}>({nodes.length})</span>
-						<button
-							className="bp5-button bp5-icon-disable"
-							style={css.dismissSelected}
-							type="button"
-							disabled={this.state.disabled ||
-								!selectedNodes.length}
-							onClick={(): void => {
-								this.onDismissSelected(selectedNodes);
-							}}
-						>Dismiss Selected</button>
-					</div>
-					{nodes.map((node): JSX.Element =>
-						this.renderNodeCard(node, nodeIds))}
+					{nodes.length > 0 ? <React.Fragment>
+						<div style={css.section}>
+							<span
+								className="bp5-icon-standard bp5-icon-cloud"
+								style={css.sectionIcon}
+							/>
+							Effected Nodes
+							<span style={css.count}>({nodes.length})</span>
+							<button
+								className="bp5-button bp5-icon-disable"
+								style={css.dismissSelected}
+								type="button"
+								disabled={this.state.disabled ||
+									!selectedNodes.length}
+								onClick={(): void => {
+									this.onDismissSelected(selectedNodes);
+								}}
+							>Dismiss Selected</button>
+						</div>
+						{nodes.map((node): JSX.Element =>
+							this.renderNodeCard(node, nodeIds))}
+					</React.Fragment> : null}
+					{unreachableNodes.length > 0 ? <React.Fragment>
+						<div className="layout horizontal"
+							style={css.dismissedRow}>
+							<button
+								className={"bp5-button bp5-minimal " +
+									(this.state.expandedUnreachableNodes ?
+										"bp5-icon-chevron-down" :
+										"bp5-icon-chevron-right")}
+								type="button"
+								style={{margin: '0 0 8px 0'}}
+								onClick={(): void => {
+									this.setState({
+										...this.state,
+										expandedUnreachableNodes:
+											!this.state.expandedUnreachableNodes,
+									});
+								}}
+							>
+								Unreachable ({unreachableNodes.length})
+							</button>
+							{this.state.expandedUnreachableNodes ? <button
+								className="bp5-button bp5-icon-disable"
+								style={css.dismissSelected}
+								type="button"
+								disabled={this.state.disabled ||
+									!selectedUnreachableNodes.length}
+								onClick={(): void => {
+									this.onDismissSelected(
+										selectedUnreachableNodes);
+								}}
+							>Dismiss Selected</button> : null}
+						</div>
+						{this.state.expandedUnreachableNodes ? <div>
+							{unreachableNodes.map((node): JSX.Element =>
+								this.renderNodeCard(
+									node, unreachableNodeIds, false, true))}
+						</div> : null}
+					</React.Fragment> : null}
 					{dismissedNodes.length > 0 ? <React.Fragment>
 						<div className="layout horizontal"
 							style={css.dismissedRow}>
@@ -1213,28 +1306,69 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						</div> : null}
 					</React.Fragment> : null}
 				</React.Fragment> : null}
-				{(instances.length > 0 || dismissedInstances.length > 0) ?
+				{(instances.length > 0 || dismissedInstances.length > 0 ||
+						unreachableInstances.length > 0) ?
 						<React.Fragment>
-					<div style={css.section}>
-						<span
-							className="bp5-icon-standard bp5-icon-desktop"
-							style={css.sectionIcon}
-						/>
-						Effected Instances
-						<span style={css.count}>({instances.length})</span>
-						<button
-							className="bp5-button bp5-icon-disable"
-							style={css.dismissSelected}
-							type="button"
-							disabled={this.state.disabled ||
-								!selectedInstances.length}
-							onClick={(): void => {
-								this.onDismissSelected(selectedInstances);
-							}}
-						>Dismiss Selected</button>
-					</div>
-					{instances.map((inst): JSX.Element =>
-						this.renderInstanceCard(inst, instanceIds))}
+					{instances.length > 0 ? <React.Fragment>
+						<div style={css.section}>
+							<span
+								className="bp5-icon-standard bp5-icon-desktop"
+								style={css.sectionIcon}
+							/>
+							Effected Instances
+							<span style={css.count}>({instances.length})</span>
+							<button
+								className="bp5-button bp5-icon-disable"
+								style={css.dismissSelected}
+								type="button"
+								disabled={this.state.disabled ||
+									!selectedInstances.length}
+								onClick={(): void => {
+									this.onDismissSelected(selectedInstances);
+								}}
+							>Dismiss Selected</button>
+						</div>
+						{instances.map((inst): JSX.Element =>
+							this.renderInstanceCard(inst, instanceIds))}
+					</React.Fragment> : null}
+					{unreachableInstances.length > 0 ? <React.Fragment>
+						<div className="layout horizontal"
+							style={css.dismissedRow}>
+							<button
+								className={"bp5-button bp5-minimal " +
+									(this.state.expandedUnreachableInstances ?
+										"bp5-icon-chevron-down" :
+										"bp5-icon-chevron-right")}
+								type="button"
+								style={{margin: '0 0 8px 0'}}
+								onClick={(): void => {
+									this.setState({
+										...this.state,
+										expandedUnreachableInstances:
+											!this.state.expandedUnreachableInstances,
+									});
+								}}
+							>
+								Unreachable ({unreachableInstances.length})
+							</button>
+							{this.state.expandedUnreachableInstances ? <button
+								className="bp5-button bp5-icon-disable"
+								style={css.dismissSelected}
+								type="button"
+								disabled={this.state.disabled ||
+									!selectedUnreachableInstances.length}
+								onClick={(): void => {
+									this.onDismissSelected(
+										selectedUnreachableInstances);
+								}}
+							>Dismiss Selected</button> : null}
+						</div>
+						{this.state.expandedUnreachableInstances ? <div>
+							{unreachableInstances.map((inst): JSX.Element =>
+								this.renderInstanceCard(
+									inst, unreachableInstanceIds, false, true))}
+						</div> : null}
+					</React.Fragment> : null}
 					{dismissedInstances.length > 0 ? <React.Fragment>
 						<div className="layout horizontal"
 							style={css.dismissedRow}>
