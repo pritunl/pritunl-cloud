@@ -520,12 +520,36 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		let sevLabel = MiscUtils.capitalize(d.severity || "Unknown");
 		let scoreLabel = d.score ? ` ${d.score.toFixed(1)}` : "";
 
-		return <div key={pair.id} style={css.cveCard}>
-			<div className="layout horizontal" style={css.headerRow}>
+		let analysis = d.analysis;
+		let analysisKey = key + "|analysis";
+
+		let headerTags: JSX.Element;
+		if (analysis) {
+			let effSeverity = Analysis.effectiveSeverity(d);
+			let realScore = (analysis.real_score || 0).toFixed(1);
+			headerTags = <>
 				<Blueprint.Tag
+					intent={Analysis.severityIntent(effSeverity)}
+					icon="endorsed"
+					style={css.headerTag}
+				>{MiscUtils.capitalize(effSeverity)} {realScore}</Blueprint.Tag>
+				<Blueprint.Tag
+					minimal={true}
 					intent={sevIntent}
 					icon="shield"
-					style={css.headerTag}>{sevLabel}{scoreLabel}</Blueprint.Tag>
+					style={css.headerTag}
+				>CVSS {sevLabel}{scoreLabel}</Blueprint.Tag>
+			</>;
+		} else {
+			headerTags = <Blueprint.Tag
+				intent={sevIntent}
+				icon="shield"
+				style={css.headerTag}>{sevLabel}{scoreLabel}</Blueprint.Tag>;
+		}
+
+		return <div key={pair.id} style={css.cveCard}>
+			<div className="layout horizontal" style={css.headerRow}>
+				{headerTags}
 				<a
 					href={nvdUrl}
 					target="_blank"
@@ -537,6 +561,19 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				style={css.tagRow}>
 				{tags}
 			</div>}
+			{analysis ? <VulnerabilityAnalysis
+				analysis={analysis}
+				expanded={!!this.state.expanded[analysisKey]}
+				onToggle={(): void => {
+					this.setState({
+						...this.state,
+						expanded: {
+							...this.state.expanded,
+							[analysisKey]: !this.state.expanded[analysisKey],
+						},
+					});
+				}}
+			/> : null}
 			{this.renderDescription(key, d.description, d.statement)}
 		</div>;
 	}
