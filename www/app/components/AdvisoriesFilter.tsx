@@ -154,6 +154,7 @@ export default class AdvisoriesFilter extends React.Component<Props, {}> {
 				>
 					<option key="any" value="any">Any Type</option>
 					<option key="rhel" value="rhel">Red Hat</option>
+					<option key="freebsd" value="freebsd">FreeBSD</option>
 				</select>
 			</div>
 			<div className="bp5-select" style={css.type} hidden={Constants.user}>
