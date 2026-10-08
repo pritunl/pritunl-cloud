@@ -4,10 +4,13 @@ import PageSelect from './PageSelect';
 import MetricChart from './MetricChart';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as NodeActions from '../actions/NodeActions';
+import * as InstanceTypes from '../types/InstanceTypes';
+import SearchInput from './SearchInput';
 
 interface Props {
 	instance?: string;
 	node?: string;
+	components?: InstanceTypes.Component[];
 	disabled: boolean;
 }
 
@@ -17,6 +20,7 @@ interface State {
 	interval: number;
 	loading: {[key: string]: boolean};
 	cancelable: {[key: string]: boolean};
+	componentsFilter: string;
 }
 
 const css = {
@@ -47,6 +51,48 @@ const css = {
 		margin: '0 10px',
 		marginBottom: '15px',
 	} as React.CSSProperties,
+	componentsHeader: {
+		fontSize: '20px',
+		marginTop: '10px',
+		paddingBottom: '2px',
+		marginBottom: '10px',
+		borderBottomStyle: 'solid',
+	} as React.CSSProperties,
+	componentsSearch: {
+		margin: '12px 0 0 8px',
+		width: '220px',
+	} as React.CSSProperties,
+	componentGroup: {
+		flex: 1,
+		minWidth: '250px',
+		margin: '0 10px 15px 10px',
+	} as React.CSSProperties,
+	componentLabel: {
+		fontSize: '14px',
+		fontWeight: 'bold',
+		margin: '0 0 6px 0',
+	} as React.CSSProperties,
+	componentCount: {
+		fontWeight: 'normal',
+		marginLeft: '6px',
+	} as React.CSSProperties,
+	componentList: {
+		display: 'flex',
+		flexWrap: 'wrap',
+		alignItems: 'flex-start',
+		maxHeight: '260px',
+		overflowY: 'auto',
+		padding: '4px 6px 8px 6px',
+		borderRadius: '3px',
+	} as React.CSSProperties,
+	componentTag: {
+		margin: '4px 3px 0 3px',
+		minHeight: '20px',
+		fontFamily: 'monospace',
+	} as React.CSSProperties,
+	componentEmpty: {
+		margin: '8px 6px',
+	} as React.CSSProperties,
 };
 
 export default class MetricCharts extends React.Component<Props, State> {
@@ -61,10 +107,124 @@ export default class MetricCharts extends React.Component<Props, State> {
 			interval: 30,
 			loading: {},
 			cancelable: {},
+			componentsFilter: '',
 		};
 
 		this.loading = {};
 		this.chartBoxRef = React.createRef();
+	}
+
+	componentNames(type: string): string[] {
+		let filter = (this.state.componentsFilter || '').toLowerCase();
+		let names: string[] = [];
+
+		for (let component of (this.props.components || [])) {
+			if (component.type !== type || !component.name) {
+				continue;
+			}
+			if (filter && component.name.toLowerCase().indexOf(filter) === -1) {
+				continue;
+			}
+			names.push(component.name);
+		}
+
+		names.sort((a: string, b: string): number => {
+			let portA = a.match(/^(\w+)\/(\d+)$/);
+			let portB = b.match(/^(\w+)\/(\d+)$/);
+			if (portA && portB) {
+				if (portA[1] !== portB[1]) {
+					return portA[1] < portB[1] ? -1 : 1;
+				}
+				return parseInt(portA[2], 10) - parseInt(portB[2], 10);
+			}
+			return a < b ? -1 : (a > b ? 1 : 0);
+		});
+		return names;
+	}
+
+	renderComponentGroup(label: string, type: string,
+			icon: string): JSX.Element {
+
+		let names = this.componentNames(type);
+		let total = 0;
+		for (let component of (this.props.components || [])) {
+			if (component.type === type) {
+				total += 1;
+			}
+		}
+
+		let count = names.length.toString();
+		if (names.length !== total) {
+			count = names.length + ' of ' + total;
+		}
+
+		let tags: JSX.Element[] = [];
+		for (let name of names) {
+			tags.push(
+				<div
+					className="bp5-tag bp5-minimal"
+					style={css.componentTag}
+					key={name}
+				>
+					{name}
+				</div>,
+			);
+		}
+
+		let body: JSX.Element;
+		if (tags.length) {
+			body = <div className="bp5-card bp5-elevation-0" style={css.componentList}>
+				{tags}
+			</div>;
+		} else {
+			body = <div className="bp5-card bp5-elevation-0" style={css.componentList}>
+				<span className="bp5-text-muted" style={css.componentEmpty}>
+					{total ? 'No matches' : 'None reported'}
+				</span>
+			</div>;
+		}
+
+		return <div style={css.componentGroup}>
+			<h5 style={css.componentLabel}>
+				<span className={'bp5-icon-standard bp5-icon-' + icon}/> {label}
+				<span className="bp5-text-muted" style={css.componentCount}>
+					({count})
+				</span>
+			</h5>
+			{body}
+		</div>;
+	}
+
+	renderComponents(): JSX.Element {
+		if (!this.props.instance && !this.props.node) {
+			return null;
+		}
+
+		return <div>
+			<div
+				className="layout horizontal wrap bp5-border"
+				style={css.componentsHeader}
+			>
+				<h3 style={css.heading}>Components</h3>
+				<div className="flex"/>
+				<SearchInput
+					style={css.componentsSearch}
+					placeholder="Filter components"
+					value={this.state.componentsFilter}
+					onChange={(val: string): void => {
+						this.setState({
+							...this.state,
+							componentsFilter: val,
+						});
+					}}
+				/>
+			</div>
+			<div className="layout horizontal wrap">
+				{this.renderComponentGroup('Processes', 'process', 'application')}
+				{this.renderComponentGroup('Kernel Modules', 'module', 'cog')}
+				{this.renderComponentGroup('Ports', 'port', 'globe-network')}
+			</div>
+		</div>;
 	}
 
 	getDefaultInterval(period: number): number {
@@ -432,6 +592,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 					/>
 				</div>
 			</div>
+			{this.renderComponents()}
 		</div>;
 	}
 }
