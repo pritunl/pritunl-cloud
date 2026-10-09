@@ -108,24 +108,70 @@ export default class MetricCharts extends React.Component<Props, State> {
 			loading: {},
 			cancelable: {},
 			componentsFilter: '',
+			guestComponents: null,
 		};
 
 		this.loading = {};
 		this.chartBoxRef = React.createRef();
 	}
 
-	componentNames(type: string): string[] {
+	componentDidMount(): void {
+		if (!this.props.disabled) {
+			this.loadGuest();
+		}
+	}
+
+	componentDidUpdate(prevProps: Props, prevState: State): void {
+		if (this.props.disabled) {
+			return;
+		}
+
+		if (prevProps.disabled || prevProps.instance !== this.props.instance ||
+				prevState.sync !== this.state.sync) {
+			this.loadGuest();
+		}
+	}
+
+	loadGuest(): void {
+		let instanceId = this.props.instance;
+		if (!instanceId) {
+			return;
+		}
+
+		InstanceActions.loadGuest(instanceId).then(
+			(guest: InstanceTypes.Guest): void => {
+				if (instanceId !== this.props.instance) {
+					return;
+				}
+
+				this.setState({
+					...this.state,
+					guestComponents: guest || {},
+				});
+			},
+			(): void => {},
+		);
+	}
+
+	components(): InstanceTypes.Components {
+		if (this.props.instance) {
+			return this.state.guestComponents || {};
+		}
+		return this.props.components || {};
+	}
+
+	componentNames(all: string[]): string[] {
 		let filter = (this.state.componentsFilter || '').toLowerCase();
 		let names: string[] = [];
 
-		for (let component of (this.props.components || [])) {
-			if (component.type !== type || !component.name) {
+		for (let name of (all || [])) {
+			if (!name) {
 				continue;
 			}
-			if (filter && component.name.toLowerCase().indexOf(filter) === -1) {
+			if (filter && name.toLowerCase().indexOf(filter) === -1) {
 				continue;
 			}
-			names.push(component.name);
+			names.push(name);
 		}
 
 		names.sort((a: string, b: string): number => {
