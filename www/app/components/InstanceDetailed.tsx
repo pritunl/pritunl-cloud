@@ -2880,7 +2880,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			</div>
 			<MetricCharts
 				instance={this.props.instance.id}
-				components={this.props.instance.guest?.components}
 				disabled={!this.state.metrics}
 			/>
 		</td>;
