@@ -168,9 +168,15 @@ export interface Guest {
 	load1?: number;
 	load5?: number;
 	load15?: number;
+	components?: Component[];
 	disks?: Disk[];
 	mounts?: Mount[];
 	interfaces?: Interface[];
+}
+
+export interface Component {
+	type?: string;
+	name?: string;
 }
 
 export interface Disk {
