@@ -91,6 +91,7 @@ export interface Advisory {
 	instances?: string[];
 	nodes?: string[];
 	dismissed_resources?: string[];
+	unreachable_resources?: string[];
 	instances_info?: InstanceInfo[];
 	nodes_info?: NodeInfo[];
 }
