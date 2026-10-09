@@ -10,7 +10,7 @@ import SearchInput from './SearchInput';
 interface Props {
 	instance?: string;
 	node?: string;
-	components?: InstanceTypes.Component[];
+	components?: InstanceTypes.Components;
 	disabled: boolean;
 }
 
@@ -21,6 +21,7 @@ interface State {
 	loading: {[key: string]: boolean};
 	cancelable: {[key: string]: boolean};
 	componentsFilter: string;
+	guestComponents: InstanceTypes.Components;
 }
 
 const css = {
@@ -77,13 +78,17 @@ const css = {
 		marginLeft: '6px',
 	} as React.CSSProperties,
 	componentList: {
+		padding: "1px",
+		borderRadius: '3px',
+		overflow: 'hidden',
+	} as React.CSSProperties,
+	componentListInner: {
 		display: 'flex',
 		flexWrap: 'wrap',
 		alignItems: 'flex-start',
 		maxHeight: '260px',
 		overflowY: 'auto',
-		padding: '4px 6px 8px 6px',
-		borderRadius: '3px',
+		padding: '3px 5px 7px 5px',
 	} as React.CSSProperties,
 	componentTag: {
 		margin: '4px 3px 0 3px',
@@ -188,16 +193,11 @@ export default class MetricCharts extends React.Component<Props, State> {
 		return names;
 	}
 
-	renderComponentGroup(label: string, type: string,
+	renderComponentGroup(label: string, all: string[],
 			icon: string): JSX.Element {
 
-		let names = this.componentNames(type);
-		let total = 0;
-		for (let component of (this.props.components || [])) {
-			if (component.type === type) {
-				total += 1;
-			}
-		}
+		let names = this.componentNames(all);
+		let total = (all || []).length;
 
 		let count = names.length.toString();
 		if (names.length !== total) {
@@ -220,13 +220,17 @@ export default class MetricCharts extends React.Component<Props, State> {
 		let body: JSX.Element;
 		if (tags.length) {
 			body = <div className="bp5-card bp5-elevation-0" style={css.componentList}>
-				{tags}
+				<div style={css.componentListInner}>
+					{tags}
+				</div>
 			</div>;
 		} else {
 			body = <div className="bp5-card bp5-elevation-0" style={css.componentList}>
-				<span className="bp5-text-muted" style={css.componentEmpty}>
-					{total ? 'No matches' : 'None reported'}
-				</span>
+				<div style={css.componentListInner}>
+					<span className="bp5-text-muted" style={css.componentEmpty}>
+						{total ? 'No matches' : 'None reported'}
+					</span>
+				</div>
 			</div>;
 		}
 
@@ -245,6 +249,8 @@ export default class MetricCharts extends React.Component<Props, State> {
 		if (!this.props.instance && !this.props.node) {
 			return null;
 		}
+
+		let components = this.components();
 
 		return <div>
 			<div
@@ -266,9 +272,12 @@ export default class MetricCharts extends React.Component<Props, State> {
 				/>
 			</div>
 			<div className="layout horizontal wrap">
-				{this.renderComponentGroup('Processes', 'process', 'application')}
-				{this.renderComponentGroup('Kernel Modules', 'module', 'cog')}
-				{this.renderComponentGroup('Ports', 'port', 'globe-network')}
+				{this.renderComponentGroup('Processes',
+					components.processes, 'application')}
+				{this.renderComponentGroup('Kernel Modules',
+					components.modules, 'box')}
+				{this.renderComponentGroup('Active Ports',
+					components.ports, 'globe-network')}
 			</div>
 		</div>;
 	}
