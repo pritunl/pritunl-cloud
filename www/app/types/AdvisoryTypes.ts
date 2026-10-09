@@ -112,6 +112,7 @@ export interface MultiData {
 export interface Filter {
 	id?: string;
 	reference?: string;
+	cve?: string;
 	type?: string;
 	severity?: string;
 	organization?: string;
