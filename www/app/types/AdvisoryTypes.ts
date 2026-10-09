@@ -7,6 +7,7 @@ export const CHANGE = 'advisory.change';
 export interface Vulnerability {
 	id?: string;
 	timestamp?: string;
+	published?: string;
 	status?: string;
 	description?: string;
 	statement?: string;
@@ -20,6 +21,35 @@ export interface Vulnerability {
 	confidentiality?: string;
 	integrity?: string;
 	availability?: string;
+	analysis?: Analysis;
+}
+
+export interface Analysis {
+	updated?: string;
+	timestamp?: string;
+	model?: string;
+	summary?: string;
+	impacted?: string;
+	real_score?: number;
+	universal?: boolean;
+	processes?: string[];
+	modules?: string[];
+	ports?: AnalysisPort[];
+	evidence?: AnalysisEvidence[];
+	boundaries?: string[];
+	mitigation?: string;
+}
+
+export interface AnalysisPort {
+	name?: string;
+	protocol?: string;
+	port?: number;
+}
+
+export interface AnalysisEvidence {
+	type?: string;
+	url?: string;
+	note?: string;
 }
 
 export interface InstanceInfo {
