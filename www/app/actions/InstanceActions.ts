@@ -309,6 +309,35 @@ export function loadAdvisories(
 	});
 }
 
+export function loadGuest(instanceId: string): Promise<InstanceTypes.Guest> {
+	let loader = new Loader().loading();
+
+	return new Promise<InstanceTypes.Guest>((resolve, reject): void => {
+		SuperAgent
+			.get('/instance/' + instanceId + '/guest')
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve(null);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load instance guest data');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body || {});
+			});
+	});
+}
+
 export function chart(instanceId: string, resource: string,
 		period: number, interval: number): Promise<any> {
 	resource = resource.replace(/[0-9]/g, '');
