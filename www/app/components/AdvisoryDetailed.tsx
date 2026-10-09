@@ -830,13 +830,13 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		let headerTags: JSX.Element;
 		if (analysis) {
-			let realScore = (analysis.real_score || 0).toFixed(1);
+			let Score = (analysis.score || 0).toFixed(1);
 			headerTags = <React.Fragment>
 				<Blueprint.Tag
 					intent={Analysis.severityIntent(effSeverity)}
-					icon="endorsed"
+					icon="intelligence"
 					style={css.headerTag}
-				>{MiscUtils.capitalize(effSeverity)} {realScore}</Blueprint.Tag>
+				>AI {MiscUtils.capitalize(effSeverity)} {Score}</Blueprint.Tag>
 				<Blueprint.Tag
 					minimal={true}
 					intent={sevIntent}
