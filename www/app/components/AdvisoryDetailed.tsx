@@ -122,6 +122,15 @@ const css = {
 		fontSize: '14px',
 		fontWeight: 600,
 	} as React.CSSProperties,
+	published: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '4px',
+		marginLeft: 'auto',
+		fontSize: '12px',
+		whiteSpace: 'nowrap',
+		color: 'var(--bp5-text-color-muted, #5f6b7c)',
+	} as React.CSSProperties,
 	tagRow: {
 		marginBottom: '8px',
 		gap: '6px',
@@ -863,6 +872,9 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					rel="noopener noreferrer"
 					style={css.title}
 				>{vulnId}</a>
+				<span style={css.published}>
+					{published}
+				</span>
 			</div>
 			{tags.length > 0 && <div className="layout horizontal wrap"
 				style={css.tagRow}>
