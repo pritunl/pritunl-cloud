@@ -30,7 +30,7 @@ export interface Analysis {
 	model?: string;
 	summary?: string;
 	impacted?: string;
-	real_score?: number;
+	score?: number;
 	universal?: boolean;
 	processes?: string[];
 	modules?: string[];
