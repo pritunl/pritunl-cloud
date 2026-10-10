@@ -101,7 +101,9 @@ export interface Metric {
 	disks?: Disk[];
 	mounts?: Mount[];
 	interfaces?: Interface[];
-	components?: InstanceTypes.Component[];
+	processes?: string[];
+	modules?: string[];
+	ports?: string[];
 }
 
 export interface Disk {
