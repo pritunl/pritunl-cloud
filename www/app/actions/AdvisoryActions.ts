@@ -146,6 +146,36 @@ export function restoreResources(advisoryId: string,
 	});
 }
 
+export function refreshVulnerability(advisoryId: string,
+		cveId: string): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/advisory/' + advisoryId + '/vulnerability/' + cveId)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to refresh vulnerability');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 function multiUpdate(data: AdvisoryTypes.MultiData): Promise<void> {
 	let loader = new Loader().loading();
 
