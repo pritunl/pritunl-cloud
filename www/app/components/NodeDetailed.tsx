@@ -2613,7 +2613,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			</PageSave>
 			<MetricCharts
 				node={this.props.node.id}
-				components={this.props.node.metric?.components}
+				components={this.props.node.metric}
 				disabled={!this.state.metrics}
 			/>
 		</td>;
