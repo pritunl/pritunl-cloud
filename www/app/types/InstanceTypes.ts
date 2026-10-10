@@ -168,15 +168,18 @@ export interface Guest {
 	load1?: number;
 	load5?: number;
 	load15?: number;
-	components?: Component[];
+	processes?: string[];
+	modules?: string[];
+	ports?: string[];
 	disks?: Disk[];
 	mounts?: Mount[];
 	interfaces?: Interface[];
 }
 
-export interface Component {
-	type?: string;
-	name?: string;
+export interface Components {
+	processes?: string[];
+	modules?: string[];
+	ports?: string[];
 }
 
 export interface Disk {
