@@ -4,12 +4,10 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -112,16 +110,6 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			}).Error("deploy: Disk type does not support snapshot")
 		} else {
 			virt := d.stat.GetVirt(dsk.Instance)
-			if virt == nil {
-				err := &errortypes.ReadError{
-					errors.New("deploy: Failed to load virt"),
-				}
-				logrus.WithFields(logrus.Fields{
-					"disk_id": dsk.Id.Hex(),
-					"error":   err,
-				}).Error("deploy: Failed to load virt")
-				return
-			}
 
 			err := data.CreateSnapshot(db, dsk, virt)
 			if err != nil {
@@ -264,16 +252,6 @@ func (d *Disks) backup(dsk *disk.Disk) {
 			}).Error("deploy: Disk type does not support backup")
 		} else {
 			virt := d.stat.GetVirt(dsk.Instance)
-			if virt == nil {
-				err := &errortypes.ReadError{
-					errors.New("deploy: Failed to load virt"),
-				}
-				logrus.WithFields(logrus.Fields{
-					"disk_id": dsk.Id.Hex(),
-					"error":   err,
-				}).Error("deploy: Failed to load virt")
-				return
-			}
 
 			err := data.CreateBackup(db, dsk, virt)
 			if err != nil {
@@ -515,16 +493,6 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 		event.PublishDispatch(db, "disk.change")
 
 		virt := d.stat.GetVirt(dsk.Instance)
-		if virt == nil {
-			err := &errortypes.ReadError{
-				errors.New("deploy: Failed to load virt"),
-			}
-			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id.Hex(),
-				"error":   err,
-			}).Error("deploy: Failed to load virt")
-			return
-		}
 
 		err = data.CreateBackup(db, dsk, virt)
 		if err != nil {
