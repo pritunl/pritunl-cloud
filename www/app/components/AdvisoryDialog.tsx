@@ -8,6 +8,7 @@ import ConfirmButton from "./ConfirmButton";
 import VulnerabilityAnalysis, * as Analysis from "./VulnerabilityAnalysis";
 
 interface CveDetail {
+	unreachable?: boolean;
 	id: string;
 	detail: AdvisoryTypes.Vulnerability;
 }
@@ -404,18 +405,29 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				(advisory.unreachable_resources || []).indexOf(
 					resourceId) !== -1;
 
+			let exclusionResources = advisory.exclusion_resources || {};
+
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
 			for (let vuln of (advisory.vulnerabilities || [])) {
-				let vulnId = (vuln.id || "").split(":").pop();
+				let vulnId = vuln.id || "";
 				if (!vulnId || seen.has(vulnId)) {
 					continue;
 				}
 				seen.add(vulnId);
-				pairs.push({id: vulnId, detail: vuln});
+				pairs.push({
+					id: vulnId,
+					detail: vuln,
+					unreachable: !!resourceId &&
+						(exclusionResources[vulnId] || []).indexOf(
+							resourceId) !== -1,
+				});
 			}
 
 			pairs.sort((a, b) => {
+				if (!!a.unreachable !== !!b.unreachable) {
+					return a.unreachable ? 1 : -1;
+				}
 				let rank = this.severityRank(
 					Analysis.effectiveSeverity(b.detail)) -
 					this.severityRank(Analysis.effectiveSeverity(a.detail));
@@ -427,6 +439,9 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			});
 
 			let importantCves = pairs.filter((p): boolean => {
+				if (p.unreachable) {
+					return false;
+				}
 				let severity = Analysis.effectiveSeverity(p.detail);
 				return severity === "critical" || severity === "high";
 			});
@@ -566,9 +581,13 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				style={css.headerTag}>{sevLabel}{scoreLabel}</Blueprint.Tag>;
 		}
 
-		return <div key={pair.id} style={css.cveCard}>
+		return <div key={pair.id} style={cardStyle}>
 			<div className="layout horizontal" style={css.headerRow}>
 				{headerTags}
+				{pair.unreachable ? <Blueprint.Tag
+					minimal={true}
+					icon="eye-off"
+					style={css.headerTag}>Unreachable</Blueprint.Tag> : null}
 				<a
 					href={nvdUrl}
 					target="_blank"
