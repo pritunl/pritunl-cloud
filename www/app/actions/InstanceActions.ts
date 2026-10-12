@@ -279,11 +279,12 @@ export function updateMulti(instanceIds: string[],
 }
 
 export function loadAdvisories(
-		instanceId: string): Promise<AdvisoryTypes.Advisory[]> {
+		instanceId: string): Promise<AdvisoryTypes.ResourceAdvisory[]> {
 
 	let loader = new Loader().loading();
 
-	return new Promise<AdvisoryTypes.Advisory[]>((resolve, reject): void => {
+	return new Promise<AdvisoryTypes.ResourceAdvisory[]>((
+			resolve, reject): void => {
 		SuperAgent
 			.get('/instance/' + instanceId + '/advisory')
 			.set('Accept', 'application/json')
