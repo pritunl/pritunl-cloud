@@ -117,6 +117,15 @@ const css = {
 		fontSize: "13px",
 		fontWeight: 600,
 	} as React.CSSProperties,
+	published: {
+		display: "flex",
+		alignItems: "center",
+		gap: "4px",
+		marginLeft: "auto",
+		fontSize: "12px",
+		whiteSpace: "nowrap",
+		color: "var(--bp5-text-color-muted, #5f6b7c)",
+	} as React.CSSProperties,
 	tagRow: {
 		marginBottom: "8px",
 		gap: "6px",
@@ -523,6 +532,16 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		let analysis = d.analysis;
 		let analysisKey = key + "|analysis";
 
+		let published = MiscUtils.formatDateNoTime(d.published);
+
+		let cardStyle: React.CSSProperties = css.cveCard;
+		if (pair.unreachable) {
+			cardStyle = {
+				...css.cveCard,
+				opacity: 0.7,
+			};
+		}
+
 		let headerTags: JSX.Element;
 		if (analysis) {
 			let effSeverity = Analysis.effectiveSeverity(d);
@@ -556,6 +575,9 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					rel="noopener noreferrer"
 					style={css.cveTitle}
 				>{pair.id}</a>
+				<span style={css.published}>
+					{published}
+				</span>
 			</div>
 			{tags.length > 0 && <div className="layout horizontal wrap"
 				style={css.tagRow}>
