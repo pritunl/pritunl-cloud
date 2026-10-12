@@ -6,6 +6,7 @@ export const CHANGE = 'advisory.change';
 
 export interface Vulnerability {
 	id?: string;
+	source?: string;
 	timestamp?: string;
 	published?: string;
 	status?: string;
