@@ -118,11 +118,8 @@ export default class Advisory extends React.Component<Props, {}> {
 		let severityText = MiscUtils.capitalize(advisory.severity) || 'Unknown';
 		let scoreCls = 'bp5-cell ' + severityClass(scoreLabel(advisory.score));
 
-		let unreachables = new Set(advisory.unreachable_resources || []);
-		let instanceCount = (advisory.instances_info || []).filter(
-			(inst): boolean => !unreachables.has(inst.id)).length;
-		let nodeCount = (advisory.nodes_info || []).filter(
-			(node): boolean => !unreachables.has(node.id)).length;
+		let instanceCount = advisory.instance_count || 0;
+		let nodeCount = advisory.node_count || 0;
 
 		let cardStyle = css.card;
 		if (advisory.dismissed) {
@@ -174,6 +171,7 @@ export default class Advisory extends React.Component<Props, {}> {
 					className="bp5-icon-standard bp5-icon-warning-sign"
 				/>
 				{scoreLabel(advisory.score)}
+				{advisory.pending ? ' (Analyzing)' : ''}
 			</div>
 			<div className="bp5-cell" style={css.item}>
 				<span
