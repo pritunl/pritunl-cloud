@@ -789,9 +789,20 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		</Blueprint.Card>;
 	}
 
-	renderVulnCard(vuln: AdvisoryTypes.Vulnerability): JSX.Element {
-		let vulnId = vuln.id.split(":").pop();
+	renderVulnCard(vuln: AdvisoryTypes.Vulnerability,
+			unreachableCount: number, resourceCount: number): JSX.Element {
+		let vulnId = vuln.id || "";
 		let nvdUrl = `https://access.redhat.com/security/cve/${vulnId}`;
+
+		let unreachableTag: JSX.Element = null;
+		if (unreachableCount > 0 && resourceCount > 0) {
+			let label = unreachableCount >= resourceCount ? "Unreachable" :
+				`Unreachable on ${unreachableCount} of ${resourceCount}`;
+			unreachableTag = <Blueprint.Tag
+				minimal={true}
+				icon="eye-off"
+				style={css.headerTag}>{label}</Blueprint.Tag>;
+		}
 
 		let tags: JSX.Element[] = [];
 		if (vuln.vector === "network") {
@@ -858,14 +869,22 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				style={css.headerTag}>{sevLabel}{scoreStr}</Blueprint.Tag>;
 		}
 
+		let published = MiscUtils.formatDateNoTime(vuln.published);
+
+		let cardStyle: React.CSSProperties = {
+			...css.itemCard,
+			borderLeftColor: Analysis.severityColor(effSeverity),
+		};
+		if (unreachableCount > 0 && unreachableCount >= resourceCount) {
+			cardStyle.opacity = 0.7;
+		}
+
 		return <div key={vuln.id}
 			className="bp5-card bp5-elevation-0"
-			style={{
-				...css.itemCard,
-				borderLeftColor: Analysis.severityColor(effSeverity),
-			}}>
+			style={cardStyle}>
 			<div className="layout horizontal" style={css.itemHeader}>
 				{headerTags}
+				{unreachableTag}
 				<a
 					href={nvdUrl}
 					target="_blank"
@@ -897,13 +916,25 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		</div>;
 	}
 
-	renderVulnerabilities(
-			vulns: AdvisoryTypes.Vulnerability[]): JSX.Element {
+	renderVulnerabilities(vulns: AdvisoryTypes.Vulnerability[],
+			unreachableCounts: {[cve: string]: number},
+			resourceCount: number): JSX.Element {
 		if (!vulns || !vulns.length) {
 			return null;
 		}
 
+		let countFor = (vuln: AdvisoryTypes.Vulnerability): number => {
+			return unreachableCounts[vuln.id || ""] || 0;
+		};
+		let allUnreachable = (vuln: AdvisoryTypes.Vulnerability): boolean => {
+			let count = countFor(vuln);
+			return count > 0 && count >= resourceCount;
+		};
+
 		let sorted = [...vulns].sort((a, b) => {
+			if (allUnreachable(a) !== allUnreachable(b)) {
+				return allUnreachable(a) ? 1 : -1;
+			}
 			let rank = this.severityRank(Analysis.effectiveSeverity(b)) -
 				this.severityRank(Analysis.effectiveSeverity(a));
 			if (rank !== 0) {
@@ -916,8 +947,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		let other: AdvisoryTypes.Vulnerability[] = [];
 		for (let vuln of sorted) {
 			let severity = Analysis.effectiveSeverity(vuln);
-			if (severity === "critical" || severity === "high" ||
-					severity === "medium") {
+			if (!allUnreachable(vuln) && (severity === "critical" ||
+					severity === "high" || severity === "medium")) {
 				important.push(vuln);
 			} else {
 				other.push(vuln);
@@ -941,7 +972,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 					High Risk ({important.length})
 				</div>
 				{important.map((vuln): JSX.Element =>
-					this.renderVulnCard(vuln))}
+					this.renderVulnCard(vuln, countFor(vuln), resourceCount))}
 			</React.Fragment> : <div className="bp5-callout bp5-intent-success"
 				style={{padding: '10px', marginBottom: '10px'}}>
 				No high risk vulnerabilities.
@@ -965,7 +996,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				</button>
 				{this.state.expandedCves ? <div>
 					{other.map((vuln): JSX.Element =>
-						this.renderVulnCard(vuln))}
+						this.renderVulnCard(vuln, countFor(vuln), resourceCount))}
 				</div> : null}
 			</React.Fragment> : null}
 		</React.Fragment>;
@@ -1074,6 +1105,18 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			(node): boolean => dismissals.has(node.id));
 		let dismissedInstances = (advisory.instances_info || []).filter(
 			(inst): boolean => dismissals.has(inst.id));
+
+		let exclusionResources = advisory.exclusion_resources || {};
+		let activeResources = [
+			...(advisory.nodes_info || []),
+			...(advisory.instances_info || []),
+		].filter((res): boolean => !dismissals.has(res.id));
+		let activeIds = new Set(activeResources.map((res): string => res.id));
+		let unreachableCounts: {[cve: string]: number} = {};
+		for (let cve of Object.keys(exclusionResources)) {
+			unreachableCounts[cve] = (exclusionResources[cve] || []).filter(
+				(id): boolean => activeIds.has(id)).length;
+		}
 
 		let nodeIds = nodes.map((node): string => node.id);
 		let instanceIds = instances.map((inst): string => inst.id);
@@ -1228,7 +1271,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				/>
 			</div> : null}
 			<div style={css.cards}>
-				{this.renderVulnerabilities(vulnerabilities)}
+				{this.renderVulnerabilities(vulnerabilities,
+					unreachableCounts, activeResources.length)}
 				{(nodes.length > 0 || dismissedNodes.length > 0 ||
 						unreachableNodes.length > 0) ?
 						<React.Fragment>
