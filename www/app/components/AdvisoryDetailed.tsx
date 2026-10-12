@@ -257,6 +257,25 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		};
 	}
 
+	onRefreshVulnerability = (cveId: string): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		AdvisoryActions.refreshVulnerability(
+			this.props.advisory.id, cveId).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	onDelete = (): void => {
 		this.setState({
 			...this.state,
@@ -894,6 +913,14 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				<span style={css.published}>
 					{published}
 				</span>
+				<button
+					className="bp5-button bp5-minimal bp5-small bp5-icon-refresh"
+					type="button"
+					disabled={this.state.disabled}
+					onClick={(): void => {
+						this.onRefreshVulnerability(vulnId);
+					}}
+				/>
 			</div>
 			{tags.length > 0 && <div className="layout horizontal wrap"
 				style={css.tagRow}>
