@@ -26,6 +26,8 @@ interface Props {
 }
 
 interface State {
+	detail: AdvisoryTypes.Detail;
+	page: number;
 	disabled: boolean;
 	expanded: {[key: string]: boolean};
 	expandedCves: boolean;
@@ -221,6 +223,9 @@ const css = {
 		width: 0,
 		margin: '0 5px',
 	} as React.CSSProperties,
+	pending: {
+		margin: '10px 0',
+	} as React.CSSProperties,
 };
 
 function severityClass(severity: string): string {
@@ -244,6 +249,8 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
+			detail: null,
+			page: 0,
 			disabled: false,
 			expanded: {},
 			expandedCves: false,
@@ -255,6 +262,40 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			selected: {},
 			lastSelected: null,
 		};
+	}
+
+	componentDidMount(): void {
+		this.loadDetail(this.state.page);
+	}
+
+	componentDidUpdate(prevProps: Props): void {
+		if (prevProps.advisory !== this.props.advisory) {
+			this.loadDetail(this.state.page, true);
+		}
+	}
+
+	componentWillUnmount(): void {
+		this.detailId = null;
+	}
+
+	detailId: string;
+
+	loadDetail = (page: number, noLoading?: boolean): void => {
+		let detailId = MiscUtils.uuid();
+		this.detailId = detailId;
+
+		AdvisoryActions.loadDetail(this.props.advisory.id, page,
+				noLoading).then((detail: AdvisoryTypes.Detail): void => {
+			if (this.detailId !== detailId || !detail) {
+				return;
+			}
+
+			this.setState({
+				...this.state,
+				detail: detail,
+				page: detail.page || 0,
+			});
+		}).catch((): void => {});
 	}
 
 	onRefreshVulnerability = (cveId: string): void => {
@@ -1112,37 +1153,59 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			});
 		}
 
-		let dismissals = new Set(advisory.dismissed_resources || []);
-		let unreachables = new Set(advisory.unreachable_resources || []);
+		let detail: AdvisoryTypes.Detail = this.state.detail || {};
+		let counts: AdvisoryTypes.DetailCounts = detail.counts || {};
+		let nodesInfo = detail.nodes_info || [];
+		let instancesInfo = detail.instances_info || [];
 
-		let vulnerabilities = advisory.vulnerabilities || [];
-		let nodes = (advisory.nodes_info || []).filter(
-			(node): boolean => !dismissals.has(node.id) &&
-				!unreachables.has(node.id));
-		let instances = (advisory.instances_info || []).filter(
-			(inst): boolean => !dismissals.has(inst.id) &&
-				!unreachables.has(inst.id));
-		let unreachableNodes = (advisory.nodes_info || []).filter(
-			(node): boolean => !dismissals.has(node.id) &&
-				unreachables.has(node.id));
-		let unreachableInstances = (advisory.instances_info || []).filter(
-			(inst): boolean => !dismissals.has(inst.id) &&
-				unreachables.has(inst.id));
-		let dismissedNodes = (advisory.nodes_info || []).filter(
-			(node): boolean => dismissals.has(node.id));
-		let dismissedInstances = (advisory.instances_info || []).filter(
-			(inst): boolean => dismissals.has(inst.id));
+		let vulnerabilities = detail.vulnerabilities || [];
+		let nodes = nodesInfo.filter(
+			(node): boolean => !node.dismissed &&
+				node.state !== 'unreachable');
+		let instances = instancesInfo.filter(
+			(inst): boolean => !inst.dismissed &&
+				inst.state !== 'unreachable');
+		let unreachableNodes = nodesInfo.filter(
+			(node): boolean => !node.dismissed &&
+				node.state === 'unreachable');
+		let unreachableInstances = instancesInfo.filter(
+			(inst): boolean => !inst.dismissed &&
+				inst.state === 'unreachable');
+		let dismissedNodes = nodesInfo.filter(
+			(node): boolean => !!node.dismissed);
+		let dismissedInstances = instancesInfo.filter(
+			(inst): boolean => !!inst.dismissed);
 
-		let exclusionResources = advisory.exclusion_resources || {};
-		let activeResources = [
-			...(advisory.nodes_info || []),
-			...(advisory.instances_info || []),
-		].filter((res): boolean => !dismissals.has(res.id));
-		let activeIds = new Set(activeResources.map((res): string => res.id));
-		let unreachableCounts: {[cve: string]: number} = {};
-		for (let cve of Object.keys(exclusionResources)) {
-			unreachableCounts[cve] = (exclusionResources[cve] || []).filter(
-				(id): boolean => activeIds.has(id)).length;
+		let unreachableCounts = detail.exclusions || {};
+		let activeCount = counts.active || 0;
+
+		let pageSize = detail.page_count || 0;
+		let pageTotal = pageSize ?
+			Math.ceil((detail.count || 0) / pageSize) : 0;
+		let pager: JSX.Element;
+		if (pageTotal > 1) {
+			pager = <div className="layout horizontal center"
+				style={css.section}>
+				<button
+					className="bp5-button bp5-minimal bp5-icon-chevron-left"
+					type="button"
+					disabled={this.state.page <= 0}
+					onClick={(): void => {
+						this.loadDetail(this.state.page - 1);
+					}}
+				/>
+				<span style={css.count}>
+					Resources page {this.state.page + 1} of {pageTotal}
+				</span>
+				<button
+					className="bp5-button bp5-minimal bp5-icon-chevron-right"
+					type="button"
+					disabled={this.state.page >= pageTotal - 1}
+					onClick={(): void => {
+						this.loadDetail(this.state.page + 1);
+					}}
+				/>
+			</div>;
 		}
 
 		let nodeIds = nodes.map((node): string => node.id);
@@ -1298,8 +1361,17 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				/>
 			</div> : null}
 			<div style={css.cards}>
+				{advisory.pending ? <div
+					className="bp5-callout bp5-intent-primary bp5-icon-time"
+					style={css.pending}
+				>
+					{advisory.pending} vulnerabilit{advisory.pending === 1 ?
+						'y is' : 'ies are'} still being analyzed, the score can
+					rise when the analysis completes.
+				</div> : null}
 				{this.renderVulnerabilities(vulnerabilities,
-					unreachableCounts, activeResources.length)}
+					unreachableCounts, activeCount)}
+				{pager}
 				{(nodes.length > 0 || dismissedNodes.length > 0 ||
 						unreachableNodes.length > 0) ?
 						<React.Fragment>
@@ -1310,7 +1382,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 								style={css.sectionIcon}
 							/>
 							Effected Nodes
-							<span style={css.count}>({nodes.length})</span>
+							<span style={css.count}>({counts.nodes || 0})</span>
 							<button
 								className="bp5-button bp5-icon-disable"
 								style={css.dismissSelected}
@@ -1343,7 +1415,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 									});
 								}}
 							>
-								Unreachable ({unreachableNodes.length})
+								Unreachable ({counts.unreachable_nodes || 0})
 							</button>
 							{this.state.expandedUnreachableNodes ? <button
 								className="bp5-button bp5-icon-disable"
@@ -1381,7 +1453,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 									});
 								}}
 							>
-								Dismissed ({dismissedNodes.length})
+								Dismissed ({counts.dismissed_nodes || 0})
 							</button>
 							{this.state.expandedDismissedNodes ? <button
 								className="bp5-button bp5-icon-undo"
@@ -1412,7 +1484,9 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 								style={css.sectionIcon}
 							/>
 							Effected Instances
-							<span style={css.count}>({instances.length})</span>
+							<span style={css.count}>
+								({counts.instances || 0})
+							</span>
 							<button
 								className="bp5-button bp5-icon-disable"
 								style={css.dismissSelected}
@@ -1445,7 +1519,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 									});
 								}}
 							>
-								Unreachable ({unreachableInstances.length})
+								Unreachable ({counts.unreachable_instances || 0})
 							</button>
 							{this.state.expandedUnreachableInstances ? <button
 								className="bp5-button bp5-icon-disable"
@@ -1483,7 +1557,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 									});
 								}}
 							>
-								Dismissed ({dismissedInstances.length})
+								Dismissed ({counts.dismissed_instances || 0})
 							</button>
 							{this.state.expandedDismissedInstances ? <button
 								className="bp5-button bp5-icon-undo"
