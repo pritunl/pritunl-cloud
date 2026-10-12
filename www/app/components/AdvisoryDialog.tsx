@@ -240,6 +240,15 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 		}
 	}
 
+	onRefreshVulnerability = (advisoryId: string, cveId: string): void => {
+		if (!advisoryId || !cveId) {
+			return;
+		}
+
+		this.runAction(
+			AdvisoryActions.refreshVulnerability(advisoryId, cveId));
+	}
+
 	runAction = (prom: Promise<void>): void => {
 		this.setState({
 			...this.state,
@@ -597,6 +606,14 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				<span style={css.published}>
 					{published}
 				</span>
+				<button
+					className="bp5-button bp5-minimal bp5-small bp5-icon-refresh"
+					type="button"
+					disabled={this.state.disabled}
+					onClick={(): void => {
+						this.onRefreshVulnerability(entry.advisoryId, pair.id);
+					}}
+				/>
 			</div>
 			{tags.length > 0 && <div className="layout horizontal wrap"
 				style={css.tagRow}>
