@@ -301,11 +301,12 @@ export function remove(nodeId: string): Promise<void> {
 }
 
 export function loadAdvisories(
-		nodeId: string): Promise<AdvisoryTypes.Advisory[]> {
+		nodeId: string): Promise<AdvisoryTypes.ResourceAdvisory[]> {
 
 	let loader = new Loader().loading();
 
-	return new Promise<AdvisoryTypes.Advisory[]>((resolve, reject): void => {
+	return new Promise<AdvisoryTypes.ResourceAdvisory[]>((
+			resolve, reject): void => {
 		SuperAgent
 			.get('/node/' + nodeId + '/advisory')
 			.set('Accept', 'application/json')
