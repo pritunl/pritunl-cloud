@@ -93,6 +93,7 @@ export interface Advisory {
 	nodes?: string[];
 	dismissed_resources?: string[];
 	unreachable_resources?: string[];
+	exclusion_resources?: {[cve: string]: string[]};
 	instances_info?: InstanceInfo[];
 	nodes_info?: NodeInfo[];
 }
