@@ -176,6 +176,44 @@ export function refreshVulnerability(advisoryId: string,
 	});
 }
 
+export function loadDetail(advisoryId: string, page?: number,
+		noLoading?: boolean): Promise<AdvisoryTypes.Detail> {
+	let loader: Loader;
+	if (!noLoading) {
+		loader = new Loader().loading();
+	}
+
+	return new Promise<AdvisoryTypes.Detail>((resolve, reject): void => {
+		SuperAgent
+			.get('/advisory/' + advisoryId + '/detail')
+			.query({
+				page: page || 0,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				if (loader) {
+					loader.done();
+				}
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve(null);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load advisory detail');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body as AdvisoryTypes.Detail);
+			});
+	});
+}
+
 function multiUpdate(data: AdvisoryTypes.MultiData): Promise<void> {
 	let loader = new Loader().loading();
 
