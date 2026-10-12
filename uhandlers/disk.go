@@ -111,7 +111,12 @@ func diskPut(c *gin.Context) {
 
 	dsk.PreCommit()
 
-	if dta.Action != "" && dsk.Action != "" {
+	if dta.Action == disk.Cancel {
+		if dsk.Action != "" {
+			dsk.Action = ""
+			fields.Add("action")
+		}
+	} else if dta.Action != "" && dsk.Action != "" {
 		errData := &errortypes.ErrorData{
 			Error:   "disk_actin_active",
 			Message: "Disk action already active",
