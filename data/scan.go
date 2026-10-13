@@ -14,11 +14,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -474,6 +476,43 @@ func scanDiskLvm(db *database.Database, dsk *disk.Disk) (
 	info, err = scanFsDevice(diskPath)
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func DiskInUse(db *database.Database, dsk *disk.Disk) (
+	inUse bool, err error) {
+
+	if dsk.Instance.IsZero() {
+		return
+	}
+
+	inst, err := instance.Get(db, dsk.Instance)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+			inUse = true
+		}
+		return
+	}
+
+	if inst.Action != instance.Stop {
+		inUse = true
+		return
+	}
+
+	state, _, err := systemd.GetState(paths.GetUnitName(dsk.Instance))
+	if err != nil {
+		return
+	}
+
+	switch state {
+	case "inactive", "failed", "unknown", "":
+		break
+	default:
+		inUse = true
+		break
 	}
 
 	return
