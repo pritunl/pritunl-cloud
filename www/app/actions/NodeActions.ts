@@ -332,6 +332,35 @@ export function loadAdvisories(
 	});
 }
 
+export function loadMetric(nodeId: string): Promise<NodeTypes.Metric> {
+	let loader = new Loader().loading();
+
+	return new Promise<NodeTypes.Metric>((resolve, reject): void => {
+		SuperAgent
+			.get('/node/' + nodeId + '/metric')
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve(null);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load node metric data');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body || {});
+			});
+	});
+}
+
 export function chart(nodeId: string, resource: string,
 		period: number, interval: number): Promise<any> {
 	resource = resource.replace(/[0-9]/g, '');
