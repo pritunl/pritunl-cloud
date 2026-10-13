@@ -23,6 +23,7 @@ export interface Vulnerability {
 	integrity?: string;
 	availability?: string;
 	analysis?: Analysis;
+	sync?: string;
 }
 
 export interface Analysis {
