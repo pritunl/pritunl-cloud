@@ -56,7 +56,7 @@ interface State {
 	addDrive: string;
 	forwardedChecked: boolean;
 	forwardedProtoChecked: boolean;
-	advisories: AdvisoryTypes.Advisory[];
+	advisories: AdvisoryTypes.ResourceAdvisory[];
 	metrics: boolean;
 	showSettings: boolean;
 }
@@ -1698,6 +1698,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							advisories={this.state.advisories}
 							advisoryCount={node.advisory_count}
 							advisoryMax={node.advisory_max}
+							advisoryPending={node.advisory_pending}
 							onOpen={this.loadAdvisories}
 						/>
 						<Relations kind="node" id={this.props.node.id}/>
