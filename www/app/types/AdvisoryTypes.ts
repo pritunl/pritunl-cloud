@@ -57,6 +57,8 @@ export interface AnalysisEvidence {
 export interface InstanceInfo {
 	id?: string;
 	name?: string;
+	state?: string;
+	dismissed?: boolean;
 	status?: string;
 	timestamp?: string;
 	uptime?: string;
@@ -71,6 +73,8 @@ export interface InstanceInfo {
 export interface NodeInfo {
 	id?: string;
 	name?: string;
+	state?: string;
+	dismissed?: boolean;
 	timestamp?: string;
 	public_ips?: string[];
 	public_ips6?: string[];
