@@ -188,6 +188,7 @@ export function loadDetail(advisoryId: string, page?: number,
 			.get('/advisory/' + advisoryId + '/detail')
 			.query({
 				page: page || 0,
+				page_count: 10,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
