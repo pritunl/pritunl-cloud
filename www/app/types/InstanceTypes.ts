@@ -48,6 +48,7 @@ export interface Instance {
 	cloud_public_ips6?: string[];
 	advisory_count?: number;
 	advisory_max?: number;
+	advisory_pending?: number;
 	network_namespace?: string;
 	host_ips?: string[];
 	node_port_ips?: string[];
