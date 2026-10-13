@@ -81,6 +81,7 @@ export interface Node {
 	advertise_address?: string;
 	advisory_count?: number;
 	advisory_max?: number;
+	advisory_pending?: number;
 	forwarded_for_header?: string;
 	forwarded_proto_header?: string;
 	software_version?: string;
