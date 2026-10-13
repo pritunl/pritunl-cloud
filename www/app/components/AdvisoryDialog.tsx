@@ -20,6 +20,7 @@ interface UpdateEntry {
 	description: string;
 	score: number;
 	packages: string[];
+	pending: number;
 	cves: CveDetail[];
 	importantCves: CveDetail[];
 	dismissed: boolean;
@@ -48,9 +49,10 @@ interface State {
 
 interface Props {
 	resourceId?: string;
-	advisories: AdvisoryTypes.Advisory[];
+	advisories: AdvisoryTypes.ResourceAdvisory[];
 	advisoryCount: number;
 	advisoryMax: number;
+	advisoryPending?: number;
 	onOpen?: () => Promise<void>;
 }
 
@@ -403,22 +405,19 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			return [];
 		}
 
-		let resourceId = this.props.resourceId;
 		let entries: UpdateEntry[] = [];
 		for (let advisory of advisories) {
+			let resource: AdvisoryTypes.Resource = advisory.resource || {};
 			let dismissedAll = !!advisory.dismissed;
-			let dismissedResource = !!resourceId &&
-				(advisory.dismissed_resources || []).indexOf(resourceId) !== -1;
+			let dismissedResource = !!resource.dismissed;
 			let dismissed = dismissedAll || dismissedResource;
-			let unreachable = !!resourceId &&
-				(advisory.unreachable_resources || []).indexOf(
-					resourceId) !== -1;
+			let unreachable = resource.state === "unreachable";
 
-			let exclusionResources = advisory.exclusion_resources || {};
+			let exclusions = new Set<string>(resource.exclusions || []);
 
 			let pairs: CveDetail[] = [];
 			let seen = new Set<string>();
-			for (let vuln of (advisory.vulnerabilities || [])) {
+			for (let vuln of (advisory.vulnerability_docs || [])) {
 				let vulnId = vuln.id || "";
 				if (!vulnId || seen.has(vulnId)) {
 					continue;
@@ -427,9 +426,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				pairs.push({
 					id: vulnId,
 					detail: vuln,
-					unreachable: !!resourceId &&
-						(exclusionResources[vulnId] || []).indexOf(
-							resourceId) !== -1,
+					unreachable: exclusions.has(vulnId),
 				});
 			}
 
@@ -462,6 +459,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				description: advisory.description || "",
 				score: advisory.score || 0,
 				packages: advisory.packages || [],
+				pending: advisory.pending || 0,
 				cves: pairs,
 				importantCves: importantCves,
 				dismissed: dismissed,
@@ -748,6 +746,11 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					minimal={true}
 					icon="eye-off"
 					style={css.headerTag}>Unreachable</Blueprint.Tag> : null}
+				{entry.pending > 0 ? <Blueprint.Tag
+					minimal={true}
+					icon="time"
+					style={css.headerTag}
+				>Analyzing ({entry.pending})</Blueprint.Tag> : null}
 				{primaryName && <span style={css.packageName}>
 					{primaryName}
 				</span>}
@@ -1047,7 +1050,8 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 					}
 				}}
 			>Security Advisories{this.props.advisoryCount ?
-				` (${this.props.advisoryCount})` : ""}</button>
+				` (${this.props.advisoryCount})` : ""}{
+				this.props.advisoryPending ? " (Analyzing)" : ""}</button>
 			{dialog}
 		</div>
 	}
