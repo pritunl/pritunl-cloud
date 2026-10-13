@@ -96,6 +96,21 @@ const css = {
 	sectionIcon: {
 		marginRight: '6px',
 	} as React.CSSProperties,
+	pager: {
+		margin: '14px 0 8px 0',
+	} as React.CSSProperties,
+	pageButton: {
+		userSelect: 'none',
+		margin: '0 5px 0 0',
+	} as React.CSSProperties,
+	pageLink: {
+		cursor: 'pointer',
+		userSelect: 'none',
+		margin: '7px 5px 0 0',
+	} as React.CSSProperties,
+	pageCurrent: {
+		opacity: 0.5,
+	} as React.CSSProperties,
 	count: {
 		marginLeft: '6px',
 		opacity: 0.7,
@@ -1130,7 +1145,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		let detailFields: PageInfos.Field[] = [];
 
-		if (advisory.vuxmls) {
+		if (!!advisory.vuxmls?.length) {
 			let vuxmls: PageInfos.LinkValue[] = [];
 
 			for (let vuxml of advisory.vuxmls) {
@@ -1184,25 +1199,64 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 			Math.ceil((detail.count || 0) / pageSize) : 0;
 		let pager: JSX.Element;
 		if (pageTotal > 1) {
-			pager = <div className="layout horizontal center"
-				style={css.section}>
-				<button
-					className="bp5-button bp5-minimal bp5-icon-chevron-left"
-					type="button"
-					disabled={this.state.page <= 0}
+			let page = this.state.page;
+			let pageLinks: JSX.Element[] = [];
+			let pageStart = Math.max(0, page - 7);
+			let pageEnd = Math.min(pageTotal, pageStart + 15);
+
+			for (let i = pageStart; i < pageEnd; i++) {
+				pageLinks.push(<span
+					key={i}
+					style={page === i ? {
+						...css.pageLink,
+						...css.pageCurrent,
+					} : css.pageLink}
 					onClick={(): void => {
-						this.loadDetail(this.state.page - 1);
+						this.loadDetail(i);
+					}}
+				>
+					{i + 1}
+				</span>);
+			}
+
+			pager = <div className="layout horizontal center-justified"
+				style={css.pager}>
+				<button
+					className="bp5-button bp5-minimal bp5-icon-chevron-backward"
+					hidden={pageTotal < 5}
+					disabled={page <= 0}
+					type="button"
+					onClick={(): void => {
+						this.loadDetail(0);
 					}}
 				/>
-				<span style={css.count}>
-					Resources page {this.state.page + 1} of {pageTotal}
-				</span>
+				<button
+					className="bp5-button bp5-minimal bp5-icon-chevron-left"
+					style={css.pageButton}
+					disabled={page <= 0}
+					type="button"
+					onClick={(): void => {
+						this.loadDetail(Math.max(0, this.state.page - 1));
+					}}
+				/>
+				{pageLinks}
 				<button
 					className="bp5-button bp5-minimal bp5-icon-chevron-right"
+					style={css.pageButton}
+					disabled={page >= pageTotal - 1}
 					type="button"
-					disabled={this.state.page >= pageTotal - 1}
 					onClick={(): void => {
-						this.loadDetail(this.state.page + 1);
+						this.loadDetail(Math.min(
+							pageTotal - 1, this.state.page + 1));
+					}}
+				/>
+				<button
+					className="bp5-button bp5-minimal bp5-icon-chevron-forward"
+					hidden={pageTotal < 5}
+					disabled={page >= pageTotal - 1}
+					type="button"
+					onClick={(): void => {
+						this.loadDetail(pageTotal - 1);
 					}}
 				/>
 			</div>;
@@ -1371,7 +1425,6 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 				</div> : null}
 				{this.renderVulnerabilities(vulnerabilities,
 					unreachableCounts, activeCount)}
-				{pager}
 				{(nodes.length > 0 || dismissedNodes.length > 0 ||
 						unreachableNodes.length > 0) ?
 						<React.Fragment>
@@ -1578,6 +1631,7 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 						</div> : null}
 					</React.Fragment> : null}
 				</React.Fragment> : null}
+				{pager}
 			</div>
 		</td>;
 	}
