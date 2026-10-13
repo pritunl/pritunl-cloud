@@ -60,7 +60,7 @@ interface State {
 	vncSuper: boolean;
 	vncScale: boolean;
 	vncHeight: number;
-	advisories: AdvisoryTypes.Advisory[];
+	advisories: AdvisoryTypes.ResourceAdvisory[];
 }
 
 const css = {
@@ -2102,6 +2102,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							advisories={this.state.advisories}
 							advisoryCount={instance.advisory_count}
 							advisoryMax={instance.advisory_max}
+							advisoryPending={instance.advisory_pending}
 							onOpen={this.loadAdvisories}
 						/>
 						<Relations kind="instance" id={this.props.instance.id}/>
