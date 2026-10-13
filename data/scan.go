@@ -517,3 +517,31 @@ func DiskInUse(db *database.Database, dsk *disk.Disk) (
 
 	return
 }
+
+func ScanDisk(db *database.Database, dsk *disk.Disk) (err error) {
+	var info *disk.Metadata
+
+	switch dsk.Type {
+	case disk.Lvm:
+		info, err = scanDiskLvm(db, dsk)
+		if err != nil {
+			return
+		}
+		break
+	case "", disk.Qcow2:
+		info, err = scanDiskQcow(dsk)
+		if err != nil {
+			return
+		}
+		break
+	default:
+		err = &errortypes.ParseError{
+			errors.Newf("data: Unknown disk type %s", dsk.Type),
+		}
+		return
+	}
+
+	dsk.Metadata = info
+
+	return
+}
