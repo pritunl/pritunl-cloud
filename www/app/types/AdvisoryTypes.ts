@@ -93,14 +93,50 @@ export interface Advisory {
 	score?: number;
 	packages?: string[];
 	vuxmls?: string[];
+	vulnerabilities?: string[];
+	pending?: number;
+	complete?: boolean;
+	instance_count?: number;
+	node_count?: number;
+}
+
+export interface Resource {
+	id?: string;
+	organization?: string;
+	reference?: string;
+	resource?: string;
+	kind?: string;
+	state?: string;
+	dismissed?: boolean;
+	exclusions?: string[];
+	timestamp?: string;
+}
+
+export interface ResourceAdvisory extends Advisory {
+	vulnerability_docs?: Vulnerability[];
+	resource?: Resource;
+}
+
+export interface DetailCounts {
+	nodes?: number;
+	unreachable_nodes?: number;
+	dismissed_nodes?: number;
+	instances?: number;
+	unreachable_instances?: number;
+	dismissed_instances?: number;
+	active?: number;
+}
+
+export interface Detail {
+	id?: string;
 	vulnerabilities?: Vulnerability[];
-	instances?: string[];
-	nodes?: string[];
-	dismissed_resources?: string[];
-	unreachable_resources?: string[];
-	exclusion_resources?: {[cve: string]: string[]};
 	instances_info?: InstanceInfo[];
 	nodes_info?: NodeInfo[];
+	counts?: DetailCounts;
+	exclusions?: {[cve: string]: number};
+	page?: number;
+	page_count?: number;
+	count?: number;
 }
 
 export interface DismissData {
