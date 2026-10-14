@@ -783,7 +783,20 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		dsk.Uuid = strings.TrimSpace(output)
 	}
 
-	err = dsk.CommitFields(db, set.NewSet("uuid"))
+	fields := set.NewSet("uuid")
+
+	info, e := scanFsDevice(ndbPath)
+	if e != nil {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+			"error":   e,
+		}).Warn("data: Failed to scan disk file system")
+	} else {
+		dsk.Metadata = info
+		fields.Add("metadata")
+	}
+
+	err = dsk.CommitFields(db, fields)
 	if err != nil {
 		return
 	}
@@ -1202,7 +1215,20 @@ func writeFsLvm(db *database.Database, dsk *disk.Disk,
 		dsk.Uuid = strings.TrimSpace(output)
 	}
 
-	err = dsk.CommitFields(db, set.NewSet("uuid"))
+	fields := set.NewSet("uuid")
+
+	info, e := scanFsDevice(diskPath)
+	if e != nil {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+			"error":   e,
+		}).Warn("data: Failed to scan disk file system")
+	} else {
+		dsk.Metadata = info
+		fields.Add("metadata")
+	}
+
+	err = dsk.CommitFields(db, fields)
 	if err != nil {
 		return
 	}
