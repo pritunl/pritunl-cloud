@@ -303,6 +303,16 @@ func (l *List) refreshDetail() {
 		parts = append(parts, renderInfo(item.Info(), width), "")
 	}
 
+	if sectioner, ok := item.(Sectioner); ok {
+		for _, section := range sectioner.Sections(width) {
+			if section.Body == "" {
+				continue
+			}
+			parts = append(parts, sectionStyle.Render(section.Title),
+				section.Body, "")
+		}
+	}
+
 	if l.editor != nil {
 		parts = append(parts, sectionStyle.Render("Settings"))
 		l.formTop = 0
