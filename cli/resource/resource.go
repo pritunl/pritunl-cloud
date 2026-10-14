@@ -67,6 +67,24 @@ type Item interface {
 	Editor() Editor
 }
 
+// Section is a rendered block shown below the info fields of an expanded
+// card such as the disk layout.
+type Section struct {
+	// Title is the section heading.
+	Title string
+
+	// Body is the content rendered for the card content width.
+	Body string
+}
+
+// Sectioner is implemented by items with rendered sections shown between
+// the info fields and the settings form when the card is expanded.
+type Sectioner interface {
+	// Sections renders the sections for the card content width, sections
+	// with an empty body are skipped.
+	Sections(width int) []Section
+}
+
 // Creator is implemented by providers whose resources can be created
 // from the list, the editor form is shown as a new card and its Save
 // inserts the resource.
