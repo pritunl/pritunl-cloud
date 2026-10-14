@@ -52,6 +52,27 @@ func JoinDefault(values []string, sep, fallback string) string {
 	return strings.Join(values, sep)
 }
 
+// FormatBytes formats a byte count with binary units and one decimal
+// like the web interface.
+func FormatBytes(bytes int64) string {
+	if bytes <= 0 {
+		return "0 B"
+	}
+
+	units := []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB"}
+	val := float64(bytes)
+	i := 0
+	for val >= 1024 && i < len(units)-1 {
+		val /= 1024
+		i++
+	}
+
+	if i == 0 {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	return fmt.Sprintf("%.1f %s", val, units[i])
+}
+
 // Bool formats a boolean as a label pair such as Enabled and Disabled.
 func Bool(value bool, on, off string) string {
 	if value {
