@@ -16,6 +16,7 @@ const (
 	Restore  = "restore"
 	Destroy  = "destroy"
 	Cancel   = "cancel"
+	Resize   = "resize"
 
 	Qcow2 = "qcow2"
 	Lvm   = "lvm"
