@@ -51,8 +51,42 @@ type Disk struct {
 	NewSize          int           `bson:"new_size" json:"new_size"`
 	Backup           bool          `bson:"backup" json:"backup"`
 	LastBackup       time.Time     `bson:"last_backup" json:"last_backup"`
+	Metadata         *Metadata     `bson:"metadata,omitempty" json:"metadata"`
 	curIndex         string        `bson:"-" json:"-"`
 	curInstance      bson.ObjectID `bson:"-" json:"-"`
+}
+
+type Metadata struct {
+	Timestamp  time.Time    `bson:"timestamp" json:"timestamp"`
+	Size       int64        `bson:"size" json:"size"`
+	Table      string       `bson:"table" json:"table"`
+	Partitions []*Partition `bson:"partitions" json:"partitions"`
+}
+
+type Partition struct {
+	Number      int          `bson:"number" json:"number"`
+	Start       int64        `bson:"start" json:"start"`
+	Size        int64        `bson:"size" json:"size"`
+	FileSystem  string       `bson:"file_system" json:"file_system"`
+	Uuid        string       `bson:"uuid" json:"uuid"`
+	Label       string       `bson:"label" json:"label"`
+	VolumeGroup *VolumeGroup `bson:"volume_group,omitempty" json:"volume_group"`
+}
+
+type VolumeGroup struct {
+	Name       string           `bson:"name" json:"name"`
+	Size       int64            `bson:"size" json:"size"`
+	Free       int64            `bson:"free" json:"free"`
+	ExtentSize int64            `bson:"extent_size" json:"extent_size"`
+	Volumes    []*LogicalVolume `bson:"volumes" json:"volumes"`
+}
+
+type LogicalVolume struct {
+	Name       string `bson:"name" json:"name"`
+	Size       int64  `bson:"size" json:"size"`
+	FileSystem string `bson:"file_system" json:"file_system"`
+	Uuid       string `bson:"uuid" json:"uuid"`
+	Label      string `bson:"label" json:"label"`
 }
 
 func (d *Disk) IsActive() bool {
