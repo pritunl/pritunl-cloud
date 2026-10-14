@@ -18,6 +18,8 @@ const (
 	Cancel   = "cancel"
 	Resize   = "resize"
 
+	VgNamePrefix = "cvg_"
+
 	Qcow2 = "qcow2"
 	Lvm   = "lvm"
 
