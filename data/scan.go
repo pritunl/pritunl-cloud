@@ -111,6 +111,13 @@ func parseLvmReport(output string) (reprt *lvmReport, err error) {
 	return
 }
 
+func fsType(fs string) string {
+	if fs == lvmMember {
+		return disk.Lvm
+	}
+	return fs
+}
+
 func getBlockDevice(devPath string) (dev *lsblkDevice, err error) {
 	output, err := utils.ExecOutputLogged(nil, "lsblk",
 		"--json", "--bytes",
@@ -290,7 +297,7 @@ func scanVolumeGroup(pvPath string) (vg *disk.VolumeGroup, err error) {
 						"error":   e,
 					}).Warn("data: Failed to read logical volume")
 				} else {
-					lv.FileSystem = dev.FsType
+					lv.FileSystem = fsType(dev.FsType)
 					lv.Uuid = dev.Uuid
 					lv.Label = dev.Label
 				}
@@ -333,12 +340,12 @@ func scanFsDevice(devPath string) (info *disk.Metadata, err error) {
 			Number:     number,
 			Start:      start,
 			Size:       int64(child.Size),
-			FileSystem: child.FsType,
+			FileSystem: fsType(child.FsType),
 			Uuid:       child.Uuid,
 			Label:      utils.FilterStr(child.Label, 128),
 		}
 
-		if child.FsType == lvmMember {
+		if part.FileSystem == disk.Lvm {
 			vg, e := scanVolumeGroup(filepath.Join("/dev", child.KName))
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
@@ -356,12 +363,12 @@ func scanFsDevice(devPath string) (info *disk.Metadata, err error) {
 	if len(info.Partitions) == 0 && dev.FsType != "" {
 		part := &disk.Partition{
 			Size:       int64(dev.Size),
-			FileSystem: dev.FsType,
+			FileSystem: fsType(dev.FsType),
 			Uuid:       dev.Uuid,
 			Label:      utils.FilterStr(dev.Label, 128),
 		}
 
-		if dev.FsType == lvmMember {
+		if part.FileSystem == disk.Lvm {
 			vg, e := scanVolumeGroup(devPath)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
