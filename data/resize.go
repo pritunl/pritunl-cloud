@@ -58,6 +58,9 @@ func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		"new_size":  dsk.NewSize,
 	}).Info("data: Expanding qcow disk")
 
+	nbdLock.Lock()
+	defer nbdLock.Unlock()
+
 	curSize, err := getDiskSizeQcow(dsk)
 	if err != nil {
 		return
