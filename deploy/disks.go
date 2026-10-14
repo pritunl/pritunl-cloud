@@ -135,6 +135,18 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 	}()
 }
 
+func (d *Disks) Scan(db *database.Database, dsk *disk.Disk) {
+	err := data.ScanDisk(db, dsk)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+			"error":   err,
+		}).Error("deploy: Failed to scan disk file system")
+
+		dsk.Metadata = nil
+	}
+}
+
 func (d *Disks) expand(dsk *disk.Disk) {
 	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
@@ -189,16 +201,21 @@ func (d *Disks) expand(dsk *disk.Disk) {
 			}
 		}
 
+		fields := set.NewSet("action", "size", "new_size")
+
 		err = data.ExpandDisk(db, dsk)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to expand disk")
+		} else {
+			d.Scan(db, dsk)
+			fields.Add("metadata")
 		}
 
 		dsk.Action = ""
 		dsk.NewSize = 0
-		err = dsk.CommitFields(db, set.NewSet("action", "size", "new_size"))
+		err = dsk.CommitFields(db, fields)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -339,6 +356,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 			}
 		}
 
+		fields := set.NewSet("action")
+
 		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
 				"disk_id":   dsk.Id.Hex(),
@@ -351,11 +370,14 @@ func (d *Disks) restore(dsk *disk.Disk) {
 					"disk_id": dsk.Id.Hex(),
 					"error":   err,
 				}).Error("deploy: Failed to restore disk")
+			} else {
+				d.Scan(db, dsk)
+				fields.Add("metadata")
 			}
 		}
 
 		dsk.Action = ""
-		err = dsk.CommitFields(db, set.NewSet("action"))
+		err = dsk.CommitFields(db, fields)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
