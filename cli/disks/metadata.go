@@ -12,12 +12,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 )
 
-const (
-	// metadataMinGap hides the partition alignment gaps like the web
-	// layout, unallocated space below it is not shown.
-	metadataMinGap = 16 * 1024 * 1024
-	lvmMember      = "LVM2_member"
-)
+// metadataMinGap hides the partition alignment gaps like the web layout,
+// unallocated space below it is not shown.
+const metadataMinGap = 16 * 1024 * 1024
 
 // segment is one block of a layout bar, a partition, a logical volume or
 // free space.
@@ -45,7 +42,7 @@ func (s segment) color() color.Color {
 		return widget.ColorCyan
 	case "swap":
 		return widget.ColorYellow
-	case lvmMember:
+	case disk.Lvm:
 		return widget.ColorOrange
 	}
 
@@ -59,14 +56,10 @@ func (s segment) block() string {
 	return "█"
 }
 
-// fsName shows the LVM physical volume signature as lvm and an empty
-// file system as unformatted like the web layout.
+// fsName shows an empty file system as unformatted like the web layout.
 func fsName(fs string) string {
 	if fs == "" {
 		return "unformatted"
-	}
-	if fs == lvmMember {
-		return "lvm"
 	}
 	return fs
 }
