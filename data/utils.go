@@ -13,7 +13,11 @@ func GetVgName(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:9]
-	return fmt.Sprintf("cvg_%s%d", strings.ToLower(hashSum), n)
+	return fmt.Sprintf("%s%s%d", vgNamePrefix, strings.ToLower(hashSum), n)
+}
+
+func IsManagedVgName(name string) bool {
+	return strings.HasPrefix(name, vgNamePrefix)
 }
 
 func GetLvName(id bson.ObjectID, n int) string {
