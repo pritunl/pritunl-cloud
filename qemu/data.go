@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -11,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/guest"
 	"github.com/pritunl/pritunl-cloud/hugepages"
 	"github.com/pritunl/pritunl-cloud/imds"
@@ -236,7 +238,31 @@ func deactivateDisks(db *database.Database,
 		if err != nil {
 			return
 		}
+
+		err = data.ScanDisk(db, dsk)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+				"error":       err,
+			}).Error("task: Failed to scan disk")
+			err = nil
+			continue
+		}
+
+		err = dsk.CommitFields(db, set.NewSet("metadata"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+				"error":       err,
+			}).Error("task: Failed to commit disk file system")
+			err = nil
+			continue
+		}
 	}
+
+	event.PublishDispatch(db, "disk.change")
 
 	return
 }
