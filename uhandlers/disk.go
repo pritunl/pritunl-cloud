@@ -23,6 +23,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 type diskData struct {
@@ -54,6 +55,11 @@ type disksMultiData struct {
 type disksData struct {
 	Disks []*aggregate.DiskAggregate `json:"disks"`
 	Count int64                      `json:"count"`
+}
+
+type diskResizeData struct {
+	Partitions []*disk.ResizePartition `json:"partitions"`
+	Volumes    []*disk.ResizeVolume    `json:"volumes"`
 }
 
 func diskPut(c *gin.Context) {
@@ -546,4 +552,103 @@ func disksGet(c *gin.Context) {
 	}
 
 	c.JSON(200, dta)
+}
+
+func diskResizePut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	dta := &diskResizeData{}
+
+	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(dta)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	dsk, err := disk.GetOrg(db, userOrg, diskId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if dsk.Action != "" {
+		errData := &errortypes.ErrorData{
+			Error:   "disk_action_active",
+			Message: "Disk action already active",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	if !dsk.IsActive() {
+		errData := &errortypes.ErrorData{
+			Error:   "disk_not_available",
+			Message: "Disk not available",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	if !dsk.Instance.IsZero() {
+		inst, err := instance.GetOrg(db, userOrg, dsk.Instance)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); !ok {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+			inst = nil
+		}
+
+		if inst != nil && (inst.Action != instance.Stop ||
+			(inst.State != vm.Stopped && inst.State != vm.Failed &&
+				inst.State != "")) {
+
+			errData := &errortypes.ErrorData{
+				Error:   "instance_running",
+				Message: "Instance must be stopped to resize partitions",
+			}
+
+			c.JSON(400, errData)
+			return
+		}
+	}
+
+	actionData := &disk.ActionData{
+		Partitions: dta.Partitions,
+		Volumes:    dta.Volumes,
+	}
+
+	errData := dsk.ValidateResize(actionData)
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	dsk.Action = disk.Resize
+	dsk.ActionData = actionData
+
+	err = dsk.CommitFields(db, set.NewSet("action", "action_data"))
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "disk.change")
+
+	c.JSON(200, dsk)
 }
