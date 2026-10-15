@@ -14,7 +14,8 @@ import (
 
 func CreateLv(vgName, lvName string, size int) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(nil,
-		"lvcreate", "-an", "-L", fmt.Sprintf("%d.1G", size),
+		"lvcreate", "-an", "--setactivationskip", "y",
+		"-L", fmt.Sprintf("%d.1G", size),
 		"-n", lvName, vgName)
 	if err != nil {
 		return
@@ -36,7 +37,7 @@ func RemoveLv(vgName, lvName string) (err error) {
 
 func ActivateLv(vgName, lvName string) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(nil,
-		"lvchange", "-ay", fmt.Sprintf("%s/%s", vgName, lvName))
+		"lvchange", "-ay", "-K", fmt.Sprintf("%s/%s", vgName, lvName))
 	if err != nil {
 		return
 	}
