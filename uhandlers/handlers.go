@@ -118,6 +118,7 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/disk/:disk_id", diskGet)
 	orgGroup.PUT("/disk", disksPut)
 	orgGroup.PUT("/disk/:disk_id", diskPut)
+	orgGroup.PUT("/disk/:disk_id/resize", diskResizePut)
 	orgGroup.POST("/disk", diskPost)
 	orgGroup.DELETE("/disk", disksDelete)
 	orgGroup.DELETE("/disk/:disk_id", diskDelete)
