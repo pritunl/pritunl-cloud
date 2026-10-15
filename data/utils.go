@@ -14,7 +14,8 @@ func GetVgName(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:9]
-	return fmt.Sprintf("%s%s%d", disk.VgNamePrefix, strings.ToLower(hashSum), n)
+	return fmt.Sprintf("%s%s%d", disk.VgNamePrefix,
+		strings.ToLower(hashSum), n)
 }
 
 func IsManagedVgName(name string) bool {
@@ -25,5 +26,6 @@ func GetLvName(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:9]
-	return fmt.Sprintf("clv_%s%d", strings.ToLower(hashSum), n)
+	return fmt.Sprintf("%s%s%d", disk.LvNamePrefix,
+		strings.ToLower(hashSum), n)
 }
