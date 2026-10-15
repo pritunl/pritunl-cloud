@@ -234,6 +234,26 @@ label.bp5-label .bp5-button-group {
   background: #30404d !important;
 }
 
+.bp5-tooltip.card-tooltip .bp5-popover-content {
+  background-color: #ffffff;
+  color: #1c2127;
+}
+
+.bp5-tooltip.card-tooltip .bp5-popover-arrow-fill {
+  fill: #ffffff;
+}
+
+.bp5-dark .bp5-tooltip.card-tooltip .bp5-popover-content,
+.bp5-tooltip.bp5-dark.card-tooltip .bp5-popover-content {
+  background-color: #383e47;
+  color: #f6f7f9;
+}
+
+.bp5-dark .bp5-tooltip.card-tooltip .bp5-popover-arrow-fill,
+.bp5-tooltip.bp5-dark.card-tooltip .bp5-popover-arrow-fill {
+  fill: #383e47;
+}
+
 #chartjs-tooltip {
    background-color: #fcfcfc;
  }
