@@ -120,6 +120,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/disk/:disk_id", diskGet)
 	csrfGroup.PUT("/disk", disksPut)
 	csrfGroup.PUT("/disk/:disk_id", diskPut)
+	csrfGroup.PUT("/disk/:disk_id/resize", diskResizePut)
 	csrfGroup.POST("/disk", diskPost)
 	csrfGroup.DELETE("/disk", disksDelete)
 	csrfGroup.DELETE("/disk/:disk_id", diskDelete)
