@@ -19,6 +19,7 @@ const (
 	Resize   = "resize"
 
 	VgNamePrefix = "cvg_"
+	LvNamePrefix = "clv_"
 
 	Qcow2 = "qcow2"
 	Lvm   = "lvm"
