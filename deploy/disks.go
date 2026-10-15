@@ -228,6 +228,79 @@ func (d *Disks) expand(dsk *disk.Disk) {
 	}()
 }
 
+func (d *Disks) resize(dsk *disk.Disk) {
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		if constants.Interrupt {
+			return
+		}
+
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.Action != disk.Resize {
+			return
+		}
+
+		stopped := true
+		inst := d.stat.GetInstace(dsk.Instance)
+		if inst != nil {
+			if inst.Action != instance.Stop {
+				stopped = false
+			} else {
+				virt := d.stat.GetVirt(inst.Id)
+				if virt != nil && virt.State != vm.Stopped &&
+					virt.State != vm.Failed {
+
+					return
+				}
+			}
+		}
+
+		if stopped {
+			if d.stat.DiskInUse(dsk.Instance, dsk.Id) {
+				return
+			}
+
+			err = data.ResizeDisk(db, dsk)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"disk_id": dsk.Id.Hex(),
+					"error":   err,
+				}).Error("deploy: Failed to resize disk")
+			}
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"disk_id":     dsk.Id.Hex(),
+				"instance_id": inst.Id.Hex(),
+			}).Warn("deploy: Instance not stopped, disk resize canceled")
+		}
+
+		dsk.Action = ""
+		dsk.ActionData = nil
+		err = dsk.CommitFields(db, set.NewSet(
+			"action", "action_data", "metadata"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed update disk state")
+			time.Sleep(5 * time.Second)
+			return
+		}
+	}()
+}
+
 func (d *Disks) backup(dsk *disk.Disk) {
 	if !backupLimiter.Acquire() {
 		return
@@ -565,6 +638,9 @@ func (d *Disks) Deploy(db *database.Database) (err error) {
 				break
 			case disk.Expand:
 				d.expand(dsk)
+				break
+			case disk.Resize:
+				d.resize(dsk)
 				break
 			case disk.Destroy:
 				d.destroy(db, dsk)
