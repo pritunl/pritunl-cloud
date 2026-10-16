@@ -1,7 +1,6 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/dropbox/godropbox/errors"
@@ -13,16 +12,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
-	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/sirupsen/logrus"
 )
-
-type diskInfo struct {
-	Filename    string `json:"filename"`
-	Format      string `json:"format"`
-	ActualSize  int    `json:"actual-size"`
-	VirtualSize int    `json:"virtual-size"`
-}
 
 type partitionDevice struct {
 	number int
@@ -30,30 +22,8 @@ type partitionDevice struct {
 	size   int64
 }
 
-func getQcowSize(pth string) (size int, err error) {
-	output, err := utils.ExecOutput("",
-		"qemu-img", "info", "--output=json", pth)
-	if err != nil {
-		return
-	}
-
-	diskInfo := &diskInfo{}
-
-	err = json.Unmarshal([]byte(output), diskInfo)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "data: Failed to parse qemu disk info"),
-		}
-		return
-	}
-
-	size = diskInfo.VirtualSize / 1073741824
-
-	return
-}
-
 func getDiskSizeQcow(dsk *disk.Disk) (size int, err error) {
-	return getQcowSize(paths.GetDiskPath(dsk.Id))
+	return qcow.Size(paths.GetDiskPath(dsk.Id))
 }
 
 func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
@@ -83,8 +53,7 @@ func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	expandSize := dsk.NewSize - curSize
-	_, err = utils.ExecCombinedOutputLogged(nil,
-		"qemu-img", "resize", dskPth, fmt.Sprintf("+%dG", expandSize))
+	err = qcow.Expand(dskPth, expandSize)
 	if err != nil {
 		return
 	}
