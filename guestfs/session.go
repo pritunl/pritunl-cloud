@@ -25,9 +25,6 @@ import (
 )
 
 const (
-	Qcow2 = "qcow2"
-	Raw   = "raw"
-
 	closeTimeout   = 10 * time.Minute
 	acquireTimeout = 30 * time.Minute
 	outputLimit    = 4 * 1024 * 1024
