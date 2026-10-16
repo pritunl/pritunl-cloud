@@ -35,6 +35,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
+	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -581,6 +582,11 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 		hashed = true
 	}
 
+	_, err = qcow.Check(tmpPth)
+	if err != nil {
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"image_id":   img.Id.Hex(),
 		"storage_id": store.Id.Hex(),
@@ -612,7 +618,7 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 		return
 	}
 
-	err = utils.Exec("", "cp", imagePth, backingImagePth)
+	err = qcow.Convert(imagePth, backingImagePth)
 	if err != nil {
 		return
 	}
@@ -741,7 +747,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 				return
 			}
 		} else {
-			err = utils.Exec("", "cp", imagePth, diskTempPath)
+			err = qcow.Convert(imagePth, diskTempPath)
 			if err != nil {
 				return
 			}
@@ -752,7 +758,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 			}
 
 			if size > 8 {
-				curSize, e := getQcowSize(diskTempPath)
+				curSize, e := qcow.Size(diskTempPath)
 				if e != nil {
 					err = e
 					return
@@ -764,9 +770,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 				}
 
 				if size > curSize {
-					_, err = utils.ExecCombinedOutputLogged(nil,
-						"qemu-img", "resize", diskTempPath,
-						fmt.Sprintf("%dG", size))
+					err = qcow.Resize(diskTempPath, size)
 					if err != nil {
 						return
 					}
@@ -784,13 +788,16 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 			return
 		}
 	} else {
-		if dsk.Backing {
-			err = getImage(db, dsk, img, backingImagePth)
-			if err != nil {
-				return
-			}
-		} else {
-			err = getImage(db, dsk, img, diskTempPath)
+		imageTempPath := ""
+		if !dsk.Backing || !backingImageExists {
+			imageTempPath = paths.GetImageTempPath()
+			defer func() {
+				if imageTempPath != "" {
+					utils.Remove(imageTempPath)
+				}
+			}()
+
+			err = getImage(db, dsk, img, imageTempPath)
 			if err != nil {
 				return
 			}
@@ -818,6 +825,13 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		}
 
 		if dsk.Backing {
+			if !backingImageExists {
+				err = copyBackingImage(imageTempPath, backingImagePth)
+				if err != nil {
+					return
+				}
+			}
+
 			utils.Exec("", "touch", backingImagePth)
 
 			err = utils.Chmod(backingImagePth, 0644)
@@ -842,13 +856,18 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 				return
 			}
 		} else {
+			err = qcow.Convert(imageTempPath, diskTempPath)
+			if err != nil {
+				return
+			}
+
 			if largeBase && size < 16 {
 				size = 16
 				newSize = 16
 			}
 
 			if size > 8 {
-				curSize, e := getQcowSize(diskTempPath)
+				curSize, e := qcow.Size(diskTempPath)
 				if e != nil {
 					err = e
 					return
@@ -860,9 +879,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 				}
 
 				if size > curSize {
-					_, err = utils.ExecCombinedOutputLogged(nil,
-						"qemu-img", "resize", diskTempPath,
-						fmt.Sprintf("%dG", size))
+					err = qcow.Resize(diskTempPath, size)
 					if err != nil {
 						return
 					}
@@ -1229,13 +1246,18 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	}
 
 	if !available {
-		err = utils.Exec("", "cp", dskPth, tmpPath)
+		err = qcow.Flatten(dskPth, tmpPath)
 		if err != nil {
 			return
 		}
 	}
 
 	err = utils.Chmod(tmpPath, 0600)
+	if err != nil {
+		return
+	}
+
+	_, err = qcow.Check(tmpPath)
 	if err != nil {
 		return
 	}
@@ -1448,6 +1470,11 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	_, err = qcow.Check(tmpPath)
+	if err != nil {
+		return
+	}
+
 	hash, err := utils.FileSha256(tmpPath)
 	if err != nil {
 		return
@@ -1605,6 +1632,11 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		}
 
 		hashed = true
+	}
+
+	_, err = qcow.Check(tmpPath)
+	if err != nil {
+		return
 	}
 
 	logrus.WithFields(logrus.Fields{
