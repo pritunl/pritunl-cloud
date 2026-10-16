@@ -28,7 +28,6 @@ const (
 	Qcow2 = "qcow2"
 	Raw   = "raw"
 
-	guestfishBin   = "guestfish"
 	closeTimeout   = 10 * time.Minute
 	acquireTimeout = 30 * time.Minute
 	outputLimit    = 4 * 1024 * 1024
@@ -260,8 +259,12 @@ func (s *Session) start() (err error) {
 		mode = "--ro"
 	}
 
-	cmd := exec.Command(guestfishBin, mode, "--format="+s.format,
-		"-a", s.path)
+	cmd := exec.Command(
+		"guestfish",
+		mode,
+		"--format="+s.format,
+		"-a", s.path,
+	)
 	cmd.Env = environ()
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
