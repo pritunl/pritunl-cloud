@@ -9,13 +9,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
-const (
-	Gpt   = "gpt"
-	Msdos = "msdos"
-
-	LvmMember = "LVM2_member"
-)
-
 type Partition struct {
 	Number int
 	Start  int64
