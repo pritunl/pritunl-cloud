@@ -55,40 +55,69 @@ func GetInfo(pth string) (info *Info, err error) {
 	return
 }
 
-func (i *Info) check() (reason string) {
+func (i *Info) check() (errData *errortypes.ErrorData) {
 	if i.Format != Format {
-		return fmt.Sprintf("format %s is not %s", i.Format, Format)
+		errData = &errortypes.ErrorData{
+			Error: "image_format_invalid",
+			Message: fmt.Sprintf("Image format %s is not %s",
+				i.Format, Format),
+		}
+		return
 	}
 
 	if i.BackingFilename != "" || i.FullBackingFilename != "" ||
 		i.BackingFilenameFormat != "" {
 
-		return "image has a backing file"
+		errData = &errortypes.ErrorData{
+			Error:   "image_backing_file",
+			Message: "Image has a backing file",
+		}
+		return
 	}
 
 	if i.FormatSpecific == nil || i.FormatSpecific.Type != Format {
-		return "image missing qcow2 header details"
+		errData = &errortypes.ErrorData{
+			Error:   "image_header_missing",
+			Message: "Image missing qcow2 header details",
+		}
+		return
 	}
 
 	data := i.FormatSpecific.Data
 
 	if data.DataFile != "" || data.DataFileRaw != nil {
-		return "image has an external data file"
+		errData = &errortypes.ErrorData{
+			Error:   "image_data_file",
+			Message: "Image has an external data file",
+		}
+		return
 	}
 
 	if len(data.Encrypt) != 0 && string(data.Encrypt) != "null" {
-		return "image is encrypted"
+		errData = &errortypes.ErrorData{
+			Error:   "image_encrypted",
+			Message: "Image is encrypted",
+		}
+		return
 	}
 
 	if data.Corrupt {
-		return "image is marked corrupt"
+		errData = &errortypes.ErrorData{
+			Error:   "image_corrupt",
+			Message: "Image is marked corrupt",
+		}
+		return
 	}
 
 	if i.VirtualSize <= 0 {
-		return "image has no virtual size"
+		errData = &errortypes.ErrorData{
+			Error:   "image_size_invalid",
+			Message: "Image has no virtual size",
+		}
+		return
 	}
 
-	return ""
+	return
 }
 
 func Check(pth string) (info *Info, err error) {
@@ -97,15 +126,15 @@ func Check(pth string) (info *Info, err error) {
 		return
 	}
 
-	reason := info.check()
-	if reason != "" {
+	errData := info.check()
+	if errData != nil {
 		logrus.WithFields(logrus.Fields{
-			"path":   pth,
-			"reason": reason,
+			"path":       pth,
+			"error_data": errData,
 		}).Error("qcow: Rejected image")
 
 		err = &errortypes.VerificationError{
-			errors.Newf("qcow: Rejected image %s, %s", pth, reason),
+			errors.Newf("qcow: Rejected image, %s", errData.Error),
 		}
 		return
 	}
