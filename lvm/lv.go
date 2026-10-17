@@ -9,6 +9,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -59,9 +60,7 @@ func WriteLv(vgName, lvName, sourcePth string) (err error) {
 	dstPth := filepath.Join("/dev/mapper",
 		fmt.Sprintf("%s-%s", vgName, lvName))
 
-	_, err = utils.ExecCombinedOutputLogged(nil,
-		"qemu-img", "convert", "-f", "qcow2",
-		"-O", "raw", sourcePth, dstPth)
+	err = qcow.ConvertRaw(sourcePth, dstPth)
 	if err != nil {
 		return
 	}
