@@ -14,12 +14,12 @@ import (
 )
 
 func createDiskQcow(db *database.Database, dsk *disk.Disk) (
-	newSize int, backingImage string, err error) {
+	newSize int, err error) {
 
 	diskPath := paths.GetDiskPath(dsk.Id)
 
 	if !dsk.Image.IsZero() {
-		newSize, backingImage, err = writeImageQcow(db, dsk)
+		newSize, err = writeImageQcow(db, dsk)
 		if err != nil {
 			return
 		}
@@ -78,7 +78,7 @@ func createDiskLvm(db *database.Database, dsk *disk.Disk) (
 }
 
 func CreateDisk(db *database.Database, dsk *disk.Disk) (
-	newSize int, backingImage string, err error) {
+	newSize int, err error) {
 
 	switch dsk.Type {
 	case disk.Lvm:
@@ -88,7 +88,7 @@ func CreateDisk(db *database.Database, dsk *disk.Disk) (
 		}
 		break
 	case "", disk.Qcow2:
-		newSize, backingImage, err = createDiskQcow(db, dsk)
+		newSize, err = createDiskQcow(db, dsk)
 		if err != nil {
 			return
 		}
