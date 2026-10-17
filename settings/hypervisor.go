@@ -18,7 +18,10 @@ type hypervisor struct {
 	OvmfVarsPath           string `bson:"ovmf_vars_path"`
 	OvmfSecureCodePath     string `bson:"ovmf_secure_code_path"`
 	OvmfSecureVarsPath     string `bson:"ovmf_secure_vars_path"`
-	NbdPath                string `bson:"nbd_path" default:"/dev/nbd6"`
+	GuestfsSessions        int    `bson:"guestfs_sessions" default:"2"`
+	GuestfsTimeout         int    `bson:"guestfs_timeout" default:"1800"`
+	GuestfsMemory          int    `bson:"guestfs_memory"`
+	GuestfsCachePath       string `bson:"guestfs_cache_path"`
 	DiskAio                string `bson:"disk_aio"`
 	NoSandbox              bool   `bson:"no_sandbox"`
 	GlHostMem              int    `bson:"gl_host_mem" default:"2048"`
