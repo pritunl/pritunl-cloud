@@ -44,7 +44,6 @@ type instanceData struct {
 	DiskType            string              `json:"disk_type"`
 	DiskPool            bson.ObjectID       `json:"disk_pool"`
 	Image               bson.ObjectID       `json:"image"`
-	ImageBacking        bool                `json:"image_backing"`
 	Name                string              `json:"name"`
 	Comment             string              `json:"comment"`
 	Action              string              `json:"action"`
@@ -386,7 +385,6 @@ func instancePost(c *gin.Context) {
 			DiskType:            dta.DiskType,
 			DiskPool:            dta.DiskPool,
 			Image:               dta.Image,
-			ImageBacking:        dta.ImageBacking,
 			Uefi:                dta.Uefi,
 			SecureBoot:          dta.SecureBoot,
 			Tpm:                 dta.Tpm,
