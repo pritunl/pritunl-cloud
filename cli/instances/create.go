@@ -162,7 +162,6 @@ type creator struct {
 	diskType       *form.Select
 	diskPool       *form.Select
 	hiddenImages   *form.Toggle
-	imageBacking   *form.Toggle
 	image          *form.Select
 	roles          *form.Tokens
 	diskSize       *form.Number
@@ -342,7 +341,6 @@ func newCreator(dta *createData) *creator {
 	}
 
 	c.hiddenImages = form.NewToggle("Show hidden images", false)
-	c.imageBacking = form.NewToggle("Linked disk image", false)
 	c.image = form.NewSelect("Image", nil, "")
 	c.image.Dynamic = c.imageOptions
 	c.image.OnChange = c.applyImage
@@ -390,7 +388,6 @@ func newCreator(dta *createData) *creator {
 		c.diskType,
 		c.diskPool,
 		c.hiddenImages,
-		c.imageBacking,
 		c.image,
 		c.roles,
 		c.diskSize,
@@ -747,7 +744,6 @@ func (c *creator) Save(db *database.Database) (err error) {
 			DiskType:         diskType,
 			DiskPool:         diskPool,
 			Image:            imageId,
-			ImageBacking:     c.imageBacking.Value(),
 			Uefi:             c.uefi.Value(),
 			SecureBoot:       c.secureBoot.Value(),
 			Tpm:              c.tpm.Value(),

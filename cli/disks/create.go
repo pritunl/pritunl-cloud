@@ -150,7 +150,6 @@ type creator struct {
 	image            *form.Select
 	fileSystem       *form.Select
 	hiddenImages     *form.Toggle
-	backing          *form.Toggle
 	lvSize           *form.Number
 	size             *form.Number
 }
@@ -296,7 +295,6 @@ func newCreator(dta *createData) *creator {
 	}
 
 	c.hiddenImages = form.NewToggle("Show hidden images", false)
-	c.backing = form.NewToggle("Linked disk image", false)
 
 	c.lvSize = form.NewNumber("LV Size (GB)",
 		"Logical volume size in gigabytes", 0, 10, 0, 1)
@@ -321,7 +319,6 @@ func newCreator(dta *createData) *creator {
 		c.image,
 		c.fileSystem,
 		c.hiddenImages,
-		c.backing,
 		c.lvSize,
 		c.size,
 	)
@@ -498,7 +495,6 @@ func (c *creator) Save(db *database.Database) (err error) {
 		Image:            imageId,
 		DeleteProtection: c.deleteProtection.Value(),
 		FileSystem:       fileSystem,
-		Backing:          c.backing.Value(),
 		Size:             c.size.Int(),
 		LvSize:           lvSize,
 	}

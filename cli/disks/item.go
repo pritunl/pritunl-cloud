@@ -177,10 +177,6 @@ func (i *Item) Info() []widget.InfoField {
 		fields = append(fields, widget.InfoField{"Image",
 			widget.Default(i.image, dsk.Image.Hex())})
 	}
-	if dsk.BackingImage != "" {
-		fields = append(fields, widget.InfoField{"Backing Image",
-			dsk.BackingImage})
-	}
 	if dsk.Uuid != "" {
 		fields = append(fields, widget.InfoField{"UUID", dsk.Uuid})
 	}
