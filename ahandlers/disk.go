@@ -113,6 +113,10 @@ func diskPut(c *gin.Context) {
 
 	if dta.Action == disk.Cancel {
 		if dsk.Action != "" {
+			if dsk.Action == disk.Resize {
+				dsk.ActionData = nil
+				fields.Add("action_data")
+			}
 			dsk.Action = ""
 			fields.Add("action")
 		}
