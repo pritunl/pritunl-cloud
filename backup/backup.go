@@ -158,102 +158,6 @@ func (b *Backup) backupDisks(db *database.Database) (err error) {
 	return
 }
 
-func (b *Backup) backupBackingDisks(db *database.Database) (err error) {
-	logrus.WithFields(logrus.Fields{
-		"node_id": b.node.Id.Hex(),
-	}).Info("backup: Exporting backing disks")
-
-	trashDir := path.Join(b.Destination, "trash")
-	backingDisksDir := path.Join(b.Destination, "backing")
-	curBackingDisksDir := path.Join(b.virtPath, "backing")
-	err = utils.ExistsMkdir(backingDisksDir, 0755)
-	if err != nil {
-		return
-	}
-
-	exists, err := utils.Exists(curBackingDisksDir)
-	if err != nil {
-		return
-	}
-
-	curBackingDisks := []os.FileInfo{}
-	if exists {
-		curBackingDisks, err = ioutil.ReadDir(curBackingDisksDir)
-		if err != nil {
-			err = &errortypes.ReadError{
-				errors.Wrap(
-					err,
-					"backup: Failed to read backing disks directory",
-				),
-			}
-			return
-		}
-	}
-
-	backingFilenames := set.NewSet()
-	for _, item := range curBackingDisks {
-		filename := item.Name()
-		backingFilenames.Add(filename)
-
-		backingPath := path.Join(curBackingDisksDir, filename)
-		newBackingPath := path.Join(backingDisksDir, filename)
-
-		_ = os.Remove(newBackingPath)
-
-		err = utils.Exec("", "cp", backingPath, newBackingPath)
-		if err != nil {
-			return
-		}
-
-		logrus.WithFields(logrus.Fields{
-			"node_id":      b.node.Id.Hex(),
-			"backing_disk": filename,
-		}).Info("backup: Backing disk exported")
-	}
-
-	exportedBackingDisks, err := ioutil.ReadDir(backingDisksDir)
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(
-				err,
-				"backup: Failed to read backing disks directory",
-			),
-		}
-		return
-	}
-
-	trashBackingDir := path.Join(trashDir, "backing")
-	for _, item := range exportedBackingDisks {
-		filename := item.Name()
-		backingPath := path.Join(backingDisksDir, filename)
-		newBackingPath := path.Join(trashBackingDir, filename)
-
-		if !backingFilenames.Contains(filename) {
-			err = utils.ExistsMkdir(trashBackingDir, 0755)
-			if err != nil {
-				return
-			}
-
-			err = os.Rename(backingPath, newBackingPath)
-			if err != nil {
-				b.errorCount += 1
-				logrus.WithFields(logrus.Fields{
-					"node_id":      b.node.Id.Hex(),
-					"backing_disk": filename,
-					"error":        err,
-				}).Error("backup: Failed to move backing disk to trash")
-			} else {
-				logrus.WithFields(logrus.Fields{
-					"node_id":      b.node.Id.Hex(),
-					"backing_disk": filename,
-				}).Info("backup: Backing disk moved to trash")
-			}
-		}
-	}
-
-	return
-}
-
 func (b *Backup) Run() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -275,11 +179,6 @@ func (b *Backup) Run() (err error) {
 	b.virtPath = nde.GetVirtPath()
 
 	err = b.backupDisks(db)
-	if err != nil {
-		return
-	}
-
-	err = b.backupBackingDisks(db)
 	if err != nil {
 		return
 	}
