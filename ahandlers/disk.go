@@ -39,7 +39,6 @@ type diskData struct {
 	FileSystem       string        `json:"file_system"`
 	Image            bson.ObjectID `json:"image"`
 	RestoreImage     bson.ObjectID `json:"restore_image"`
-	Backing          bool          `json:"backing"`
 	Action           string        `json:"action"`
 	Size             int           `json:"size"`
 	LvSize           int           `json:"lv_size"`
@@ -278,7 +277,6 @@ func diskPost(c *gin.Context) {
 		Image:            dta.Image,
 		DeleteProtection: dta.DeleteProtection,
 		FileSystem:       dta.FileSystem,
-		Backing:          dta.Backing,
 		Size:             dta.Size,
 		LvSize:           dta.LvSize,
 		Backup:           dta.Backup,
