@@ -298,6 +298,8 @@ func (d *Disks) resize(dsk *disk.Disk) {
 			time.Sleep(5 * time.Second)
 			return
 		}
+
+		event.PublishDispatch(db, "disk.change")
 	}()
 }
 
