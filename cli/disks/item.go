@@ -84,6 +84,9 @@ func status(dsk *disk.Disk) (text string, clr color.Color) {
 	case disk.Expand:
 		text = "Expanding"
 		clr = widget.ColorAccent
+	case disk.Resize:
+		text = "Resizing Partitions"
+		clr = widget.ColorAccent
 	}
 
 	return
