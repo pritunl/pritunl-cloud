@@ -47,10 +47,6 @@ func GetLocalIsosPath() string {
 	return path.Join(node.Self.GetVirtPath(), "isos")
 }
 
-func GetBackingPath() string {
-	return path.Join(node.Self.GetVirtPath(), "backing")
-}
-
 func GetTpmsPath() string {
 	return path.Join(node.Self.GetVirtPath(), "tpms")
 }
