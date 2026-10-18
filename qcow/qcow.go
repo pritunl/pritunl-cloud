@@ -208,21 +208,6 @@ func ConvertRaw(srcPth, dstPth string) (err error) {
 	return
 }
 
-func Flatten(srcPth, dstPth string) (err error) {
-	_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img", "convert",
-		"-f", Format, "-O", Format, srcPth, dstPth)
-	if err != nil {
-		return
-	}
-
-	err = utils.Chmod(dstPth, 0600)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
 func Size(pth string) (sizeGb int, err error) {
 	info, err := GetInfo(pth)
 	if err != nil {
@@ -235,6 +220,11 @@ func Size(pth string) (sizeGb int, err error) {
 }
 
 func Resize(pth string, sizeGb int) (err error) {
+	_, err = Check(pth)
+	if err != nil {
+		return
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img", "resize",
 		"-f", Format, pth, fmt.Sprintf("%dG", sizeGb))
 	if err != nil {
@@ -245,6 +235,11 @@ func Resize(pth string, sizeGb int) (err error) {
 }
 
 func Expand(pth string, addGb int) (err error) {
+	_, err = Check(pth)
+	if err != nil {
+		return
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img", "resize",
 		"-f", Format, pth, fmt.Sprintf("+%dG", addGb))
 	if err != nil {
