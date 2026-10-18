@@ -43,8 +43,6 @@ type Disk struct {
 	FileSystem       string        `bson:"file_system" json:"file_system"`
 	Image            bson.ObjectID `bson:"image" json:"image"`
 	RestoreImage     bson.ObjectID `bson:"restore_image" json:"restore_image"`
-	Backing          bool          `bson:"backing" json:"backing"`
-	BackingImage     string        `bson:"backing_image" json:"backing_image"`
 	Index            string        `bson:"index" json:"index"`
 	Size             int           `bson:"size" json:"size"`
 	LvSize           int           `bson:"lv_size" json:"lv_size"`
@@ -183,14 +181,6 @@ func (d *Disk) Validate(db *database.Database) (
 			}
 			return
 		}
-
-		if d.Backing || d.BackingImage != "" {
-			errData = &errortypes.ErrorData{
-				Error:   "backing_image_invalid",
-				Message: "LVM disk cannot have backing image",
-			}
-			return
-		}
 		break
 	default:
 		errData = &errortypes.ErrorData{
@@ -235,14 +225,6 @@ func (d *Disk) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "unknown_file_system",
 			Message: "Unknown disk file system",
-		}
-		return
-	}
-
-	if d.Backup && d.BackingImage != "" {
-		errData = &errortypes.ErrorData{
-			Error:   "backing_image_backup",
-			Message: "Cannot enable backups with backing image",
 		}
 		return
 	}
