@@ -3,7 +3,6 @@ package disk
 import (
 	"fmt"
 
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -462,48 +461,6 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
 	}, &bson.M{
 		"$set": doc,
 	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
-
-func GetAllKeys(db *database.Database, ndeId bson.ObjectID) (
-	keys set.Set, err error) {
-
-	coll := db.Disks()
-	keys = set.NewSet()
-
-	cursor, err := coll.Find(db, &bson.M{
-		"node": ndeId,
-	}, options.Find().
-		SetProjection(bson.D{
-			{"node", 1},
-			{"backing_image", 1},
-		}),
-	)
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-	defer cursor.Close(db)
-
-	for cursor.Next(db) {
-		dsk := &Disk{}
-		err = cursor.Decode(dsk)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		if dsk.BackingImage != "" {
-			keys.Add(dsk.BackingImage)
-		}
-	}
-
-	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
