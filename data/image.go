@@ -45,9 +45,8 @@ import (
 )
 
 var (
-	imageLock        = utils.NewMultiTimeoutLock(10 * time.Minute)
-	backingImageLock = utils.NewMultiTimeoutLock(5 * time.Minute)
-	pgpConfig        = &packet.Config{
+	imageLock = utils.NewMultiTimeoutLock(10 * time.Minute)
+	pgpConfig = &packet.Config{
 		RejectMessageHashAlgorithms: map[crypto.Hash]bool{
 			crypto.MD5:  true,
 			crypto.SHA1: true,
@@ -605,42 +604,15 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 	return
 }
 
-func copyBackingImage(imagePth, backingImagePth string) (err error) {
-	lockId := backingImageLock.Lock(backingImagePth)
-	defer backingImageLock.Unlock(backingImagePth, lockId)
-
-	exists, err := utils.Exists(backingImagePth)
-	if err != nil {
-		return
-	}
-
-	if exists {
-		return
-	}
-
-	err = qcow.Convert(imagePth, backingImagePth)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
 func writeImageQcow(db *database.Database, dsk *disk.Disk) (
-	newSize int, backingImageName string, err error) {
+	newSize int, err error) {
 
 	size := dsk.Size
 	diskPath := paths.GetDiskPath(dsk.Id)
 	diskTempPath := paths.GetDiskTempPath()
 	disksPath := paths.GetDisksPath()
-	backingPath := paths.GetBackingPath()
 
 	err = utils.ExistsMkdir(disksPath, 0755)
-	if err != nil {
-		return
-	}
-
-	err = utils.ExistsMkdir(backingPath, 0755)
 	if err != nil {
 		return
 	}
@@ -657,27 +629,13 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 
 	largeBase := strings.Contains(img.Key, "fedora")
 
-	backingImagePth := path.Join(
-		backingPath,
-		fmt.Sprintf("image-%s-%s", img.Id.Hex(), img.Etag),
-	)
-
-	backingImageExists := false
-	if dsk.Backing {
-		backingImageName = fmt.Sprintf("%s-%s", img.Id.Hex(), img.Etag)
-
-		backingImageExists, err = utils.Exists(backingImagePth)
-		if err != nil {
-			return
-		}
-	}
-
+	imagePth := ""
 	if img.Type == storage.Public || img.Type == storage.Web ||
 		!img.Deployment.IsZero() {
 
 		cacheDir := node.Self.GetCachePath()
 
-		imagePth := path.Join(
+		imagePth = path.Join(
 			cacheDir,
 			fmt.Sprintf("image-%s-%s", img.Id.Hex(), img.Etag),
 		)
@@ -687,210 +645,80 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 			return
 		}
 
-		if !backingImageExists {
-			err = getImage(db, dsk, img, imagePth)
-			if err != nil {
-				return
-			}
-		}
-
-		exists, e := utils.Exists(diskPath)
-		if e != nil {
-			err = e
-			return
-		}
-
-		if exists {
-			logrus.WithFields(logrus.Fields{
-				"image_id":   img.Id.Hex(),
-				"image_type": img.Type,
-				"disk_id":    dsk.Id.Hex(),
-				"key":        img.Key,
-				"path":       diskPath,
-			}).Error("data: Blocking disk image overwrite")
-
-			err = &errortypes.WriteError{
-				errors.Wrap(err, "data: Image already exists"),
-			}
+		err = getImage(db, dsk, img, imagePth)
+		if err != nil {
 			return
 		}
 
 		utils.Exec("", "touch", imagePth)
-
-		if dsk.Backing {
-			err = copyBackingImage(imagePth, backingImagePth)
-			if err != nil {
-				return
-			}
-
-			utils.Exec("", "touch", backingImagePth)
-
-			err = utils.Chmod(backingImagePth, 0644)
-			if err != nil {
-				return
-			}
-
-			if largeBase && size < 16 {
-				size = 16
-				newSize = 16
-			} else if !largeBase && size < 10 {
-				size = 10
-				newSize = 10
-			}
-
-			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-				"create", "-f", "qcow2", "-F", "qcow2",
-				"-o", fmt.Sprintf("backing_file=%s", backingImagePth),
-				diskTempPath,
-				fmt.Sprintf("%dG", size))
-			if err != nil {
-				return
-			}
-		} else {
-			err = qcow.Convert(imagePth, diskTempPath)
-			if err != nil {
-				return
-			}
-
-			if largeBase && size < 16 {
-				size = 16
-				newSize = 16
-			}
-
-			if size > 8 {
-				curSize, e := qcow.Size(diskTempPath)
-				if e != nil {
-					err = e
-					return
-				}
-
-				if curSize > size {
-					size = curSize
-					newSize = curSize
-				}
-
-				if size > curSize {
-					err = qcow.Resize(diskTempPath, size)
-					if err != nil {
-						return
-					}
-				}
-			}
-		}
-
-		err = utils.Chmod(diskTempPath, 0600)
-		if err != nil {
-			return
-		}
-
-		err = utils.Exec("", "mv", diskTempPath, diskPath)
-		if err != nil {
-			return
-		}
 	} else {
-		imageTempPath := ""
-		if !dsk.Backing || !backingImageExists {
-			imageTempPath = paths.GetImageTempPath()
-			defer func() {
-				if imageTempPath != "" {
-					utils.Remove(imageTempPath)
-				}
-			}()
+		imagePth = paths.GetImageTempPath()
+		defer utils.Remove(imagePth)
 
-			err = getImage(db, dsk, img, imageTempPath)
-			if err != nil {
-				return
-			}
+		err = getImage(db, dsk, img, imagePth)
+		if err != nil {
+			return
 		}
+	}
 
-		exists, e := utils.Exists(diskPath)
+	exists, err := utils.Exists(diskPath)
+	if err != nil {
+		return
+	}
+
+	if exists {
+		logrus.WithFields(logrus.Fields{
+			"image_id":   img.Id.Hex(),
+			"image_type": img.Type,
+			"disk_id":    dsk.Id.Hex(),
+			"key":        img.Key,
+			"path":       diskPath,
+		}).Error("data: Blocking disk image overwrite")
+
+		err = &errortypes.WriteError{
+			errors.Wrap(err, "data: Image already exists"),
+		}
+		return
+	}
+
+	err = qcow.Convert(imagePth, diskTempPath)
+	if err != nil {
+		return
+	}
+
+	if largeBase && size < 16 {
+		size = 16
+		newSize = 16
+	}
+
+	if size > 8 {
+		curSize, e := qcow.Size(diskTempPath)
 		if e != nil {
 			err = e
 			return
 		}
 
-		if exists {
-			logrus.WithFields(logrus.Fields{
-				"image_id":   img.Id.Hex(),
-				"image_type": img.Type,
-				"disk_id":    dsk.Id.Hex(),
-				"key":        img.Key,
-				"path":       diskPath,
-			}).Error("data: Blocking disk image overwrite")
-
-			err = &errortypes.WriteError{
-				errors.Wrap(err, "data: Image already exists"),
-			}
-			return
+		if curSize > size {
+			size = curSize
+			newSize = curSize
 		}
 
-		if dsk.Backing {
-			if !backingImageExists {
-				err = copyBackingImage(imageTempPath, backingImagePth)
-				if err != nil {
-					return
-				}
-			}
-
-			utils.Exec("", "touch", backingImagePth)
-
-			err = utils.Chmod(backingImagePth, 0644)
+		if size > curSize {
+			err = qcow.Resize(diskTempPath, size)
 			if err != nil {
 				return
 			}
-
-			if largeBase && size < 16 {
-				size = 16
-				newSize = 16
-			} else if !largeBase && size < 10 {
-				size = 10
-				newSize = 10
-			}
-
-			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-				"create", "-f", "qcow2", "-F", "qcow2",
-				"-o", fmt.Sprintf("backing_file=%s", backingImagePth),
-				diskTempPath,
-				fmt.Sprintf("%dG", size))
-			if err != nil {
-				return
-			}
-		} else {
-			err = qcow.Convert(imageTempPath, diskTempPath)
-			if err != nil {
-				return
-			}
-
-			if largeBase && size < 16 {
-				size = 16
-				newSize = 16
-			}
-
-			if size > 8 {
-				curSize, e := qcow.Size(diskTempPath)
-				if e != nil {
-					err = e
-					return
-				}
-
-				if curSize > size {
-					size = curSize
-					newSize = curSize
-				}
-
-				if size > curSize {
-					err = qcow.Resize(diskTempPath, size)
-					if err != nil {
-						return
-					}
-				}
-			}
 		}
+	}
 
-		err = utils.Exec("", "mv", diskTempPath, diskPath)
-		if err != nil {
-			return
-		}
+	err = utils.Chmod(diskTempPath, 0600)
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "mv", diskTempPath, diskPath)
+	if err != nil {
+		return
 	}
 
 	return
@@ -905,13 +733,6 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 	sourcePth := ""
 	diskTempPath := paths.GetDiskTempPath()
 	defer utils.Remove(diskTempPath)
-
-	if dsk.Backing {
-		err = &errortypes.ParseError{
-			errors.New("data: Cannot create LVM disk with linked image"),
-		}
-		return
-	}
 
 	img, err := image.Get(db, dsk.Image)
 	if err != nil {
@@ -1051,7 +872,7 @@ func DeleteImage(db *database.Database, imgId bson.ObjectID) (
 }
 
 func WriteImage(db *database.Database, dsk *disk.Disk) (
-	newSize int, backingImageName string, err error) {
+	newSize int, err error) {
 
 	switch dsk.Type {
 	case disk.Lvm:
@@ -1072,7 +893,7 @@ func WriteImage(db *database.Database, dsk *disk.Disk) (
 		}
 		break
 	case "", disk.Qcow2:
-		newSize, backingImageName, err = writeImageQcow(db, dsk)
+		newSize, err = writeImageQcow(db, dsk)
 		if err != nil {
 			return
 		}
@@ -1246,7 +1067,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	}
 
 	if !available {
-		err = qcow.Flatten(dskPth, tmpPath)
+		err = qcow.Convert(dskPth, tmpPath)
 		if err != nil {
 			return
 		}
@@ -1386,13 +1207,6 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		logrus.WithFields(logrus.Fields{
 			"disk_id": dsk.Id.Hex(),
 		}).Error("data: Cannot backup disk without backup storage")
-		return
-	}
-
-	if dsk.BackingImage != "" {
-		logrus.WithFields(logrus.Fields{
-			"disk_id": dsk.Id.Hex(),
-		}).Error("data: Cannot backup disk with backing image")
 		return
 	}
 
