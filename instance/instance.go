@@ -56,7 +56,6 @@ type Instance struct {
 	CloudVnic           string              `bson:"cloud_vnic" json:"cloud_vnic"`
 	CloudVnicAttach     string              `bson:"cloud_vnic_attach" json:"cloud_vnic_attach"`
 	Image               bson.ObjectID       `bson:"image" json:"image"`
-	ImageBacking        bool                `bson:"image_backing" json:"image_backing"`
 	DiskType            string              `bson:"disk_type" json:"disk_type"`
 	DiskPool            bson.ObjectID       `bson:"disk_pool" json:"disk_pool"`
 	Status              string              `bson:"-" json:"status"`
