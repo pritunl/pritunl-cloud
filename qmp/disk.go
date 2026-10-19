@@ -335,11 +335,31 @@ type blockQueryDevice struct {
 }
 
 type blockQueryInserted struct {
-	NodeName string          `json:"node-name"`
-	Drv      string          `json:"drv"`
-	File     string          `json:"file"`
-	Cache    blockQueryCache `json:"cache"`
-	Image    blockQueryImage `json:"image"`
+	NodeName string            `json:"node-name"`
+	Drv      string            `json:"drv"`
+	File     string            `json:"file"`
+	Cache    blockQueryCache   `json:"cache"`
+	Image    blockQueryImage   `json:"image"`
+	Children []blockQueryChild `json:"children"`
+}
+
+type blockQueryChild struct {
+	NodeName string `json:"node-name"`
+	Child    string `json:"child"`
+}
+
+func (d *blockQueryDevice) diskNode() string {
+	if strings.HasPrefix(d.Inserted.NodeName, "fd_") {
+		return d.Inserted.NodeName
+	}
+
+	for _, child := range d.Inserted.Children {
+		if strings.HasPrefix(child.NodeName, "fd_") {
+			return child.NodeName
+		}
+	}
+
+	return ""
 }
 
 type blockQueryCache struct {
@@ -413,8 +433,8 @@ func GetDisks(vmId bson.ObjectID) (info *QemuInfo, disks []*vm.Disk,
 		var idSpl []string
 		if strings.HasPrefix(disk.Device, "disk_") {
 			idSpl = strings.Split(disk.Device, "_")
-		} else if strings.HasPrefix(disk.Inserted.NodeName, "fd_") {
-			idSpl = strings.Split(disk.Inserted.NodeName, "_")
+		} else if nodeName := disk.diskNode(); nodeName != "" {
+			idSpl = strings.Split(nodeName, "_")
 		} else {
 			continue
 		}
