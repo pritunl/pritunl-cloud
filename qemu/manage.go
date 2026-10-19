@@ -518,7 +518,6 @@ func Create(db *database.Database, inst *instance.Instance,
 			Zone:             node.Self.Zone,
 			SourceInstance:   inst.Id,
 			Image:            virt.Image,
-			Backing:          inst.ImageBacking,
 			Index:            "0",
 			Size:             inst.InitDiskSize,
 			DeleteProtection: inst.DeleteProtection,
@@ -534,11 +533,9 @@ func Create(db *database.Database, inst *instance.Instance,
 			return
 		}
 
-		backingImage := ""
-
 		newSize := 0
 		if virt.Image.IsZero() {
-			newSize, backingImage, err = data.CreateDisk(db, dsk)
+			newSize, err = data.CreateDisk(db, dsk)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": err,
@@ -555,7 +552,7 @@ func Create(db *database.Database, inst *instance.Instance,
 			dsk.SystemType = img.GetSystemType()
 			dsk.SystemKind = img.GetSystemKind()
 
-			newSize, backingImage, err = data.WriteImage(db, dsk)
+			newSize, err = data.WriteImage(db, dsk)
 			if err != nil {
 				return
 			}
@@ -564,8 +561,6 @@ func Create(db *database.Database, inst *instance.Instance,
 		if newSize != 0 {
 			dsk.Size = newSize
 		}
-
-		dsk.BackingImage = backingImage
 
 		err = dsk.Insert(db)
 		if err != nil {
