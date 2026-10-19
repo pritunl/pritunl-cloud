@@ -13,12 +13,21 @@ import (
 )
 
 func chown(virt *vm.VirtualMachine, path string) (err error) {
-	err = os.Chown(path, virt.UnixId, 0)
+	err = ChownUnixId(path, virt.UnixId)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func ChownUnixId(path string, unixId int) (err error) {
+	err = os.Chown(path, unixId, 0)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Newf(
 				"permission: Failed to set owner of '%s' to '%d'",
-				path, virt.UnixId,
+				path, unixId,
 			),
 		}
 		return
