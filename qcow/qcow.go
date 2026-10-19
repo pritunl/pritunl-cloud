@@ -199,6 +199,21 @@ func Convert(srcPth, dstPth string) (err error) {
 	return
 }
 
+func Create(pth string, size int64) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img", "create",
+		"-f", Format, pth, fmt.Sprintf("%d", size))
+	if err != nil {
+		return
+	}
+
+	err = utils.Chmod(pth, 0600)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func ConvertRaw(srcPth, dstPth string) (err error) {
 	err = convert(srcPth, dstPth, Raw)
 	if err != nil {
