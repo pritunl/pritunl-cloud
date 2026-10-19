@@ -17,6 +17,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/permission"
+	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -34,6 +36,7 @@ func (b *Backup) backupDisk(db *database.Database,
 	dsk *disk.Disk, dest string) (err error) {
 
 	online := false
+	unixId := 0
 	if !dsk.Instance.IsZero() {
 		inst, e := instance.Get(db, dsk.Instance)
 		if e != nil {
@@ -42,6 +45,8 @@ func (b *Backup) backupDisk(db *database.Database,
 		}
 
 		if inst != nil {
+			unixId = inst.UnixId
+
 			if inst.State == vm.Starting {
 				time.Sleep(5 * time.Second)
 				online = true
@@ -56,12 +61,33 @@ func (b *Backup) backupDisk(db *database.Database,
 	_ = os.Remove(dest)
 
 	if online {
-		err = qmp.BackupDisk(dsk.Instance, dsk, dest)
-		if err != nil {
-			if _, ok := err.(*qmp.DiskNotFound); ok {
+		device, size, e := qmp.GetDiskNode(dsk.Instance, dsk.Id)
+		if e != nil {
+			if _, ok := e.(*qmp.DiskNotFound); ok {
 				online = false
-				err = nil
 			} else {
+				err = e
+				return
+			}
+		} else {
+			err = qcow.Create(dest, size)
+			if err != nil {
+				return
+			}
+
+			err = permission.ChownUnixId(dest, unixId)
+			if err != nil {
+				return
+			}
+
+			job, e := qmp.BackupDisk(dsk.Instance, dsk.Id, device, dest)
+			if e != nil {
+				err = e
+				return
+			}
+
+			err = job.Wait()
+			if err != nil {
 				return
 			}
 		}
