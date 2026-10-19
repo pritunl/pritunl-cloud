@@ -28,12 +28,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/guest"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -976,6 +978,114 @@ func DeleteImagesOrg(db *database.Database, orgId bson.ObjectID,
 	return
 }
 
+func freezeInstance(virt *vm.VirtualMachine) bool {
+	err := guest.Ping(virt.Id)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"error":       err,
+		}).Info("data: Guest agent unavailable, skipping filesystem freeze")
+		return false
+	}
+
+	count, err := guest.FsFreeze(virt.Id)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"error":       err,
+		}).Warning("data: Failed to freeze guest filesystems")
+		thawInstance(virt)
+		return false
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+		"count":       count,
+	}).Info("data: Froze guest filesystems")
+
+	return true
+}
+
+func thawInstance(virt *vm.VirtualMachine) {
+	var err error
+	for i := 0; i < 3; i++ {
+		_, err = guest.FsThaw(virt.Id)
+		if err == nil {
+			return
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+		"error":       err,
+	}).Error("data: Failed to thaw guest filesystems, guest may be frozen")
+}
+
+func exportDiskLive(dsk *disk.Disk, virt *vm.VirtualMachine,
+	device string, size int64, dstPth string) (err error) {
+
+	err = qcow.Create(dstPth, size)
+	if err != nil {
+		return
+	}
+
+	err = permission.Chown(virt, dstPth)
+	if err != nil {
+		return
+	}
+
+	frozen := freezeInstance(virt)
+	job, err := qmp.BackupDisk(virt.Id, dsk.Id, device, dstPth)
+	if frozen {
+		thawInstance(virt)
+	}
+	if err != nil {
+		return
+	}
+
+	err = job.Wait()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func exportDisk(dsk *disk.Disk, virt *vm.VirtualMachine,
+	dstPth string) (err error) {
+
+	if virt != nil && virt.Running() {
+		device, size, e := qmp.GetDiskNode(virt.Id, dsk.Id)
+		if e != nil {
+			if _, ok := e.(*qmp.DiskNotFound); !ok {
+				err = e
+				return
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+			}).Info("data: Disk not attached to running instance")
+		} else {
+			err = exportDiskLive(dsk, virt, device, size, dstPth)
+			if err != nil {
+				return
+			}
+
+			return
+		}
+	}
+
+	err = qcow.Convert(paths.GetDiskPath(dsk.Id), dstPth)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	virt *vm.VirtualMachine) (err error) {
 
@@ -1052,25 +1162,9 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 
 	defer utils.Remove(tmpPath)
 
-	available := false
-	if virt != nil && virt.Running() {
-		err = qmp.BackupDisk(virt.Id, dsk, tmpPath)
-		if err != nil {
-			if _, ok := err.(*qmp.DiskNotFound); ok {
-				err = nil
-			} else {
-				return
-			}
-		} else {
-			available = true
-		}
-	}
-
-	if !available {
-		err = qcow.Convert(dskPth, tmpPath)
-		if err != nil {
-			return
-		}
+	err = exportDisk(dsk, virt, tmpPath)
+	if err != nil {
+		return
 	}
 
 	err = utils.Chmod(tmpPath, 0600)
@@ -1258,25 +1352,9 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 
 	defer utils.Remove(tmpPath)
 
-	available := false
-	if virt != nil && virt.Running() {
-		err = qmp.BackupDisk(virt.Id, dsk, tmpPath)
-		if err != nil {
-			if _, ok := err.(*qmp.DiskNotFound); ok {
-				err = nil
-			} else {
-				return
-			}
-		} else {
-			available = true
-		}
-	}
-
-	if !available {
-		err = utils.Exec("", "cp", dskPth, tmpPath)
-		if err != nil {
-			return
-		}
+	err = exportDisk(dsk, virt, tmpPath)
+	if err != nil {
+		return
 	}
 
 	err = utils.Chmod(tmpPath, 0600)
