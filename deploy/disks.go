@@ -185,7 +185,7 @@ func (d *Disks) expand(dsk *disk.Disk) {
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": err,
-					}).Error("deploy: Failed to commit instance state")
+					}).Error("deploy: Failed to commit instance action")
 					return
 				}
 
@@ -411,11 +411,11 @@ func (d *Disks) restore(dsk *disk.Disk) {
 					"disk_id":     dsk.Id.Hex(),
 				}).Info("deploy: Stopping instance for restore")
 
-				err := inst.CommitFields(db, set.NewSet("state"))
+				err := inst.CommitFields(db, set.NewSet("action"))
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": err,
-					}).Error("deploy: Failed to commit instance state")
+					}).Error("deploy: Failed to commit instance action")
 					return
 				}
 
