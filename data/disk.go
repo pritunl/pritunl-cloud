@@ -7,10 +7,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 func createDiskQcow(db *database.Database, dsk *disk.Disk) (
@@ -44,6 +46,37 @@ func createDiskQcow(db *database.Database, dsk *disk.Disk) (
 	return
 }
 
+func createLvLocked(db *database.Database, vgName, lvName string,
+	size int) (err error) {
+
+	acquired, err := lock.LvmLock(db, vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	if !acquired {
+		err = &lock.LvmLockedError{
+			errors.New("data: Failed to acquire LVM lock"),
+		}
+		return
+	}
+	defer func() {
+		err2 := lock.LvmUnlock(db, vgName, lvName)
+		if err2 != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err2,
+			}).Error("data: Failed to unlock lvm")
+		}
+	}()
+
+	err = lvm.CreateLv(vgName, lvName, size)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func createDiskLvm(db *database.Database, dsk *disk.Disk) (
 	newSize int, err error) {
 
@@ -68,7 +101,7 @@ func createDiskLvm(db *database.Database, dsk *disk.Disk) (
 			return
 		}
 	} else {
-		err = lvm.CreateLv(pl.VgName, dsk.Id.Hex(), dsk.Size)
+		err = createLvLocked(db, pl.VgName, dsk.Id.Hex(), dsk.Size)
 		if err != nil {
 			return
 		}
