@@ -20,6 +20,7 @@ import (
 
 const (
 	mib = int64(1024 * 1024)
+	gib = int64(1024 * 1024 * 1024)
 )
 
 func parseFileSystem(fileSystem string) (fsType string, fsLvm bool,
