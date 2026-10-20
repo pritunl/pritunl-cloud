@@ -29,9 +29,12 @@ type CommandNode struct {
 }
 
 type JobStatus struct {
-	Id     string `json:"id"`
-	Type   string `json:"type"`
-	Status string `json:"status"`
+	Id              string `json:"id"`
+	Type            string `json:"type"`
+	Status          string `json:"status"`
+	CurrentProgress int64  `json:"current-progress"`
+	TotalProgress   int64  `json:"total-progress"`
+	Error           string `json:"error"`
 }
 
 type JobStatusReturn struct {
@@ -235,6 +238,7 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 			returnWait <- true
 		}()
 
+		var pending []byte
 		for {
 			buffer := make([]byte, 5000000)
 			n, e := c.sock.Read(buffer)
@@ -244,17 +248,17 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 				}
 				return
 			}
-			buffer = buffer[:n]
 
-			lines := bytes.Split(buffer, []byte("\n"))
-			for _, line := range lines {
+			data := append(pending, buffer[:n]...)
+			lines := bytes.Split(data, []byte("\n"))
+			pending = append([]byte(nil), lines[len(lines)-1]...)
+
+			for _, line := range lines[:len(lines)-1] {
 				if !constants.Production && c.logging {
 					fmt.Println(string(line))
 				}
 
-				if bytes.Contains(line, []byte(`"return"`)) ||
-					bytes.Contains(line, []byte(`"error"`)) {
-
+				if isResponse(line) {
 					returnData = line
 					returnWait <- true
 
@@ -289,6 +293,25 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 	}
 
 	return
+}
+
+func isResponse(line []byte) bool {
+	msg := map[string]json.RawMessage{}
+
+	err := json.Unmarshal(line, &msg)
+	if err != nil {
+		return false
+	}
+
+	_, ok := msg["event"]
+	if ok {
+		return false
+	}
+
+	_, hasReturn := msg["return"]
+	_, hasError := msg["error"]
+
+	return hasReturn || hasError
 }
 
 func (c *Connection) Event(resp interface{}, callback EventCallback) (
