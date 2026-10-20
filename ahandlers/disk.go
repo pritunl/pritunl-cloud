@@ -121,7 +121,7 @@ func diskPut(c *gin.Context) {
 		}
 	} else if dta.Action != "" && dsk.Action != "" {
 		errData := &errortypes.ErrorData{
-			Error:   "disk_actin_active",
+			Error:   "disk_action_active",
 			Message: "Disk action already active",
 		}
 
