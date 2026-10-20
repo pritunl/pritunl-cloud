@@ -14,13 +14,24 @@ const (
 	freezeTimeout = 60 * time.Second
 )
 
-func Ping(vmId bson.ObjectID) (err error) {
-	_, err = execute(vmId, &Command{
-		Execute: "guest-ping",
+func FsFreezeStatus(vmId bson.ObjectID) (frozen bool, err error) {
+	ret, err := execute(vmId, &Command{
+		Execute: "guest-fsfreeze-status",
 	}, pingTimeout)
 	if err != nil {
 		return
 	}
+
+	status := ""
+	err = json.Unmarshal(ret, &status)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "guest: Failed to parse freeze status"),
+		}
+		return
+	}
+
+	frozen = status == "frozen"
 
 	return
 }
