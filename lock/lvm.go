@@ -45,7 +45,7 @@ func LvmRelock(db *database.Database, vgName, lvName string) (err error) {
 	coll := db.LvmLock()
 
 	_, err = coll.UpdateOne(db, &bson.M{
-		"id":   fmt.Sprintf("%s/%s", vgName, lvName),
+		"_id":  fmt.Sprintf("%s/%s", vgName, lvName),
 		"node": node.Self.Id,
 	}, &bson.M{
 		"timestamp": time.Now(),
@@ -62,7 +62,7 @@ func LvmUnlock(db *database.Database, vgName, lvName string) (err error) {
 	coll := db.LvmLock()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"id":   fmt.Sprintf("%s/%s", vgName, lvName),
+		"_id":  fmt.Sprintf("%s/%s", vgName, lvName),
 		"node": node.Self.Id,
 	})
 	if err != nil {
