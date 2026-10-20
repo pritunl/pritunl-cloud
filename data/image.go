@@ -58,6 +58,40 @@ var (
 	}
 )
 
+const (
+	fedoraMinSize = 16
+)
+
+func imageMinSize(img *image.Image) int {
+	if strings.Contains(img.Key, "fedora") {
+		return fedoraMinSize
+	}
+
+	return 0
+}
+
+func imageDiskSize(img *image.Image, pth string, size int) (
+	newSize int, virtualSize int64, err error) {
+
+	info, err := qcow.GetInfo(pth)
+	if err != nil {
+		return
+	}
+	virtualSize = info.VirtualSize
+
+	minSize := imageMinSize(img)
+	imgSize := int((virtualSize + gib - 1) / gib)
+	if imgSize > minSize {
+		minSize = imgSize
+	}
+
+	if size < minSize {
+		newSize = minSize
+	}
+
+	return
+}
+
 func getImageS3(db *database.Database, store *storage.Storage,
 	dsk *disk.Disk, img *image.Image) (tmpPth string, err error) {
 
@@ -631,8 +665,6 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		return
 	}
 
-	largeBase := strings.Contains(img.Key, "fedora")
-
 	imagePth := ""
 	if img.Type == storage.Public || img.Type == storage.Web ||
 		!img.Deployment.IsZero() {
@@ -690,28 +722,20 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		return
 	}
 
-	if largeBase && size < 16 {
-		size = 16
-		newSize = 16
+	var virtualSize int64
+	newSize, virtualSize, err = imageDiskSize(img, diskTempPath, size)
+	if err != nil {
+		return
 	}
 
-	if size > 8 {
-		curSize, e := qcow.Size(diskTempPath)
-		if e != nil {
-			err = e
+	if newSize != 0 {
+		size = newSize
+	}
+
+	if int64(size)*gib > virtualSize {
+		err = qcow.Resize(diskTempPath, size)
+		if err != nil {
 			return
-		}
-
-		if curSize > size {
-			size = curSize
-			newSize = curSize
-		}
-
-		if size > curSize {
-			err = qcow.Resize(diskTempPath, size)
-			if err != nil {
-				return
-			}
 		}
 	}
 
@@ -743,7 +767,25 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
-	largeBase := strings.Contains(img.Key, "fedora")
+	acquired, err := lock.LvmLock(db, vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	if !acquired {
+		err = &lock.LvmLockedError{
+			errors.New("data: Failed to acquire LVM lock"),
+		}
+		return
+	}
+	defer func() {
+		e := lock.LvmUnlock(db, vgName, lvName)
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": e,
+			}).Error("data: Failed to unlock lvm")
+		}
+	}()
 
 	if img.Type == storage.Public || img.Type == storage.Web ||
 		!img.Deployment.IsZero() {
@@ -766,14 +808,6 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 		}
 
 		sourcePth = imagePth
-
-		if largeBase && size < 16 {
-			size = 16
-			newSize = 16
-		} else if !largeBase && size < 10 {
-			size = 10
-			newSize = 10
-		}
 	} else {
 		err = getImage(db, dsk, img, diskTempPath)
 		if err != nil {
@@ -781,32 +815,16 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 		}
 
 		sourcePth = diskTempPath
-
-		if largeBase && size < 16 {
-			size = 16
-			newSize = 16
-		}
 	}
 
-	acquired, err := lock.LvmLock(db, vgName, lvName)
+	newSize, _, err = imageDiskSize(img, sourcePth, size)
 	if err != nil {
 		return
 	}
 
-	if !acquired {
-		err = &errortypes.WriteError{
-			errors.New("data: Failed to acquire LVM lock"),
-		}
-		return
+	if newSize != 0 {
+		size = newSize
 	}
-	defer func() {
-		err2 := lock.LvmUnlock(db, vgName, lvName)
-		if err2 != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err2,
-			}).Error("data: Failed to unlock lvm")
-		}
-	}()
 
 	err = lvm.CreateLv(vgName, lvName, size)
 	if err != nil {
@@ -819,9 +837,16 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 	}
 
 	defer func() {
-		err = lvm.DeactivateLv(vgName, lvName)
-		if err != nil {
-			return
+		e := lvm.DeactivateLv(vgName, lvName)
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"vg_name": vgName,
+				"lv_name": lvName,
+				"error":   e,
+			}).Error("data: Failed to deactivate lvm disk")
+			if err == nil {
+				err = e
+			}
 		}
 	}()
 
@@ -1124,20 +1149,14 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	}
 
 	if dc.PrivateStorage.IsZero() {
-		logrus.WithFields(logrus.Fields{
-			"disk_id": dsk.Id.Hex(),
-		}).Error("data: Cannot snapshot disk without private storage")
+		err = &errortypes.NotFoundError{
+			errors.New("data: Datacenter private storage not configured"),
+		}
 		return
 	}
 
 	store, err := storage.Get(db, dc.PrivateStorage)
 	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id.Hex(),
-			}).Error("data: Cannot snapshot disk without private storage")
-		}
 		return
 	}
 
@@ -1314,20 +1333,14 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 	}
 
 	if dc.BackupStorage.IsZero() {
-		logrus.WithFields(logrus.Fields{
-			"disk_id": dsk.Id.Hex(),
-		}).Error("data: Cannot backup disk without backup storage")
+		err = &errortypes.NotFoundError{
+			errors.New("data: Datacenter backup storage not configured"),
+		}
 		return
 	}
 
 	store, err := storage.Get(db, dc.BackupStorage)
 	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id.Hex(),
-			}).Error("data: Cannot backup disk without backup storage")
-		}
 		return
 	}
 
