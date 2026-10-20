@@ -2,6 +2,7 @@ package qmp
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -13,9 +14,21 @@ import (
 )
 
 const (
-	backupPollInterval = 3 * time.Second
-	backupLogInterval  = 60 * time.Second
+	backupPollInterval   = 3 * time.Second
+	backupLogInterval    = 60 * time.Second
+	backupCancelTimeout  = 2 * time.Minute
+	backupCancelInterval = 1 * time.Second
 )
+
+type namedNode struct {
+	NodeName string `json:"node-name"`
+	File     string `json:"file"`
+}
+
+type namedNodesReturn struct {
+	Return []namedNode   `json:"return"`
+	Error  *CommandError `json:"error"`
+}
 
 type backupTargetFile struct {
 	Driver   string `json:"driver"`
@@ -160,42 +173,108 @@ func GetDiskNode(vmId, dskId bson.ObjectID) (
 	return
 }
 
-func (j *BackupJob) clearStale(conn *Connection) (err error) {
+func (j *BackupJob) targetFile() (pth string, err error) {
 	cmd := &Command{
-		Execute: "query-jobs",
+		Execute: "query-named-block-nodes",
 	}
 
-	jobs := &JobStatusReturn{}
-	err = conn.Send(cmd, jobs)
+	returnData := &namedNodesReturn{}
+	err = RunCommand(j.vmId, cmd, returnData)
 	if err != nil {
 		return
 	}
 
-	if jobs.Error != nil {
-		err = apiError(jobs.Error)
+	if returnData.Error != nil {
+		err = apiError(returnData.Error)
 		return
 	}
 
-	for _, job := range jobs.Return {
-		if job.Id != j.jobId {
-			continue
+	for _, nde := range returnData.Return {
+		if nde.NodeName == j.targetNode {
+			pth = nde.File
+			break
 		}
+	}
 
-		if job.Status != "concluded" {
-			err = &errortypes.ApiError{
-				errors.Newf("qmp: Backup job %s already active (%s)",
-					j.jobId, job.Status),
-			}
+	return
+}
+
+func (j *BackupJob) cancelStale(status *JobStatus) (err error) {
+	logrus.WithFields(logrus.Fields{
+		"instance_id": j.vmId.Hex(),
+		"disk_id":     j.dskId.Hex(),
+		"status":      status.Status,
+	}).Warning("qmp: Cancelling orphaned backup job")
+
+	if status.Status != "aborting" {
+		cmdErr, e := runChecked(j.vmId, &Command{
+			Execute: "job-cancel",
+			Arguments: &CommandId{
+				Id: j.jobId,
+			},
+		})
+		if e != nil {
+			err = e
 			return
 		}
 
+		if cmdErr != nil && !isNotFoundError(cmdErr) {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": j.vmId.Hex(),
+				"disk_id":     j.dskId.Hex(),
+				"error":       cmdErr.Desc,
+			}).Warning("qmp: Backup job cancel rejected")
+		}
+	}
+
+	start := time.Now()
+	for {
+		time.Sleep(backupCancelInterval)
+
+		status, err = j.find()
+		if err != nil {
+			return
+		}
+
+		if status == nil || status.Status == "concluded" {
+			return
+		}
+
+		if time.Since(start) > backupCancelTimeout {
+			err = &errortypes.TimeoutError{
+				errors.Newf("qmp: Timeout cancelling backup job %s", j.jobId),
+			}
+			return
+		}
+	}
+}
+
+func (j *BackupJob) clearStale() (err error) {
+	status, err := j.find()
+	if err != nil {
+		return
+	}
+
+	if status != nil && status.Status != "concluded" {
+		err = j.cancelStale(status)
+		if err != nil {
+			return
+		}
+
+		status, err = j.find()
+		if err != nil {
+			return
+		}
+	}
+
+	if status != nil {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": j.vmId.Hex(),
 			"disk_id":     j.dskId.Hex(),
-			"job_error":   job.Error,
+			"job_error":   status.Error,
 		}).Warning("qmp: Dismissing stale backup job")
 
-		cmdErr, e := conn.run(&Command{
+		cmdErr, e := runChecked(j.vmId, &Command{
 			Execute: "job-dismiss",
 			Arguments: &CommandId{
 				Id: j.jobId,
@@ -210,11 +289,14 @@ func (j *BackupJob) clearStale(conn *Connection) (err error) {
 			err = apiError(cmdErr)
 			return
 		}
-
-		break
 	}
 
-	cmdErr, err := conn.run(&Command{
+	targetPth, err := j.targetFile()
+	if err != nil {
+		return
+	}
+
+	cmdErr, err := runChecked(j.vmId, &Command{
 		Execute: "blockdev-del",
 		Arguments: &CommandNode{
 			NodeName: j.targetNode,
@@ -224,14 +306,31 @@ func (j *BackupJob) clearStale(conn *Connection) (err error) {
 		return
 	}
 
-	if cmdErr == nil {
-		logrus.WithFields(logrus.Fields{
-			"instance_id": j.vmId.Hex(),
-			"disk_id":     j.dskId.Hex(),
-		}).Warning("qmp: Removed stale backup target")
-	} else if !isNotFoundError(cmdErr) {
-		err = apiError(cmdErr)
+	if cmdErr != nil {
+		if !isNotFoundError(cmdErr) {
+			err = apiError(cmdErr)
+			return
+		}
+
 		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": j.vmId.Hex(),
+		"disk_id":     j.dskId.Hex(),
+		"target_path": targetPth,
+	}).Warning("qmp: Removed stale backup target")
+
+	if targetPth != "" {
+		e := os.Remove(targetPth)
+		if e != nil && !os.IsNotExist(e) {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": j.vmId.Hex(),
+				"disk_id":     j.dskId.Hex(),
+				"target_path": targetPth,
+				"error":       e,
+			}).Error("qmp: Failed to remove stale backup target")
+		}
 	}
 
 	return
@@ -254,18 +353,18 @@ func BackupDisk(vmId, dskId bson.ObjectID, device, targetPth string) (
 		"target_path": targetPth,
 	}).Info("qmp: Starting disk backup")
 
+	err = job.clearStale()
+	if err != nil {
+		job = nil
+		return
+	}
+
 	conn := NewConnection(vmId, true)
 	defer conn.Close()
 
 	conn.SetDeadline(30 * time.Second)
 
 	_, err = conn.Connect()
-	if err != nil {
-		job = nil
-		return
-	}
-
-	err = job.clearStale(conn)
 	if err != nil {
 		job = nil
 		return
@@ -321,7 +420,7 @@ func BackupDisk(vmId, dskId bson.ObjectID, device, targetPth string) (
 	return
 }
 
-func (j *BackupJob) query() (status *JobStatus, err error) {
+func (j *BackupJob) find() (status *JobStatus, err error) {
 	cmd := &Command{
 		Execute: "query-jobs",
 	}
@@ -344,8 +443,20 @@ func (j *BackupJob) query() (status *JobStatus, err error) {
 		}
 	}
 
-	err = &errortypes.ApiError{
-		errors.Newf("qmp: Backup job %s missing", j.jobId),
+	return
+}
+
+func (j *BackupJob) query() (status *JobStatus, err error) {
+	status, err = j.find()
+	if err != nil {
+		return
+	}
+
+	if status == nil {
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Backup job %s missing", j.jobId),
+		}
+		return
 	}
 
 	return
