@@ -33,6 +33,7 @@ func (d *Disks) provision(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
@@ -84,6 +85,7 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
@@ -153,6 +155,7 @@ func (d *Disks) expand(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
@@ -234,6 +237,7 @@ func (d *Disks) resize(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
@@ -314,6 +318,7 @@ func (d *Disks) backup(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer func() {
 			time.Sleep(1 * time.Second)
 			disksLock.Unlock(dsk.Id.Hex(), lockId)
@@ -379,6 +384,7 @@ func (d *Disks) restore(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer func() {
 			time.Sleep(1 * time.Second)
 			disksLock.Unlock(dsk.Id.Hex(), lockId)
@@ -481,6 +487,7 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
@@ -554,6 +561,7 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 	}
 
 	go func() {
+		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer func() {
 			time.Sleep(1 * time.Second)
 			disksLock.Unlock(dsk.Id.Hex(), lockId)
