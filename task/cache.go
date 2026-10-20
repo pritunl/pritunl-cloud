@@ -72,6 +72,17 @@ func cacheCleanHandler(db *database.Database) (err error) {
 					continue
 				}
 			}
+		} else if strings.HasPrefix(name, "backup-") ||
+			strings.HasPrefix(name, "snapshot-") ||
+			strings.HasPrefix(name, "restore-") {
+
+			if time.Since(item.ModTime()) > 24*time.Hour {
+				logrus.WithFields(logrus.Fields{
+					"path": pth,
+				}).Warning("task: Removing abandoned disk copy cache")
+				os.Remove(pth)
+				continue
+			}
 		}
 	}
 
