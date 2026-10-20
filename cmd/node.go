@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/defaults"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -92,6 +93,8 @@ func Node() (err error) {
 	}
 
 	constants.Interrupt = true
+
+	data.ShutdownWait()
 
 	if !constants.Production || constants.FastExit {
 		time.Sleep(300 * time.Millisecond)
