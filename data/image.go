@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
@@ -47,8 +48,9 @@ import (
 )
 
 var (
-	imageLock = utils.NewMultiTimeoutLock(10 * time.Minute)
-	pgpConfig = &packet.Config{
+	frozenInstances atomic.Int64
+	imageLock       = utils.NewMultiTimeoutLock(10 * time.Minute)
+	pgpConfig       = &packet.Config{
 		RejectMessageHashAlgorithms: map[crypto.Hash]bool{
 			crypto.MD5:  true,
 			crypto.SHA1: true,
@@ -978,14 +980,25 @@ func DeleteImagesOrg(db *database.Database, orgId bson.ObjectID,
 	return
 }
 
+func FrozenInstances() int64 {
+	return frozenInstances.Load()
+}
+
 func freezeInstance(virt *vm.VirtualMachine) bool {
-	err := guest.Ping(virt.Id)
+	frozen, err := guest.FsFreezeStatus(virt.Id)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": virt.Id.Hex(),
 			"error":       err,
 		}).Info("data: Guest agent unavailable, skipping filesystem freeze")
 		return false
+	}
+
+	if frozen {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+		}).Warning("data: Guest filesystems already frozen, thawing")
+		thawInstance(virt)
 	}
 
 	count, err := guest.FsFreeze(virt.Id)
@@ -997,6 +1010,8 @@ func freezeInstance(virt *vm.VirtualMachine) bool {
 		thawInstance(virt)
 		return false
 	}
+
+	frozenInstances.Add(1)
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": virt.Id.Hex(),
@@ -1040,6 +1055,7 @@ func exportDiskLive(dsk *disk.Disk, virt *vm.VirtualMachine,
 	job, err := qmp.BackupDisk(virt.Id, dsk.Id, device, dstPth)
 	if frozen {
 		thawInstance(virt)
+		frozenInstances.Add(-1)
 	}
 	if err != nil {
 		return
