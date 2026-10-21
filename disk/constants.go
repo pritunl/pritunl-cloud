@@ -1,8 +1,11 @@
 package disk
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 const (
@@ -44,6 +47,7 @@ const (
 
 var (
 	Vacant           = bson.NilObjectID
+	ActionLock       = utils.NewMultiTimeoutLock(10 * time.Minute)
 	ValidSystemTypes = set.NewSet(
 		Linux,
 		LinuxLegacy,
