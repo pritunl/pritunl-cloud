@@ -253,9 +253,9 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 			err = e
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = nil
-			} else {
-				return
+				continue
 			}
+			return
 		}
 
 		logrus.WithFields(logrus.Fields{
