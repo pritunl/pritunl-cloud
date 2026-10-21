@@ -21,7 +21,6 @@ import (
 )
 
 var (
-	disksLock       = disk.ActionLock
 	backupLimiter   = utils.NewLimiter(3)
 	backupRetry     = map[bson.ObjectID]time.Time{}
 	backupRetryLock = sync.Mutex{}
@@ -32,14 +31,14 @@ type Disks struct {
 }
 
 func (d *Disks) provision(dsk *disk.Disk) {
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
 		return
 	}
 
 	go func() {
 		defer utils.RecoverLog("deploy: Panic in disk action")
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
 		defer db.Close()
@@ -96,14 +95,15 @@ func (d *Disks) provision(dsk *disk.Disk) {
 }
 
 func (d *Disks) snapshot(dsk *disk.Disk) {
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpenTimeout(dsk.Id.Hex(),
+		time.Duration(settings.Hypervisor.DiskBackupTimeout)*time.Second)
 	if !acquired {
 		return
 	}
 
 	go func() {
 		defer utils.RecoverLog("deploy: Panic in disk action")
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
 		defer db.Close()
@@ -166,14 +166,14 @@ func (d *Disks) Scan(db *database.Database, dsk *disk.Disk) {
 }
 
 func (d *Disks) expand(dsk *disk.Disk) {
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
 		return
 	}
 
 	go func() {
 		defer utils.RecoverLog("deploy: Panic in disk action")
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
 		defer db.Close()
@@ -260,14 +260,14 @@ func (d *Disks) expand(dsk *disk.Disk) {
 }
 
 func (d *Disks) resize(dsk *disk.Disk) {
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
 		return
 	}
 
 	go func() {
 		defer utils.RecoverLog("deploy: Panic in disk action")
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
 		defer db.Close()
@@ -352,7 +352,8 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		return
 	}
 
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpenTimeout(dsk.Id.Hex(),
+		time.Duration(settings.Hypervisor.DiskBackupTimeout)*time.Second)
 	if !acquired {
 		backupLimiter.Release()
 		return
@@ -362,7 +363,7 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer func() {
 			time.Sleep(1 * time.Second)
-			disksLock.Unlock(dsk.Id.Hex(), lockId)
+			disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 			backupLimiter.Release()
 		}()
 
@@ -418,7 +419,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 		return
 	}
 
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpenTimeout(dsk.Id.Hex(),
+		time.Duration(settings.Hypervisor.DiskBackupTimeout)*time.Second)
 	if !acquired {
 		backupLimiter.Release()
 		return
@@ -428,7 +430,7 @@ func (d *Disks) restore(dsk *disk.Disk) {
 		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer func() {
 			time.Sleep(1 * time.Second)
-			disksLock.Unlock(dsk.Id.Hex(), lockId)
+			disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 			backupLimiter.Release()
 		}()
 
@@ -522,14 +524,14 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 		return
 	}
 
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
 		return
 	}
 
 	go func() {
 		defer utils.RecoverLog("deploy: Panic in disk action")
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 
 		db := database.GetDatabase()
 		defer db.Close()
@@ -615,7 +617,8 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 		return
 	}
 
-	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	acquired, lockId := disk.ActionLock.LockOpenTimeout(dsk.Id.Hex(),
+		time.Duration(settings.Hypervisor.DiskBackupTimeout)*time.Second)
 	if !acquired {
 		backupLimiter.Release()
 		return
@@ -625,7 +628,7 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 		defer utils.RecoverLog("deploy: Panic in disk action")
 		defer func() {
 			time.Sleep(1 * time.Second)
-			disksLock.Unlock(dsk.Id.Hex(), lockId)
+			disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 			backupLimiter.Release()
 		}()
 
@@ -741,7 +744,7 @@ func (d *Disks) Deploy(db *database.Database) (err error) {
 				d.destroy(db, dsk)
 				break
 			default:
-				if backupActive && dsk.Backup {
+				if backupActive && dsk.Backup && dsk.Type == disk.Qcow2 {
 					d.scheduleBackup(dsk)
 				}
 				break
