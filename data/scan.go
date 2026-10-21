@@ -385,7 +385,7 @@ func scanDiskLvm(db *database.Database, dsk *disk.Disk) (
 	}
 
 	if !acquired {
-		err = &errortypes.WriteError{
+		err = &lock.LvmLockedError{
 			errors.New("data: Failed to acquire LVM lock"),
 		}
 		return
