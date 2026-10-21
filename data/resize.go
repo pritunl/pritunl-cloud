@@ -101,7 +101,8 @@ func expandDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	acquired, err := lock.LvmLock(db, vgName, lvName)
+	lckr := lock.NewLvmLocker(vgName, lvName)
+	acquired, err := lckr.Lock(db)
 	if err != nil {
 		return
 	}
@@ -113,7 +114,7 @@ func expandDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 	defer func() {
-		err2 := lock.LvmUnlock(db, vgName, lvName)
+		err2 := lckr.Unlock(db)
 		if err2 != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err2,
@@ -656,7 +657,8 @@ func resizeDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 	vgName := pl.VgName
 	lvName := dsk.Id.Hex()
 
-	acquired, err := lock.LvmLock(db, vgName, lvName)
+	lckr := lock.NewLvmLocker(vgName, lvName)
+	acquired, err := lckr.Lock(db)
 	if err != nil {
 		return
 	}
@@ -668,7 +670,7 @@ func resizeDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 	defer func() {
-		err2 := lock.LvmUnlock(db, vgName, lvName)
+		err2 := lckr.Unlock(db)
 		if err2 != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err2,

@@ -54,7 +54,8 @@ func createDiskQcow(db *database.Database, dsk *disk.Disk) (
 func createLvLocked(db *database.Database, vgName, lvName string,
 	size int) (err error) {
 
-	acquired, err := lock.LvmLock(db, vgName, lvName)
+	lckr := lock.NewLvmLocker(vgName, lvName)
+	acquired, err := lckr.Lock(db)
 	if err != nil {
 		return
 	}
@@ -66,7 +67,7 @@ func createLvLocked(db *database.Database, vgName, lvName string,
 		return
 	}
 	defer func() {
-		err2 := lock.LvmUnlock(db, vgName, lvName)
+		err2 := lckr.Unlock(db)
 		if err2 != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err2,

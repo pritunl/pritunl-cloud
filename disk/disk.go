@@ -431,20 +431,21 @@ func (d *Disk) Destroy(db *database.Database) (err error) {
 		vgName := pl.VgName
 		lvName := d.Id.Hex()
 
-		acquired, e := lock.LvmLock(db, vgName, lvName)
+		lckr := lock.NewLvmLocker(vgName, lvName)
+		acquired, e := lckr.Lock(db)
 		if e != nil {
 			err = e
 			return
 		}
 
 		if !acquired {
-			err = &errortypes.WriteError{
+			err = &lock.LvmLockedError{
 				errors.New("data: Failed to acquire LVM lock"),
 			}
 			return
 		}
 		defer func() {
-			err2 := lock.LvmUnlock(db, vgName, lvName)
+			err2 := lckr.Unlock(db)
 			if err2 != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": err2,

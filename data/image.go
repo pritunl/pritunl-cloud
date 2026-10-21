@@ -767,7 +767,8 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
-	acquired, err := lock.LvmLock(db, vgName, lvName)
+	lckr := lock.NewLvmLocker(vgName, lvName)
+	acquired, err := lckr.Lock(db)
 	if err != nil {
 		return
 	}
@@ -779,7 +780,7 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 		return
 	}
 	defer func() {
-		e := lock.LvmUnlock(db, vgName, lvName)
+		e := lckr.Unlock(db)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": e,
