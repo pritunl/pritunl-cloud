@@ -1,15 +1,18 @@
 package deploy
 
 import (
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -18,8 +21,10 @@ import (
 )
 
 var (
-	disksLock     = utils.NewMultiTimeoutLock(5 * time.Minute)
-	backupLimiter = utils.NewLimiter(3)
+	disksLock       = disk.ActionLock
+	backupLimiter   = utils.NewLimiter(3)
+	backupRetry     = map[bson.ObjectID]time.Time{}
+	backupRetryLock = sync.Mutex{}
 )
 
 type Disks struct {
@@ -54,6 +59,18 @@ func (d *Disks) provision(dsk *disk.Disk) {
 
 		newSize, err := data.CreateDisk(db, dsk)
 		if err != nil {
+			if _, ok := err.(*lock.LvmLockedError); ok {
+				err = nil
+
+				logrus.WithFields(logrus.Fields{
+					"disk_id": dsk.Id.Hex(),
+				}).Info("deploy: Disk locked by another node, waiting")
+				time.Sleep(time.Duration(
+					settings.Hypervisor.LvmLockedDelay) * time.Second)
+
+				return
+			}
+
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to provision disk")
@@ -207,6 +224,18 @@ func (d *Disks) expand(dsk *disk.Disk) {
 
 		err = data.ExpandDisk(db, dsk)
 		if err != nil {
+			if _, ok := err.(*lock.LvmLockedError); ok {
+				err = nil
+
+				logrus.WithFields(logrus.Fields{
+					"disk_id": dsk.Id.Hex(),
+				}).Info("deploy: Disk locked by another node, waiting")
+				time.Sleep(time.Duration(
+					settings.Hypervisor.LvmLockedDelay) * time.Second)
+
+				return
+			}
+
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to expand disk")
@@ -278,6 +307,18 @@ func (d *Disks) resize(dsk *disk.Disk) {
 
 			err = data.ResizeDisk(db, dsk)
 			if err != nil {
+				if _, ok := err.(*lock.LvmLockedError); ok {
+					err = nil
+
+					logrus.WithFields(logrus.Fields{
+						"disk_id": dsk.Id.Hex(),
+					}).Info("deploy: Disk locked by another node, waiting")
+					time.Sleep(time.Duration(
+						settings.Hypervisor.LvmLockedDelay) * time.Second)
+
+					return
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"disk_id": dsk.Id.Hex(),
 					"error":   err,
@@ -534,6 +575,18 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 
 		err = dsk.Destroy(db)
 		if err != nil {
+			if _, ok := err.(*lock.LvmLockedError); ok {
+				err = nil
+
+				logrus.WithFields(logrus.Fields{
+					"disk_id": dsk.Id.Hex(),
+				}).Info("deploy: Disk locked by another node, waiting")
+				time.Sleep(time.Duration(
+					settings.Hypervisor.LvmLockedDelay) * time.Second)
+
+				return
+			}
+
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to destroy disk")
@@ -547,6 +600,14 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 
 func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 	if time.Since(dsk.LastBackup) < 24*time.Hour {
+		return
+	}
+
+	backupRetryLock.Lock()
+	backupDelay := time.Now().Before(backupRetry[dsk.Id])
+	backupRetryLock.Unlock()
+
+	if backupDelay {
 		return
 	}
 
@@ -584,8 +645,7 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 		}).Info("deploy: Scheduling automatic disk backup")
 
 		dsk.Action = disk.Backup
-		dsk.LastBackup = time.Now()
-		err := dsk.CommitFields(db, set.NewSet("action", "last_backup"))
+		err := dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -598,15 +658,29 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 
 		virt := d.stat.GetVirt(dsk.Instance)
 
+		fields := set.NewSet("action")
+
 		err = data.CreateBackup(db, dsk, virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to backup disk")
+
+			backupRetryLock.Lock()
+			backupRetry[dsk.Id] = time.Now().Add(time.Duration(
+				settings.Hypervisor.BackupRetryDelay) * time.Second)
+			backupRetryLock.Unlock()
+		} else {
+			dsk.LastBackup = time.Now()
+			fields.Add("last_backup")
+
+			backupRetryLock.Lock()
+			delete(backupRetry, dsk.Id)
+			backupRetryLock.Unlock()
 		}
 
 		dsk.Action = ""
-		err = dsk.CommitFields(db, set.NewSet("action"))
+		err = dsk.CommitFields(db, fields)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -618,6 +692,14 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 		event.PublishDispatch(db, "disk.change")
 		event.PublishDispatch(db, "image.change")
 	}()
+}
+
+func (d *Disks) owned(dsk *disk.Disk) bool {
+	if dsk.Type != disk.Lvm || dsk.Instance.IsZero() {
+		return true
+	}
+
+	return d.stat.GetInstace(dsk.Instance) != nil
 }
 
 func (d *Disks) Deploy(db *database.Database) (err error) {
@@ -632,6 +714,10 @@ func (d *Disks) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, dsk := range disks {
+		if !d.owned(dsk) {
+			continue
+		}
+
 		if dsk.State == disk.Provision {
 			d.provision(dsk)
 		} else if dsk.IsActive() {
