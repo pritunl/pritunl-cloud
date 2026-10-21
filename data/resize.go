@@ -107,7 +107,7 @@ func expandDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	if !acquired {
-		err = &errortypes.WriteError{
+		err = &lock.LvmLockedError{
 			errors.New("data: Failed to acquire LVM lock"),
 		}
 		return
@@ -662,7 +662,7 @@ func resizeDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	if !acquired {
-		err = &errortypes.WriteError{
+		err = &lock.LvmLockedError{
 			errors.New("data: Failed to acquire LVM lock"),
 		}
 		return
