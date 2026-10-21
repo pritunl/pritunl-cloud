@@ -219,6 +219,7 @@ func (d *Disk) Validate(db *database.Database) (
 				Error:   "lv_size_invalid",
 				Message: "LV size cannot be greater than disk size",
 			}
+			return
 		}
 		break
 	default:
