@@ -23,6 +23,9 @@ type hypervisor struct {
 	GuestfsMemory          int    `bson:"guestfs_memory"`
 	GuestfsCachePath       string `bson:"guestfs_cache_path"`
 	DiskAio                string `bson:"disk_aio"`
+	LvmLockedDelay         int    `bson:"lvm_locked_delay" default:"10"`
+	BackupRetryDelay       int    `bson:"backup_retry_delay" default:"3600"`
+	DiskBackupTimeout      int    `bson:"disk_backup_timeout" default:"7200"`
 	NoSandbox              bool   `bson:"no_sandbox"`
 	GlHostMem              int    `bson:"gl_host_mem" default:"2048"`
 	BridgeIfaceName        string `bson:"bridge_iface_name" default:"br0"`
