@@ -205,16 +205,47 @@ func writeOvmfVars(virt *vm.VirtualMachine, force bool) (err error) {
 	return
 }
 
-func activateDisks(db *database.Database,
-	virt *vm.VirtualMachine) (err error) {
+func virtLvmDisks(db *database.Database,
+	virt *vm.VirtualMachine) (disks []*disk.Disk, err error) {
 
-	for _, virtDsk := range virt.Disks {
-		dsk, e := disk.Get(db, virtDsk.Id)
+	for _, device := range virt.DriveDevices {
+		if device.Type != vm.Lvm {
+			continue
+		}
+
+		dskId, ok := utils.ParseObjectId(device.Id)
+		if !ok || dskId.IsZero() {
+			err = &errortypes.ParseError{
+				errors.Newf("qemu: Failed to parse LVM disk ID '%s'",
+					device.Id),
+			}
+			return
+		}
+
+		dsk, e := disk.Get(db, dskId)
 		if e != nil {
+			if _, ok := e.(*database.NotFoundError); ok {
+				continue
+			}
 			err = e
 			return
 		}
 
+		disks = append(disks, dsk)
+	}
+
+	return
+}
+
+func activateDisks(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	disks, err := virtLvmDisks(db, virt)
+	if err != nil {
+		return
+	}
+
+	for _, dsk := range disks {
 		err = data.ActivateDisk(db, dsk)
 		if err != nil {
 			return
@@ -227,16 +258,39 @@ func activateDisks(db *database.Database,
 func deactivateDisks(db *database.Database,
 	virt *vm.VirtualMachine) (err error) {
 
+	disks := []*disk.Disk{}
 	for _, virtDsk := range virt.Disks {
 		dsk, e := disk.Get(db, virtDsk.Id)
 		if e != nil {
+			if _, ok := e.(*database.NotFoundError); ok {
+				continue
+			}
 			err = e
 			return
 		}
 
+		disks = append(disks, dsk)
+	}
+
+	lvmDisks, err := virtLvmDisks(db, virt)
+	if err != nil {
+		return
+	}
+	disks = append(disks, lvmDisks...)
+
+	for _, dsk := range disks {
 		err = data.DeactivateDisk(db, dsk)
 		if err != nil {
 			return
+		}
+
+		acquired, lockId := disk.ActionLock.LockOpen(dsk.Id.Hex())
+		if !acquired {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+			}).Info("qemu: Disk action active, skipping scan")
+			continue
 		}
 
 		err = data.ScanDisk(db, dsk)
@@ -245,7 +299,7 @@ func deactivateDisks(db *database.Database,
 				"instance_id": virt.Id.Hex(),
 				"disk_id":     dsk.Id.Hex(),
 				"error":       err,
-			}).Error("task: Failed to scan disk")
+			}).Error("qemu: Failed to scan disk")
 			err = nil
 			continue
 		}
@@ -256,10 +310,12 @@ func deactivateDisks(db *database.Database,
 				"instance_id": virt.Id.Hex(),
 				"disk_id":     dsk.Id.Hex(),
 				"error":       err,
-			}).Error("task: Failed to commit disk file system")
+			}).Error("qemu: Failed to commit disk file system")
 			err = nil
 			continue
 		}
+
+		disk.ActionLock.Unlock(dsk.Id.Hex(), lockId)
 	}
 
 	event.PublishDispatch(db, "disk.change")
@@ -492,6 +548,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				err = nil
 				continue
 			}
+			return
+		}
+
+		err = data.DeactivateDisk(db, ds)
+		if err != nil {
 			return
 		}
 
