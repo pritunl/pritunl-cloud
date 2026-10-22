@@ -2,6 +2,7 @@ package lvm
 
 import (
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -15,7 +16,9 @@ import (
 
 var (
 	cachedNodePools          []*pool.Pool
+	cachedNodePoolsZone      bson.ObjectID
 	cachedNodePoolsTimestamp time.Time
+	cachedNodePoolsLock      sync.Mutex
 )
 
 type report struct {
@@ -39,7 +42,12 @@ type vgDetails struct {
 func GetAvailablePools(db *database.Database, zoneId bson.ObjectID) (
 	availablePools []*pool.Pool, err error) {
 
-	if time.Since(cachedNodePoolsTimestamp) < 30*time.Second {
+	cachedNodePoolsLock.Lock()
+	defer cachedNodePoolsLock.Unlock()
+
+	if cachedNodePoolsZone == zoneId &&
+		time.Since(cachedNodePoolsTimestamp) < 30*time.Second {
+
 		availablePools = cachedNodePools
 		return
 	}
@@ -89,6 +97,7 @@ func GetAvailablePools(db *database.Database, zoneId bson.ObjectID) (
 	}
 
 	cachedNodePools = availablePools
+	cachedNodePoolsZone = zoneId
 	cachedNodePoolsTimestamp = time.Now()
 
 	return
