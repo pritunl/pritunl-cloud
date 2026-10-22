@@ -11,6 +11,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -299,6 +300,26 @@ func GetRunWithSupport() (supported bool, err error) {
 
 	if major >= 9 {
 		supported = true
+	}
+
+	return
+}
+
+func GetDiskAio() (aio string, err error) {
+	aio = settings.Hypervisor.DiskAio
+	if aio != "" {
+		return
+	}
+
+	supported, err := GetUringSupport()
+	if err != nil {
+		return
+	}
+
+	if supported {
+		aio = "io_uring"
+	} else {
+		aio = "native"
 	}
 
 	return
