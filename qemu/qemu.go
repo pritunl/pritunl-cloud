@@ -508,19 +508,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, "-device", "intel-iommu,intremap=on,caching-mode=on")
 	}
 
-	diskAio := settings.Hypervisor.DiskAio
-	if diskAio == "" {
-		supported, e := features.GetUringSupport()
-		if e != nil {
-			err = e
-			return
-		}
-
-		if supported {
-			diskAio = "io_uring"
-		} else {
-			diskAio = "native"
-		}
+	diskAio, e := features.GetDiskAio()
+	if e != nil {
+		err = e
+		return
 	}
 
 	for _, disk := range q.Disks {
