@@ -260,7 +260,6 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
-					"organization":  bson.NilObjectID,
 					"release":       i.Release,
 					"build":         i.Build,
 					"storage":       i.Storage,
