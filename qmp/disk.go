@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -65,19 +64,10 @@ func AddDisk(vmId bson.ObjectID, dsk *vm.Disk) (err error) {
 		"disk_index":  dsk.Index,
 	}).Info("qmp: Connecting virtual disk")
 
-	diskAio := settings.Hypervisor.DiskAio
-	if diskAio == "" {
-		supported, e := features.GetUringSupport()
-		if e != nil {
-			err = e
-			return
-		}
-
-		if supported {
-			diskAio = "io_uring"
-		} else {
-			diskAio = "threads"
-		}
+	diskAio, e := features.GetDiskAio()
+	if e != nil {
+		err = e
+		return
 	}
 
 	conn := NewConnection(vmId, true)
@@ -190,21 +180,6 @@ func RemoveDisk(vmId bson.ObjectID, dsk *vm.Disk) (err error) {
 		"disk_id":     dsk.Id.Hex(),
 		"disk_index":  dsk.Index,
 	}).Info("qmp: Disconnecting virtual disk")
-
-	diskAio := settings.Hypervisor.DiskAio
-	if diskAio == "" {
-		supported, e := features.GetUringSupport()
-		if e != nil {
-			err = e
-			return
-		}
-
-		if supported {
-			diskAio = "io_uring"
-		} else {
-			diskAio = "threads"
-		}
-	}
 
 	conn := NewConnection(vmId, true)
 	defer conn.Close()
