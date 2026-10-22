@@ -1,6 +1,7 @@
 package qmp
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -78,6 +79,10 @@ type CommandReturn struct {
 
 type EventCallback func() (resp interface{}, err error)
 
+const (
+	readerSize = 64 * 1024
+)
+
 var (
 	socketsLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
@@ -85,6 +90,7 @@ var (
 type Connection struct {
 	vmId     bson.ObjectID
 	sock     net.Conn
+	reader   *bufio.Reader
 	lockId   bson.ObjectID
 	deadline time.Duration
 	logging  bool
@@ -133,40 +139,20 @@ func (c *Connection) connect() (info *QemuInfo, err error) {
 		return
 	}
 
+	c.reader = bufio.NewReaderSize(c.sock, readerSize)
+
 	var infoByt []byte
 	for {
-		buffer := make([]byte, 5000000)
-		n, e := c.sock.Read(buffer)
+		line, e := c.readLine()
 		if e != nil {
-			err = &errortypes.ReadError{
-				errors.Wrap(e, "qmp: Failed to read socket"),
-			}
+			err = e
 			return
 		}
-		buffer = buffer[:n]
 
-		lines := bytes.Split(buffer, []byte("\n"))
-		for _, line := range lines {
-			if !constants.Production && c.logging {
-				fmt.Println(string(line))
-			}
-
-			if bytes.Contains(line, []byte(`"QMP"`)) {
-				infoByt = line
-				break
-			}
-		}
-
-		if infoByt != nil {
+		if isGreeting(line) {
+			infoByt = line
 			break
 		}
-	}
-
-	if infoByt == nil {
-		err = &errortypes.ReadError{
-			errors.New("qmp: No info message from socket"),
-		}
-		return
 	}
 
 	connInfo := &QmpCapabilities{}
@@ -231,53 +217,17 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 	}
 
 	var returnData []byte
-	returnWait := make(chan bool, 2)
-
-	go func() {
-		defer func() {
-			returnWait <- true
-		}()
-
-		var pending []byte
-		for {
-			buffer := make([]byte, 5000000)
-			n, e := c.sock.Read(buffer)
-			if e != nil {
-				err = &errortypes.ReadError{
-					errors.Wrap(e, "qmp: Failed to read socket"),
-				}
-				return
-			}
-
-			data := append(pending, buffer[:n]...)
-			lines := bytes.Split(data, []byte("\n"))
-			pending = append([]byte(nil), lines[len(lines)-1]...)
-
-			for _, line := range lines[:len(lines)-1] {
-				if !constants.Production && c.logging {
-					fmt.Println(string(line))
-				}
-
-				if isResponse(line) {
-					returnData = line
-					returnWait <- true
-
-					return
-				}
-			}
+	for {
+		line, e := c.readLine()
+		if e != nil {
+			err = e
+			return
 		}
-	}()
 
-	<-returnWait
-	if err != nil {
-		return
-	}
-
-	if returnData == nil {
-		err = &errortypes.ReadError{
-			errors.New("qmp: No data from socket"),
+		if isResponse(line) {
+			returnData = line
+			break
 		}
-		return
 	}
 
 	err = json.Unmarshal(returnData, resp)
@@ -295,67 +245,112 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 	return
 }
 
-func isResponse(line []byte) bool {
-	msg := map[string]json.RawMessage{}
+func messageKeys(line []byte) (keys map[string]json.RawMessage, ok bool) {
+	keys = map[string]json.RawMessage{}
 
-	err := json.Unmarshal(line, &msg)
+	err := json.Unmarshal(line, &keys)
 	if err != nil {
+		return
+	}
+
+	ok = true
+
+	return
+}
+
+func isGreeting(line []byte) bool {
+	keys, ok := messageKeys(line)
+	if !ok {
 		return false
 	}
 
-	_, ok := msg["event"]
+	_, ok = keys["QMP"]
+
+	return ok
+}
+
+func isEvent(line []byte) bool {
+	keys, ok := messageKeys(line)
+	if !ok {
+		return false
+	}
+
+	_, ok = keys["event"]
+
+	return ok
+}
+
+func isResponse(line []byte) bool {
+	keys, ok := messageKeys(line)
+	if !ok {
+		return false
+	}
+
+	_, ok = keys["event"]
 	if ok {
 		return false
 	}
 
-	_, hasReturn := msg["return"]
-	_, hasError := msg["error"]
+	_, hasReturn := keys["return"]
+	_, hasError := keys["error"]
 
 	return hasReturn || hasError
 }
 
-func (c *Connection) Event(resp interface{}, callback EventCallback) (
-	err error) {
-
+func (c *Connection) readLine() (line []byte, err error) {
 	for {
-		buffer := make([]byte, 5000000)
-		n, e := c.sock.Read(buffer)
+		data, e := c.reader.ReadBytes('\n')
 		if e != nil {
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "qmp: Failed to read socket"),
 			}
 			return
 		}
-		buffer = buffer[:n]
 
-		lines := bytes.Split(buffer, []byte("\n"))
-		for _, line := range lines {
-			if !constants.Production && c.logging {
-				fmt.Println(string(line))
+		line = bytes.TrimSpace(data)
+		if len(line) == 0 {
+			continue
+		}
+
+		if !constants.Production && c.logging {
+			fmt.Println(string(line))
+		}
+
+		return
+	}
+}
+
+func (c *Connection) Event(resp interface{}, callback EventCallback) (
+	err error) {
+
+	for {
+		line, e := c.readLine()
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !isEvent(line) {
+			continue
+		}
+
+		err = json.Unmarshal(line, resp)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrapf(
+					err,
+					"qmp: Failed to unmarshal return '%s'",
+					string(line),
+				),
 			}
+			return
+		}
 
-			if bytes.Contains(line, []byte(`"event"`)) {
-				err = json.Unmarshal(line, resp)
-				if err != nil {
-					err = &errortypes.ParseError{
-						errors.Wrapf(
-							err,
-							"qmp: Failed to unmarshal return '%s'",
-							string(line),
-						),
-					}
-					return
-				}
-
-				resp, err = callback()
-				if err != nil || resp == nil {
-					return
-				}
-			}
+		resp, err = callback()
+		if err != nil || resp == nil {
+			return
 		}
 	}
-
-	return
 }
 
 func (c *Connection) Connect() (info *QemuInfo, err error) {
