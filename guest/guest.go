@@ -27,12 +27,6 @@ type Command struct {
 	Arguments map[string]interface{} `json:"arguments,omitempty"`
 }
 
-type Response struct {
-	Return  map[string]interface{} `json:"return"`
-	Error   map[string]interface{} `json:"error,omitempty"`
-	RawData []byte                 `json:"-"`
-}
-
 type rawResponse struct {
 	Return json.RawMessage        `json:"return"`
 	Error  map[string]interface{} `json:"error,omitempty"`
@@ -64,8 +58,8 @@ func writeCommand(conn net.Conn, cmd *Command) (err error) {
 	return
 }
 
-func execute(vmId bson.ObjectID, cmd *Command, timeout time.Duration) (
-	ret json.RawMessage, err error) {
+func executeOpt(vmId bson.ObjectID, cmd *Command, timeout time.Duration,
+	tolerateReply bool) (ret json.RawMessage, err error) {
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
@@ -146,6 +140,10 @@ func execute(vmId bson.ObjectID, cmd *Command, timeout time.Duration) (
 
 	line, e := reader.ReadBytes('\n')
 	if e != nil {
+		if tolerateReply {
+			return
+		}
+
 		err = &errortypes.ReadError{
 			errors.Wrap(e, "guest: Failed to read from guest agent"),
 		}
@@ -169,6 +167,17 @@ func execute(vmId bson.ObjectID, cmd *Command, timeout time.Duration) (
 	}
 
 	ret = resp.Return
+
+	return
+}
+
+func execute(vmId bson.ObjectID, cmd *Command, timeout time.Duration) (
+	ret json.RawMessage, err error) {
+
+	ret, err = executeOpt(vmId, cmd, timeout, false)
+	if err != nil {
+		return
+	}
 
 	return
 }
