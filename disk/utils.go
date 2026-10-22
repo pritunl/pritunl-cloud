@@ -453,12 +453,7 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
 		}
 	}
 
-	_, err = coll.UpdateMany(db, &bson.M{
-		"_id": &bson.M{
-			"$in": dskIds,
-		},
-		"organization": orgId,
-	}, &bson.M{
+	_, err = coll.UpdateMany(db, query, &bson.M{
 		"$set": doc,
 	})
 	if err != nil {
