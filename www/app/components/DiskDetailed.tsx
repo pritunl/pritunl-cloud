@@ -79,6 +79,9 @@ const css = {
 	save: {
 		paddingBottom: '10px',
 	} as React.CSSProperties,
+	controlButton: {
+		marginRight: '10px',
+	} as React.CSSProperties,
 	label: {
 		width: '100%',
 		maxWidth: '280px',
@@ -360,6 +363,32 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAction = (action: string, message: string): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+
+		let disk: DiskTypes.Disk = {
+			...this.props.disk,
+		};
+		disk.action = action;
+
+		DiskActions.commit(disk).then((): void => {
+			Alert.success(message);
+
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	instanceStatusClass(status: string): string {
 		switch (status) {
 			case 'Running':
@@ -579,26 +608,32 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				break;
 		}
 
+		let actionLabel = 'Action';
 		switch (this.props.disk.action) {
 			case 'destroy':
 				statusText = 'Destroying';
 				statusClass += ' bp5-text-intent-danger';
+				actionLabel = 'Destroy';
 				break;
 			case 'snapshot':
 				statusText = 'Snapshotting';
 				statusClass += ' bp5-text-intent-primary';
+				actionLabel = 'Snapshot';
 				break;
 			case 'backup':
 				statusText = 'Backing Up';
 				statusClass += ' bp5-text-intent-primary';
+				actionLabel = 'Backup';
 				break;
 			case 'restore':
 				statusText = 'Restoring';
 				statusClass += ' bp5-text-intent-primary';
+				actionLabel = 'Restore';
 				break;
 			case 'expand':
 				statusText = 'Expanding';
 				statusClass += ' bp5-text-intent-primary';
+				actionLabel = 'Expand';
 				break;
 		}
 
@@ -867,7 +902,40 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					});
 				}}
 				onSave={this.onSave}
-			/>
+			>
+				<ConfirmButton
+					label="Snapshot"
+					className="bp5-intent-primary bp5-icon-floppy-disk"
+					progressClassName="bp5-intent-primary"
+					style={css.controlButton}
+					disabled={this.state.disabled || !!this.props.disk.action}
+					onConfirm={(): void => {
+						this.onAction('snapshot', 'Disk snapshot started');
+					}}
+				/>
+				<ConfirmButton
+					label="Backup"
+					className="bp5-intent-primary bp5-icon-compressed"
+					progressClassName="bp5-intent-primary"
+					style={css.controlButton}
+					disabled={this.state.disabled || !!this.props.disk.action}
+					onConfirm={(): void => {
+						this.onAction('backup', 'Disk backup started');
+					}}
+				/>
+				<ConfirmButton
+					label={'Cancel ' + actionLabel}
+					className="bp5-intent-danger bp5-icon-cross"
+					progressClassName="bp5-intent-danger"
+					style={css.controlButton}
+					hidden={!this.props.disk.action}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.onAction('cancel',
+							'Disk ' + actionLabel.toLowerCase() + ' canceled');
+					}}
+				/>
+			</PageSave>
 		</td>;
 	}
 }
