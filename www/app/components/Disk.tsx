@@ -150,6 +150,10 @@ export default class Disk extends React.Component<Props, {}> {
 				statusText = 'Expanding';
 				statusClass += ' bp5-text-intent-primary';
 				break;
+			case 'resize':
+				statusText = 'Resizing Partitions';
+				statusClass += ' bp5-text-intent-primary';
+				break;
 		}
 
 		let resourceIcon = "";
