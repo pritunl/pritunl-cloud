@@ -31,6 +31,7 @@ export interface Disk {
 	backups?: Backup[];
 	instance_info?: InstanceInfo;
 	metadata?: Metadata;
+	action_data?: ActionData;
 }
 
 export interface InstanceInfo {
@@ -78,6 +79,24 @@ export interface LogicalVolume {
 	file_system?: string;
 	uuid?: string;
 	label?: string;
+}
+
+export interface ActionData {
+	partitions?: ResizePartition[];
+	volumes?: ResizeVolume[];
+}
+
+export interface ResizePartition {
+	number?: number;
+	size?: number;
+	fill?: boolean;
+}
+
+export interface ResizeVolume {
+	volume_group?: string;
+	name?: string;
+	size?: number;
+	fill?: boolean;
 }
 
 export interface Filter {
