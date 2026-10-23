@@ -1441,16 +1441,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			})
 		}
 
-		let backingImage = this.props.disk.backing_image;
-		if (backingImage) {
-			backingImage = backingImage.replace('-', '\n');
-
-			fields.splice(2, 0, {
-				label: 'Backing Image',
-				value: backingImage,
-			});
-		}
-
 		return <td
 			className="bp5-cell"
 			colSpan={5}
