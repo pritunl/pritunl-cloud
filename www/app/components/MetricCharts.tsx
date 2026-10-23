@@ -5,12 +5,12 @@ import MetricChart from './MetricChart';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as NodeActions from '../actions/NodeActions';
 import * as InstanceTypes from '../types/InstanceTypes';
+import * as NodeTypes from '../types/NodeTypes';
 import SearchInput from './SearchInput';
 
 interface Props {
 	instance?: string;
 	node?: string;
-	components?: InstanceTypes.Components;
 	disabled: boolean;
 }
 
@@ -21,7 +21,7 @@ interface State {
 	loading: {[key: string]: boolean};
 	cancelable: {[key: string]: boolean};
 	componentsFilter: string;
-	guestComponents: InstanceTypes.Components;
+	components: InstanceTypes.Components;
 }
 
 const css = {
@@ -113,7 +113,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 			loading: {},
 			cancelable: {},
 			componentsFilter: '',
-			guestComponents: null,
+			components: null,
 		};
 
 		this.loading = {};
@@ -122,7 +122,7 @@ export default class MetricCharts extends React.Component<Props, State> {
 
 	componentDidMount(): void {
 		if (!this.props.disabled) {
-			this.loadGuest();
+			this.loadComponents();
 		}
 	}
 
@@ -132,37 +132,49 @@ export default class MetricCharts extends React.Component<Props, State> {
 		}
 
 		if (prevProps.disabled || prevProps.instance !== this.props.instance ||
+				prevProps.node !== this.props.node ||
 				prevState.sync !== this.state.sync) {
-			this.loadGuest();
+			this.loadComponents();
 		}
 	}
 
-	loadGuest(): void {
+	loadComponents(): void {
 		let instanceId = this.props.instance;
-		if (!instanceId) {
-			return;
+		let nodeId = this.props.node;
+
+		if (instanceId) {
+			InstanceActions.loadGuest(instanceId).then(
+				(guest: InstanceTypes.Guest): void => {
+					if (instanceId !== this.props.instance) {
+						return;
+					}
+
+					this.setState({
+						...this.state,
+						components: guest || {},
+					});
+				},
+				(): void => {},
+			);
+		} else if (nodeId) {
+			NodeActions.loadMetric(nodeId).then(
+				(metric: NodeTypes.Metric): void => {
+					if (nodeId !== this.props.node) {
+						return;
+					}
+
+					this.setState({
+						...this.state,
+						components: metric || {},
+					});
+				},
+				(): void => {},
+			);
 		}
-
-		InstanceActions.loadGuest(instanceId).then(
-			(guest: InstanceTypes.Guest): void => {
-				if (instanceId !== this.props.instance) {
-					return;
-				}
-
-				this.setState({
-					...this.state,
-					guestComponents: guest || {},
-				});
-			},
-			(): void => {},
-		);
 	}
 
 	components(): InstanceTypes.Components {
-		if (this.props.instance) {
-			return this.state.guestComponents || {};
-		}
-		return this.props.components || {};
+		return this.state.components || {};
 	}
 
 	componentNames(all: string[]): string[] {
