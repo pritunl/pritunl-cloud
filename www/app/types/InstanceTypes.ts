@@ -17,7 +17,6 @@ export interface Instance {
 	node?: string;
 	shape?: string;
 	image?: string;
-	image_backing?: boolean;
 	disk_type?: string;
 	disk_pool?: string;
 	status?: string;
