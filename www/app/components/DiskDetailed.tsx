@@ -42,16 +42,35 @@ interface State {
 	instances: InstanceTypes.InstancesRo;
 	restoreImage: string;
 	resizeDisk: boolean;
+	resizeTarget: ResizeTarget;
+	resizeSize: number;
+	resizeFill: boolean;
+}
+
+interface ResizeTarget {
+	kind: string;
+	key: string;
+	name: string;
+	number?: number;
+	volumeGroup?: string;
+	volume?: string;
+	fileSystem: string;
+	size: number;
+	available: number;
+	min: number;
+	max: number;
 }
 
 interface FsSegment {
 	key: string;
 	label: string;
 	detail: string;
-	title: string;
+	name: string;
+	info: [string, string][];
 	size: number;
 	fileSystem?: string;
 	free?: boolean;
+	resize?: ResizeTarget;
 }
 
 const fsMinGap = 16 * 1024 * 1024;
@@ -72,6 +91,22 @@ function fsName(fileSystem: string): string {
 		return 'unformatted';
 	}
 	return fileSystem;
+}
+
+const gibBytes = 1024 * 1024 * 1024;
+const mibBytes = 1024 * 1024;
+
+function bytesToGb(bytes: number): number {
+	return Math.floor((bytes / gibBytes) * 10) / 10;
+}
+
+function gbToBytes(gb: number): number {
+	return Math.round(gb * gibBytes);
+}
+
+function fsResizable(fileSystem: string): boolean {
+	return fileSystem === 'xfs' || fileSystem === 'ext4' ||
+		fileSystem === 'lvm';
 }
 
 const css = {
@@ -236,15 +271,72 @@ const css = {
 		whiteSpace: 'nowrap',
 		textOverflow: 'ellipsis',
 	} as React.CSSProperties,
-	fsTable: {
-		width: '100%',
-		marginTop: '2px',
+	fsTip: {
+		minWidth: '180px',
+		maxWidth: '360px',
 		fontSize: '11px',
+		lineHeight: '16px',
 		fontFamily: Theme.monospaceFont,
 		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
-	fsUuid: {
+	fsTipHeader: {
+		display: 'flex',
+		alignItems: 'center',
+		fontSize: '12px',
+		fontWeight: 600,
+	} as React.CSSProperties,
+	fsTipSwatch: {
+		flex: '0 0 auto',
+		width: '10px',
+		height: '10px',
+		marginRight: '7px',
+		borderRadius: '2px',
+		boxSizing: 'border-box',
+	} as React.CSSProperties,
+	fsTipDivider: {
+		height: '1px',
+		margin: '6px 0',
+		backgroundColor: 'currentColor',
+		opacity: 0.2,
+	} as React.CSSProperties,
+	fsTipGrid: {
+		display: 'grid',
+		gridTemplateColumns: 'auto minmax(0, 1fr)',
+		columnGap: '12px',
+		rowGap: '1px',
+	} as React.CSSProperties,
+	fsTipLabel: {
+		opacity: 0.65,
+		whiteSpace: 'nowrap',
+	} as React.CSSProperties,
+	fsTipValue: {
 		wordBreak: 'break-all',
+	} as React.CSSProperties,
+	fsTipHint: {
+		display: 'flex',
+		alignItems: 'center',
+		opacity: 0.75,
+	} as React.CSSProperties,
+	fsTipHintIcon: {
+		marginRight: '6px',
+		fontSize: '12px',
+	} as React.CSSProperties,
+	fsSegmentIcon: {
+		marginLeft: '5px',
+		fontSize: '12px',
+		opacity: 0.7,
+	} as React.CSSProperties,
+	fsResizeStatus: {
+		marginTop: '8px',
+	} as React.CSSProperties,
+	fsResizeNote: {
+		marginBottom: '4px',
+	} as React.CSSProperties,
+	resizeDialog: {
+		width: '420px',
+	} as React.CSSProperties,
+	resizeDialogNote: {
+		marginTop: '6px',
 	} as React.CSSProperties,
 };
 
@@ -259,6 +351,9 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			instances: null,
 			restoreImage: null,
 			resizeDisk: false,
+			resizeTarget: null,
+			resizeSize: 0,
+			resizeFill: false,
 		};
 	}
 
@@ -604,40 +699,350 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		</div>;
 	}
 
+	canResize(): boolean {
+		let disk = this.props.disk;
+		if (disk.action || !disk.metadata) {
+			return false;
+		}
+
+		let inst = disk.instance_info;
+		if (disk.instance && inst && inst.status !== 'Stopped' &&
+				inst.status !== 'Failed') {
+			return false;
+		}
+
+		return true;
+	}
+
+	openResizeDialog(target: ResizeTarget): void {
+		this.setState({
+			...this.state,
+			resizeTarget: target,
+			resizeSize: bytesToGb(target.size),
+			resizeFill: false,
+		});
+	}
+
+	closeResizeDialog = (): void => {
+		this.setState({
+			...this.state,
+			resizeTarget: null,
+		});
+	}
+
+	onResize = (): void => {
+		let target = this.state.resizeTarget;
+		if (!target) {
+			return;
+		}
+
+		let fill = this.state.resizeFill;
+		let size = fill ? 0 : gbToBytes(this.state.resizeSize);
+		let data: DiskTypes.ActionData = {
+			partitions: [],
+			volumes: [],
+		};
+
+		if (target.kind === 'partition') {
+			data.partitions.push({
+				number: target.number,
+				size: size,
+				fill: fill,
+			});
+		} else {
+			data.volumes.push({
+				volume_group: target.volumeGroup,
+				name: target.volume,
+				size: size,
+				fill: fill,
+			});
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+
+		DiskActions.resize(this.props.disk.id, data).then((): void => {
+			Alert.success('Disk resize started');
+
+			this.setState({
+				...this.state,
+				disabled: false,
+				resizeTarget: null,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	renderResizeDialog(): JSX.Element {
+		let target = this.state.resizeTarget;
+		if (!target) {
+			return null;
+		}
+
+		let fill = this.state.resizeFill;
+		let size = this.state.resizeSize;
+		let current = bytesToGb(target.size);
+		let changed = fill || size !== current;
+		let valid = fill || (size >= target.min && size <= target.max);
+
+		let title = 'Resize Volume ' + target.name;
+		let help = 'New size in gigabytes of the logical volume. ' +
+			'Volumes can grow into the free space of the volume group.';
+		let fillHelp = 'Grow the volume to fill the free space of the ' +
+			'volume group.';
+		if (target.kind === 'partition') {
+			title = 'Resize ' + target.name;
+			help = 'New size in gigabytes of the partition. Partitions ' +
+				'can only grow into the unallocated space after them.';
+			fillHelp = 'Grow the partition to fill the unallocated ' +
+				'space after it.';
+		}
+
+		let note: JSX.Element = null;
+		if (target.fileSystem === 'xfs') {
+			note = <div className="bp5-text-muted" style={css.resizeDialogNote}>
+				XFS file systems cannot be shrunk.
+			</div>;
+		} else if (target.fileSystem === 'ext4') {
+			note = <div className="bp5-text-muted" style={css.resizeDialogNote}>
+				Shrinking below the used space of the file system will fail.
+			</div>;
+		}
+
+		return <Blueprint.Dialog
+			title={title}
+			style={css.resizeDialog}
+			isOpen={true}
+			usePortal={true}
+			portalContainer={document.body}
+			onClose={this.closeResizeDialog}
+		>
+			<div className="bp5-dialog-body">
+				<PageInfo
+					fields={[
+						{
+							label: 'File System',
+							value: fsName(target.fileSystem),
+						},
+						{
+							label: 'Current Size',
+							value: MiscUtils.humanReadableBytes(target.size),
+						},
+						{
+							label: 'Maximum Size',
+							value: MiscUtils.humanReadableBytes(
+								target.available),
+						},
+					]}
+				/>
+				<PageNumInput
+					label="New Size"
+					help={help}
+					min={target.min}
+					max={target.max}
+					minorStepSize={0.1}
+					stepSize={1}
+					majorStepSize={5}
+					disabled={this.state.disabled || fill}
+					selectAllOnFocus={true}
+					value={size}
+					onChange={(val: number): void => {
+						this.setState({
+							...this.state,
+							resizeSize: val,
+						});
+					}}
+				/>
+				<PageSwitch
+					label="Use all available space"
+					help={fillHelp}
+					disabled={this.state.disabled}
+					checked={fill}
+					onToggle={(): void => {
+						this.setState({
+							...this.state,
+							resizeFill: !fill,
+						});
+					}}
+				/>
+				{note}
+			</div>
+			<div className="bp5-dialog-footer">
+				<div className="bp5-dialog-footer-actions">
+					<button
+						className="bp5-button"
+						type="button"
+						onClick={this.closeResizeDialog}
+					>Cancel</button>
+					<button
+						className="bp5-button bp5-intent-primary"
+						type="button"
+						disabled={this.state.disabled || !changed || !valid}
+						onClick={this.onResize}
+					>Resize</button>
+				</div>
+			</div>
+		</Blueprint.Dialog>;
+	}
+
+	renderResizeStatus(): JSX.Element {
+		let disk = this.props.disk;
+		let inst = disk.instance_info;
+		let running = disk.instance && inst && inst.status !== 'Stopped' &&
+			inst.status !== 'Failed';
+		let elems: JSX.Element[] = [];
+
+		if (disk.action === 'resize') {
+			elems.push(
+				<div
+					key="resizing"
+					className="bp5-text-muted"
+					style={css.fsResizeNote}
+				>Resizing partitions and volumes...</div>,
+			);
+		} else if (!disk.action && running) {
+			elems.push(
+				<div
+					key="running"
+					className="bp5-text-muted"
+					style={css.fsResizeNote}
+				>Stop the instance to resize partitions and volumes.</div>,
+			);
+		}
+
+		return <div style={css.fsResizeStatus}>{elems}</div>;
+	}
+
+
+	renderFsTooltip(seg: FsSegment, active: boolean): JSX.Element {
+		let swatch: React.CSSProperties = {
+			...css.fsTipSwatch,
+		};
+		if (seg.free) {
+			swatch.border = '1px dashed rgba(' + fsColorDefault + ', 0.8)';
+		} else {
+			let color = fsColors[seg.fileSystem] || fsColorDefault;
+			swatch.backgroundColor = 'rgba(' + color + ', 0.45)';
+			swatch.border = '1px solid rgb(' + color + ')';
+		}
+
+		let rows: JSX.Element[] = [];
+		for (let item of seg.info) {
+			rows.push(<div key={item[0]} style={css.fsTipLabel}>
+				{item[0]}
+			</div>);
+			rows.push(<div key={item[0] + '-value'} style={css.fsTipValue}>
+				{item[1]}
+			</div>);
+		}
+
+		let hint: JSX.Element = null;
+		if (active) {
+			hint = <div>
+				<div style={css.fsTipDivider}/>
+				<div style={css.fsTipHint}>
+					<span
+						className="bp5-icon-standard bp5-icon-arrows-horizontal"
+						style={css.fsTipHintIcon}
+					/>
+					Click to resize
+				</div>
+			</div>;
+		}
+
+		return <div style={css.fsTip}>
+			<div style={css.fsTipHeader}>
+				<div style={swatch}/>
+				<div>{seg.name}</div>
+			</div>
+			<div style={css.fsTipDivider}/>
+			<div style={css.fsTipGrid}>{rows}</div>
+			{hint}
+		</div>;
+	}
+
 	renderFsSegments(segments: FsSegment[], total: number): JSX.Element {
 		let elems: JSX.Element[] = [];
+		let canResize = this.canResize();
+		let dialogOpen = !!this.state.resizeTarget;
 
 		for (let seg of segments) {
 			let percent = total > 0 ? (seg.size / total) * 100 : 0;
-			let style: React.CSSProperties = {
-				...css.fsSegment,
-				flex: percent.toFixed(4) + ' 1 0px',
-			};
+			let active = canResize && !!seg.resize;
+			let target = seg.resize;
 
-			if (seg.free) {
-				style = {
-					...style,
-					...css.fsSegmentFree,
-				};
-			} else {
-				let color = fsColors[seg.fileSystem] || fsColorDefault;
-				style.backgroundColor = 'rgba(' + color + ', 0.22)';
-				style.border = '1px solid rgba(' + color + ', 0.75)';
+			let icon: JSX.Element = null;
+			if (active) {
+				icon = <span
+					className="bp5-icon-standard bp5-icon-arrows-horizontal"
+					style={css.fsSegmentIcon}
+				/>;
 			}
 
 			elems.push(
-				<div key={seg.key} style={style} title={seg.title}>
-					<div style={css.fsSegmentLine}>{seg.label}</div>
-					<div
-						className="bp5-text-muted"
-						style={css.fsSegmentLine}
-					>{seg.detail}</div>
-				</div>,
+				<Blueprint.Tooltip
+					key={seg.key}
+					content={this.renderFsTooltip(seg, active)}
+					placement="top"
+					popoverClassName="card-tooltip"
+					hoverOpenDelay={200}
+					openOnTargetFocus={false}
+					disabled={dialogOpen}
+					renderTarget={({isOpen, ...tooltipProps}): JSX.Element => {
+						let style: React.CSSProperties = {
+							...css.fsSegment,
+							flex: percent.toFixed(4) + ' 1 0px',
+						};
+
+						if (seg.free) {
+							style = {
+								...style,
+								...css.fsSegmentFree,
+							};
+							if (isOpen) {
+								style.backgroundColor = 'rgba(' +
+									fsColorDefault + ', 0.12)';
+							}
+						} else {
+							let color = fsColors[seg.fileSystem] ||
+								fsColorDefault;
+							style.backgroundColor = 'rgba(' + color + ', ' +
+								(isOpen ? '0.45' : '0.22') + ')';
+							style.border = '1px solid rgba(' + color + ', ' +
+								(isOpen ? '1' : '0.75') + ')';
+						}
+
+						if (active) {
+							style.cursor = 'pointer';
+						}
+
+						return <div
+							{...tooltipProps}
+							style={style}
+							onClick={active ? (): void => {
+								this.openResizeDialog(target);
+							} : undefined}
+						>
+							<div style={css.fsSegmentLine}>{seg.label}{icon}</div>
+							<div
+								className="bp5-text-muted"
+								style={css.fsSegmentLine}
+							>{seg.detail}</div>
+						</div>;
+					}}
+				/>,
 			);
 		}
 
 		return <div style={css.fsBar}>{elems}</div>;
 	}
+
 
 	renderFsBar(key: string, label: string, detail: string,
 		segments: FsSegment[], total: number): JSX.Element {
@@ -652,18 +1057,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		</div>;
 	}
 
-	renderFsRow(key: string, name: string, fileSystem: string,
-		label: string, size: number, uuid: string): JSX.Element {
-
-		return <tr key={key}>
-			<td>{name}</td>
-			<td>{fileSystem}</td>
-			<td>{label || '-'}</td>
-			<td>{MiscUtils.humanReadableBytes(size)}</td>
-			<td style={css.fsUuid}>{uuid || '-'}</td>
-		</tr>;
-	}
-
 	renderFileSystem(): JSX.Element {
 		let info = this.props.disk.metadata;
 		if (!info || !info.size) {
@@ -675,7 +1068,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 
 		let diskSegments: FsSegment[] = [];
 		let vgBars: JSX.Element[] = [];
-		let rows: JSX.Element[] = [];
 		let pos = 0;
 
 		let addFree = (start: number, size: number): void => {
@@ -688,15 +1080,15 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				key: 'free-' + start,
 				label: 'Unallocated',
 				detail: sizeStr,
-				title: 'Unallocated ' + sizeStr,
+				name: 'Unallocated',
+				info: [['Size', sizeStr]],
 				size: size,
 				free: true,
 			});
-			rows.push(this.renderFsRow('free-' + start, 'Unallocated',
-				'-', '', size, ''));
 		};
 
-		for (let part of partitions) {
+		for (let i = 0; i < partitions.length; i++) {
+			let part = partitions[i];
 			let start = part.start || 0;
 			let size = part.size || 0;
 			let key = 'part-' + part.number + '-' + start;
@@ -708,21 +1100,63 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			let name = part.number ? 'Partition ' + part.number : 'Disk';
 			let fs = fsName(part.file_system);
 			let sizeStr = MiscUtils.humanReadableBytes(size);
+			let vg = part.volume_group;
+
+			let resize: ResizeTarget = null;
+			if (part.number && fsResizable(part.file_system)) {
+				let next = partitions[i + 1];
+				let limit = next ? (next.start || 0) : (info.size || 0);
+				if (!next && info.table === 'gpt') {
+					limit -= mibBytes;
+				}
+				let available = Math.max(limit - start, size);
+
+				let min = 1;
+				if (part.file_system === 'xfs') {
+					min = bytesToGb(size);
+				} else if (part.file_system === 'lvm') {
+					min = Math.max(1, bytesToGb(
+						size - (vg ? (vg.free || 0) : 0)));
+				}
+
+				resize = {
+					kind: 'partition',
+					key: key,
+					name: name,
+					number: part.number,
+					fileSystem: part.file_system,
+					size: size,
+					available: available,
+					min: min,
+					max: bytesToGb(available),
+				};
+			}
+
+			let partInfo: [string, string][] = [
+				['File System', fs],
+				['Size', sizeStr],
+			];
+			if (vg) {
+				partInfo.push(['Volume Group', vg.name]);
+			}
+			if (part.label) {
+				partInfo.push(['Label', part.label]);
+			}
+			if (part.uuid) {
+				partInfo.push(['UUID', part.uuid]);
+			}
 
 			diskSegments.push({
 				key: key,
 				label: name,
 				detail: fs + ' \u00b7 ' + sizeStr,
-				title: name + '\n' + fs + ' ' + sizeStr +
-					(part.label ? '\nLabel: ' + part.label : '') +
-					(part.uuid ? '\nUUID: ' + part.uuid : ''),
+				name: name,
+				info: partInfo,
 				size: size,
 				fileSystem: part.file_system,
+				resize: resize,
 			});
-			rows.push(this.renderFsRow(key, name, fs, part.label,
-				size, part.uuid));
 
-			let vg = part.volume_group;
 			if (vg) {
 				let vgSegments: FsSegment[] = [];
 
@@ -732,19 +1166,47 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					let lvSize = lv.size || 0;
 					let lvSizeStr = MiscUtils.humanReadableBytes(lvSize);
 
+					let lvResize: ResizeTarget = null;
+					if (lv.file_system === 'xfs' ||
+							lv.file_system === 'ext4') {
+						let lvAvailable = lvSize + (vg.free || 0);
+						lvResize = {
+							kind: 'volume',
+							key: 'lv-' + lvName,
+							name: lvName,
+							volumeGroup: vg.name,
+							volume: lv.name,
+							fileSystem: lv.file_system,
+							size: lvSize,
+							available: lvAvailable,
+							min: lv.file_system === 'xfs' ?
+								bytesToGb(lvSize) : 1,
+							max: bytesToGb(lvAvailable),
+						};
+					}
+
+					let lvInfo: [string, string][] = [
+						['Volume Group', vg.name],
+						['File System', lvFs],
+						['Size', lvSizeStr],
+					];
+					if (lv.label) {
+						lvInfo.push(['Label', lv.label]);
+					}
+					if (lv.uuid) {
+						lvInfo.push(['UUID', lv.uuid]);
+					}
+
 					vgSegments.push({
 						key: 'lv-' + lvName,
 						label: lv.name,
 						detail: lvFs + ' \u00b7 ' + lvSizeStr,
-						title: 'Logical Volume ' + lvName + '\n' +
-							lvFs + ' ' + lvSizeStr +
-							(lv.label ? '\nLabel: ' + lv.label : '') +
-							(lv.uuid ? '\nUUID: ' + lv.uuid : ''),
+						name: lv.name,
+						info: lvInfo,
 						size: lvSize,
 						fileSystem: lv.file_system,
+						resize: lvResize,
 					});
-					rows.push(this.renderFsRow('lv-' + lvName, lvName,
-						lvFs, lv.label, lvSize, lv.uuid));
 				}
 
 				let vgFree = vg.free || 0;
@@ -754,13 +1216,14 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						key: 'vg-free-' + vg.name,
 						label: 'Free',
 						detail: freeStr,
-						title: 'Volume Group ' + vg.name +
-							'\nFree ' + freeStr,
+						name: 'Free',
+						info: [
+							['Volume Group', vg.name],
+							['Size', freeStr],
+						],
 						size: vgFree,
 						free: true,
 					});
-					rows.push(this.renderFsRow('vg-free-' + vg.name,
-						vg.name + ' (free)', '-', '', vgFree, ''));
 				}
 
 				vgBars.push(this.renderFsBar('vg-' + vg.name,
@@ -802,24 +1265,12 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					MiscUtils.humanReadableBytes(info.size),
 					diskSegments, info.size)}
 				{vgBars}
-				<table
-					className="bp5-html-table bp5-compact"
-					style={css.fsTable}
-				>
-					<thead>
-						<tr>
-							<th>Partition</th>
-							<th>File System</th>
-							<th>Label</th>
-							<th>Size</th>
-							<th>UUID</th>
-						</tr>
-					</thead>
-					<tbody>{rows}</tbody>
-				</table>
+				{this.renderResizeStatus()}
 			</Blueprint.Card>
+			{this.renderResizeDialog()}
 		</div>;
 	}
+
 
 	render(): JSX.Element {
 		let disk: DiskTypes.Disk = this.state.disk ||
@@ -935,6 +1386,11 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				statusText = 'Expanding';
 				statusClass += ' bp5-text-intent-primary';
 				actionLabel = 'Expand';
+				break;
+			case 'resize':
+				statusText = 'Resizing Partitions';
+				statusClass += ' bp5-text-intent-primary';
+				actionLabel = 'Resize';
 				break;
 		}
 
