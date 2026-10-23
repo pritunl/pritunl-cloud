@@ -21,8 +21,6 @@ export interface Disk {
 	file_system?: string;
 	image?: string;
 	restore_image?: string;
-	backing?: boolean;
-	backing_image?: string;
 	index?: string;
 	size?: number;
 	lv_size?: number;
