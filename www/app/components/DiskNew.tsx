@@ -580,14 +580,6 @@ export default class DiskNew extends React.Component<Props, State> {
 								});
 							}}
 						/>
-						<PageSwitch
-							label="Linked disk image"
-							help="Link to source disk image instead of creating full copy. This will reduce disk size and provide faster creation."
-							checked={disk.backing}
-							onToggle={(): void => {
-								this.set('backing', !disk.backing);
-							}}
-						/>
 						<PageNumInput
 							label="LV Size"
 							help="Disk size in gigabytes of LVM logical volume. Must be less then disk size."
