@@ -1241,14 +1241,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 								});
 							}}
 						/>
-						<PageSwitch
-							label="Linked disk image"
-							help="Link to source disk image instead of creating full copy. This will reduce disk size and provide faster startup."
-							checked={instance.image_backing}
-							onToggle={(): void => {
-								this.set('image_backing', !instance.image_backing);
-							}}
-						/>
 						<label className="bp5-label">
 							Roles
 							<Help
