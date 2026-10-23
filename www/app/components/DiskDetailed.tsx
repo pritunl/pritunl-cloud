@@ -23,6 +23,7 @@ import * as InstanceTypes from '../types/InstanceTypes';
 import * as Alert from '../Alert';
 import PageTextArea from "./PageTextArea";
 import * as PoolTypes from "../types/PoolTypes";
+import * as MiscUtils from '../utils/MiscUtils';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -41,6 +42,39 @@ interface State {
 	instances: InstanceTypes.InstancesRo;
 	restoreImage: string;
 	resizeDisk: boolean;
+}
+
+interface FsSegment {
+	key: string;
+	label: string;
+	detail: string;
+	title: string;
+	size: number;
+	fileSystem?: string;
+	free?: boolean;
+}
+
+const fsMinGap = 16 * 1024 * 1024;
+const fsColorDefault = '143, 153, 168';
+const fsColors: {[key: string]: string} = {
+	'xfs': '45, 114, 210',
+	'ext4': '35, 133, 81',
+	'ext3': '35, 133, 81',
+	'ext2': '35, 133, 81',
+	'btrfs': '0, 153, 150',
+	'vfat': '125, 88, 192',
+	'swap': '171, 83, 160',
+	'LVM2_member': '200, 118, 25',
+};
+
+function fsName(fileSystem: string): string {
+	if (!fileSystem) {
+		return 'unformatted';
+	}
+	if (fileSystem === 'LVM2_member') {
+		return 'lvm';
+	}
+	return fileSystem;
 }
 
 const css = {
@@ -161,6 +195,59 @@ const css = {
 		flex: '2 1 auto',
 		width: 0,
 		margin: '0 5px',
+	} as React.CSSProperties,
+	fsScanned: {
+		fontSize: '11px',
+		fontWeight: 400,
+	} as React.CSSProperties,
+	fsCard: {
+		padding: '8px 10px 6px 10px',
+		marginBottom: '10px',
+	} as React.CSSProperties,
+	fsBlock: {
+		marginBottom: '10px',
+	} as React.CSSProperties,
+	fsBarHeader: {
+		alignItems: 'baseline',
+		marginBottom: '3px',
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	fsBar: {
+		display: 'flex',
+		width: '100%',
+		gap: '3px',
+	} as React.CSSProperties,
+	fsSegment: {
+		minWidth: '60px',
+		height: '38px',
+		padding: '3px 6px',
+		overflow: 'hidden',
+		boxSizing: 'border-box',
+		borderRadius: '3px',
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+		lineHeight: '15px',
+	} as React.CSSProperties,
+	fsSegmentFree: {
+		border: '1px dashed rgba(143, 153, 168, 0.6)',
+	} as React.CSSProperties,
+	fsSegmentLine: {
+		overflow: 'hidden',
+		whiteSpace: 'nowrap',
+		textOverflow: 'ellipsis',
+	} as React.CSSProperties,
+	fsTable: {
+		width: '100%',
+		marginTop: '2px',
+		fontSize: '11px',
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	fsUuid: {
+		wordBreak: 'break-all',
 	} as React.CSSProperties,
 };
 
@@ -516,6 +603,223 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						/>
 					</div>
 				</div>
+			</Blueprint.Card>
+		</div>;
+	}
+
+	renderFsSegments(segments: FsSegment[], total: number): JSX.Element {
+		let elems: JSX.Element[] = [];
+
+		for (let seg of segments) {
+			let percent = total > 0 ? (seg.size / total) * 100 : 0;
+			let style: React.CSSProperties = {
+				...css.fsSegment,
+				flex: percent.toFixed(4) + ' 1 0px',
+			};
+
+			if (seg.free) {
+				style = {
+					...style,
+					...css.fsSegmentFree,
+				};
+			} else {
+				let color = fsColors[seg.fileSystem] || fsColorDefault;
+				style.backgroundColor = 'rgba(' + color + ', 0.22)';
+				style.border = '1px solid rgba(' + color + ', 0.75)';
+			}
+
+			elems.push(
+				<div key={seg.key} style={style} title={seg.title}>
+					<div style={css.fsSegmentLine}>{seg.label}</div>
+					<div
+						className="bp5-text-muted"
+						style={css.fsSegmentLine}
+					>{seg.detail}</div>
+				</div>,
+			);
+		}
+
+		return <div style={css.fsBar}>{elems}</div>;
+	}
+
+	renderFsBar(key: string, label: string, detail: string,
+		segments: FsSegment[], total: number): JSX.Element {
+
+		return <div key={key} style={css.fsBlock}>
+			<div className="layout horizontal" style={css.fsBarHeader}>
+				<div>{label}</div>
+				<div className="flex"/>
+				<div className="bp5-text-muted">{detail}</div>
+			</div>
+			{this.renderFsSegments(segments, total)}
+		</div>;
+	}
+
+	renderFsRow(key: string, name: string, fileSystem: string,
+		label: string, size: number, uuid: string): JSX.Element {
+
+		return <tr key={key}>
+			<td>{name}</td>
+			<td>{fileSystem}</td>
+			<td>{label || '-'}</td>
+			<td>{MiscUtils.humanReadableBytes(size)}</td>
+			<td style={css.fsUuid}>{uuid || '-'}</td>
+		</tr>;
+	}
+
+	renderFileSystem(): JSX.Element {
+		let info = this.props.disk.metadata;
+		if (!info || !info.size) {
+			return null;
+		}
+
+		let partitions = (info.partitions || []).slice().sort(
+			(a, b): number => (a.start || 0) - (b.start || 0));
+
+		let diskSegments: FsSegment[] = [];
+		let vgBars: JSX.Element[] = [];
+		let rows: JSX.Element[] = [];
+		let pos = 0;
+
+		let addFree = (start: number, size: number): void => {
+			if (size < fsMinGap) {
+				return;
+			}
+
+			let sizeStr = MiscUtils.humanReadableBytes(size);
+			diskSegments.push({
+				key: 'free-' + start,
+				label: 'Unallocated',
+				detail: sizeStr,
+				title: 'Unallocated ' + sizeStr,
+				size: size,
+				free: true,
+			});
+			rows.push(this.renderFsRow('free-' + start, 'Unallocated',
+				'-', '', size, ''));
+		};
+
+		for (let part of partitions) {
+			let start = part.start || 0;
+			let size = part.size || 0;
+			let key = 'part-' + part.number + '-' + start;
+
+			if (start > pos) {
+				addFree(pos, start - pos);
+			}
+
+			let name = part.number ? 'Partition ' + part.number : 'Disk';
+			let fs = fsName(part.file_system);
+			let sizeStr = MiscUtils.humanReadableBytes(size);
+
+			diskSegments.push({
+				key: key,
+				label: name,
+				detail: fs + ' \u00b7 ' + sizeStr,
+				title: name + '\n' + fs + ' ' + sizeStr +
+					(part.label ? '\nLabel: ' + part.label : '') +
+					(part.uuid ? '\nUUID: ' + part.uuid : ''),
+				size: size,
+				fileSystem: part.file_system,
+			});
+			rows.push(this.renderFsRow(key, name, fs, part.label,
+				size, part.uuid));
+
+			let vg = part.volume_group;
+			if (vg) {
+				let vgSegments: FsSegment[] = [];
+
+				for (let lv of (vg.volumes || [])) {
+					let lvName = vg.name + '/' + lv.name;
+					let lvFs = fsName(lv.file_system);
+					let lvSize = lv.size || 0;
+					let lvSizeStr = MiscUtils.humanReadableBytes(lvSize);
+
+					vgSegments.push({
+						key: 'lv-' + lvName,
+						label: lv.name,
+						detail: lvFs + ' \u00b7 ' + lvSizeStr,
+						title: 'Logical Volume ' + lvName + '\n' +
+							lvFs + ' ' + lvSizeStr +
+							(lv.label ? '\nLabel: ' + lv.label : '') +
+							(lv.uuid ? '\nUUID: ' + lv.uuid : ''),
+						size: lvSize,
+						fileSystem: lv.file_system,
+					});
+					rows.push(this.renderFsRow('lv-' + lvName, lvName,
+						lvFs, lv.label, lvSize, lv.uuid));
+				}
+
+				let vgFree = vg.free || 0;
+				if (vgFree > 0) {
+					let freeStr = MiscUtils.humanReadableBytes(vgFree);
+					vgSegments.push({
+						key: 'vg-free-' + vg.name,
+						label: 'Free',
+						detail: freeStr,
+						title: 'Volume Group ' + vg.name +
+							'\nFree ' + freeStr,
+						size: vgFree,
+						free: true,
+					});
+					rows.push(this.renderFsRow('vg-free-' + vg.name,
+						vg.name + ' (free)', '-', '', vgFree, ''));
+				}
+
+				vgBars.push(this.renderFsBar('vg-' + vg.name,
+					'Volume Group ' + vg.name,
+					MiscUtils.humanReadableBytes(vg.size || 0) +
+						' \u00b7 ' + MiscUtils.humanReadableBytes(vgFree) +
+						' free',
+					vgSegments, vg.size || 0));
+			}
+
+			pos = Math.max(pos, start + size);
+		}
+
+		if (info.size > pos) {
+			addFree(pos, info.size - pos);
+		}
+
+		return <div style={css.instSection}>
+			<div style={css.section}>
+				<span
+					className="bp5-icon-standard bp5-icon-database"
+					style={css.sectionIcon}
+				/>
+				File System
+				{info.table ? <Blueprint.Tag
+					minimal={true}
+					style={css.indexTag}
+				>{info.table.toUpperCase()}</Blueprint.Tag> : null}
+				<div className="flex"/>
+				<span className="bp5-text-muted" style={css.fsScanned}>
+					Scanned {MiscUtils.formatDateShortTime(info.timestamp)}
+				</span>
+			</div>
+			<Blueprint.Card
+				compact={true}
+				style={css.fsCard}
+			>
+				{this.renderFsBar('disk', 'Disk',
+					MiscUtils.humanReadableBytes(info.size),
+					diskSegments, info.size)}
+				{vgBars}
+				<table
+					className="bp5-html-table bp5-compact"
+					style={css.fsTable}
+				>
+					<thead>
+						<tr>
+							<th>Partition</th>
+							<th>File System</th>
+							<th>Label</th>
+							<th>Size</th>
+							<th>UUID</th>
+						</tr>
+					</thead>
+					<tbody>{rows}</tbody>
+				</table>
 			</Blueprint.Card>
 		</div>;
 	}
@@ -886,6 +1190,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					</PageSelectButtonConfirm>
 				</div>
 			</div>
+			{this.renderFileSystem()}
 			{this.renderInstanceCard()}
 			<PageSave
 				style={css.save}
