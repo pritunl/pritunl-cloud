@@ -64,15 +64,12 @@ const fsColors: {[key: string]: string} = {
 	'btrfs': '0, 153, 150',
 	'vfat': '125, 88, 192',
 	'swap': '171, 83, 160',
-	'LVM2_member': '200, 118, 25',
+	'lvm': '200, 118, 25',
 };
 
 function fsName(fileSystem: string): string {
 	if (!fileSystem) {
 		return 'unformatted';
-	}
-	if (fileSystem === 'LVM2_member') {
-		return 'lvm';
 	}
 	return fileSystem;
 }
