@@ -119,6 +119,37 @@ export function commit(disk: DiskTypes.Disk): Promise<void> {
 	});
 }
 
+export function resize(diskId: string,
+		data: DiskTypes.ActionData): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/disk/' + diskId + '/resize')
+			.send(data)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', CompletionStore.userOrganization)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to resize disk');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function create(disk: DiskTypes.Disk): Promise<void> {
 	let loader = new Loader().loading();
 
