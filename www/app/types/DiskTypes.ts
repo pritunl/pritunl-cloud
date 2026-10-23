@@ -30,6 +30,7 @@ export interface Disk {
 	backup?: boolean;
 	backups?: Backup[];
 	instance_info?: InstanceInfo;
+	metadata?: Metadata;
 }
 
 export interface InstanceInfo {
@@ -44,6 +45,39 @@ export interface InstanceInfo {
 	private_ips6?: string[];
 	cloud_public_ips?: string[];
 	cloud_public_ips6?: string[];
+}
+
+export interface Metadata {
+	timestamp?: string;
+	size?: number;
+	table?: string;
+	partitions?: Partition[];
+}
+
+export interface Partition {
+	number?: number;
+	start?: number;
+	size?: number;
+	file_system?: string;
+	uuid?: string;
+	label?: string;
+	volume_group?: VolumeGroup;
+}
+
+export interface VolumeGroup {
+	name?: string;
+	size?: number;
+	free?: number;
+	extent_size?: number;
+	volumes?: LogicalVolume[];
+}
+
+export interface LogicalVolume {
+	name?: string;
+	size?: number;
+	file_system?: string;
+	uuid?: string;
+	label?: string;
 }
 
 export interface Filter {
