@@ -9391,6 +9391,26 @@ span.bp5-popover-target{
   .bp5-tooltip.bp5-intent-danger .bp5-popover-arrow-fill{
     fill:#db3737; }
 
+.bp5-tooltip.card-tooltip .bp5-popover-content {
+  background-color: #ffffff !important;
+  color: #182026 !important;
+}
+
+.bp5-tooltip.card-tooltip .bp5-popover-arrow-fill {
+  fill: #ffffff !important;
+}
+
+.bp5-dark .bp5-tooltip.card-tooltip .bp5-popover-content,
+.bp5-tooltip.bp5-dark.card-tooltip .bp5-popover-content {
+  background-color: #30404d !important;
+  color: #f5f8fa !important;
+}
+
+.bp5-dark .bp5-tooltip.card-tooltip .bp5-popover-arrow-fill,
+.bp5-tooltip.bp5-dark.card-tooltip .bp5-popover-arrow-fill {
+  fill: #30404d !important;
+}
+
 .bp5-tooltip-indicator{
   border-bottom:dotted 1px;
   cursor:help; }
