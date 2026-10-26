@@ -26,6 +26,7 @@ type shapeData struct {
 	DeleteProtection bool            `json:"delete_protection"`
 	Roles            []string        `json:"roles"`
 	Flexible         bool            `json:"flexible"`
+	DiskType         string          `json:"disk_type"`
 	DisksPath        string          `json:"disks_path"`
 	DiskPools        []bson.ObjectID `json:"disk_pools"`
 	Memory           int             `json:"memory"`
@@ -69,6 +70,7 @@ func shapePut(c *gin.Context) {
 	shpe.DeleteProtection = data.DeleteProtection
 	shpe.Roles = data.Roles
 	shpe.Flexible = data.Flexible
+	shpe.DiskType = data.DiskType
 	shpe.DisksPath = data.DisksPath
 	shpe.DiskPools = data.DiskPools
 	shpe.Memory = data.Memory
@@ -81,6 +83,7 @@ func shapePut(c *gin.Context) {
 		"delete_protection",
 		"roles",
 		"flexible",
+		"disk_type",
 		"disks_path",
 		"disk_pools",
 		"memory",
@@ -132,6 +135,7 @@ func shapePost(c *gin.Context) {
 		DeleteProtection: data.DeleteProtection,
 		Roles:            data.Roles,
 		Flexible:         data.Flexible,
+		DiskType:         data.DiskType,
 		DisksPath:        data.DisksPath,
 		DiskPools:        data.DiskPools,
 		Memory:           data.Memory,
