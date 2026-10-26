@@ -414,12 +414,18 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	if deply != nil && deployUnit != nil && deploySpec != nil {
 		if deply.Mounts != nil && len(deply.Mounts) > 0 {
 			data.HasMounts = true
+
+			mountOpts := "defaults,nofail"
+			if virt.CloudType == instance.BSD {
+				mountOpts = "defaults"
+			}
+
 			for _, mnt := range deply.Mounts {
 				data.Mounts = append(data.Mounts, cloudMount{
 					Tag:  fmt.Sprintf("UUID=%s", mnt.Uuid),
 					Path: utils.FilterPath(mnt.Path),
 					Type: "auto",
-					Opts: "defaults",
+					Opts: mountOpts,
 					Fsck: "2",
 				})
 			}
