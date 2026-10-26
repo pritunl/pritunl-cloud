@@ -607,6 +607,27 @@ func (d *Deployments) migrateMounts(db *database.Database,
 	return
 }
 
+func (d *Deployments) unreserveDisks(db *database.Database,
+	deply *deployment.Deployment, inst *instance.Instance,
+	disks []*disk.Disk) (changed bool) {
+
+	for _, dsk := range disks {
+		err := dsk.Unreserve(db, inst.Id, deply.Id)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"disk_id":       dsk.Id.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to unreserve disk")
+			continue
+		}
+
+		changed = true
+	}
+
+	return
+}
+
 func (d *Deployments) destroy(deply *deployment.Deployment) {
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		deply.Id.Hex(), 3*time.Minute)
