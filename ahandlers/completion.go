@@ -120,8 +120,7 @@ func completionGet(c *gin.Context) {
 				Type:       item.Type,
 				Roles:      item.Roles,
 				Flexible:   item.Flexible,
-				DisksPath:  item.DisksPath,
-				DiskPools:  item.DiskPools,
+				DiskType:   item.DiskType,
 				Memory:     item.Memory,
 				Processors: item.Processors,
 			})
