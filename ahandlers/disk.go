@@ -32,9 +32,9 @@ type diskData struct {
 	Organization     bson.ObjectID `json:"organization"`
 	Instance         bson.ObjectID `json:"instance"`
 	Index            string        `json:"index"`
-	Type             string        `json:"type"`
+	Shape            bson.ObjectID `json:"shape"`
+	Zone             bson.ObjectID `json:"zone"`
 	Node             bson.ObjectID `json:"node"`
-	Pool             bson.ObjectID `json:"pool"`
 	DeleteProtection bool          `json:"delete_protection"`
 	FileSystem       string        `json:"file_system"`
 	Image            bson.ObjectID `json:"image"`
@@ -204,19 +204,21 @@ func diskPost(c *gin.Context) {
 		return
 	}
 
-	if dta.Node.IsZero() {
-		errData := &errortypes.ErrorData{
-			Error:   "node_required",
-			Message: "Missing required node",
+	var nde *node.Node
+	if !dta.Node.IsZero() {
+		nde, err = node.Get(db, dta.Node)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				errData := &errortypes.ErrorData{
+					Error:   "node_not_found",
+					Message: "Node not found",
+				}
+				c.JSON(400, errData)
+				return
+			}
+			utils.AbortWithError(c, 500, err)
+			return
 		}
-		c.JSON(400, errData)
-		return
-	}
-
-	nde, err := node.Get(db, dta.Node)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
 	}
 
 	imgSystemType := ""
@@ -266,14 +268,9 @@ func diskPost(c *gin.Context) {
 		Comment:          dta.Comment,
 		Organization:     dta.Organization,
 		Instance:         dta.Instance,
-		Datacenter:       nde.Datacenter,
-		Zone:             nde.Zone,
 		Index:            dta.Index,
-		Type:             dta.Type,
 		SystemType:       imgSystemType,
 		SystemKind:       imgSystemKind,
-		Node:             dta.Node,
-		Pool:             dta.Pool,
 		Image:            dta.Image,
 		DeleteProtection: dta.DeleteProtection,
 		FileSystem:       dta.FileSystem,
@@ -282,7 +279,18 @@ func diskPost(c *gin.Context) {
 		Backup:           dta.Backup,
 	}
 
-	errData, err := dsk.Validate(db)
+	errData, err := dsk.ApplyShapeId(db, dta.Shape, nde, dta.Zone)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	errData, err = dsk.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
