@@ -14,7 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
-	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -41,8 +40,7 @@ type instanceData struct {
 	CloudSubnet         string              `json:"cloud_subnet"`
 	Shape               bson.ObjectID       `json:"shape"`
 	Node                bson.ObjectID       `json:"node"`
-	DiskType            string              `json:"disk_type"`
-	DiskPool            bson.ObjectID       `json:"disk_pool"`
+	DiskShape           bson.ObjectID       `json:"disk_shape"`
 	Image               bson.ObjectID       `json:"image"`
 	Name                string              `json:"name"`
 	Comment             string              `json:"comment"`
@@ -281,8 +279,6 @@ func instancePost(c *gin.Context) {
 
 	if !dta.Shape.IsZero() {
 		dta.Node = bson.NilObjectID
-		dta.DiskType = ""
-		dta.DiskPool = bson.NilObjectID
 	} else {
 		nde, err := node.Get(db, dta.Node)
 		if err != nil {
@@ -293,24 +289,6 @@ func instancePost(c *gin.Context) {
 		if nde.Zone != zne.Id {
 			utils.AbortWithStatus(c, 405)
 			return
-		}
-
-		if dta.DiskType == disk.Lvm {
-			poolMatch := false
-			for _, plId := range nde.Pools {
-				if plId == dta.DiskPool {
-					poolMatch = true
-				}
-			}
-
-			if !poolMatch {
-				errData := &errortypes.ErrorData{
-					Error:   "pool_not_found",
-					Message: "Pool not found",
-				}
-				c.JSON(400, errData)
-				return
-			}
 		}
 	}
 
@@ -382,8 +360,7 @@ func instancePost(c *gin.Context) {
 			CloudSubnet:         dta.CloudSubnet,
 			Shape:               dta.Shape,
 			Node:                dta.Node,
-			DiskType:            dta.DiskType,
-			DiskPool:            dta.DiskPool,
+			DiskShape:           dta.DiskShape,
 			Image:               dta.Image,
 			Uefi:                dta.Uefi,
 			SecureBoot:          dta.SecureBoot,
