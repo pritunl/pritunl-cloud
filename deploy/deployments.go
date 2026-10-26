@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/imds"
@@ -137,6 +138,51 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 
 			return
 		}
+
+		deplyMounts, reservedDisks, releaseDisks, errData, err :=
+			d.migrateMounts(db, deply, inst, curSpec, newSpec, nodeId)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   newSpec.Id.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to migrate deployment mounts")
+			return
+		}
+
+		if errData != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   newSpec.Id.Hex(),
+				"error_data":    errData,
+			}).Error("deploy: Incompatible migrate")
+
+			deply.Action = ""
+			deply.NewSpec = bson.NilObjectID
+			err = deply.CommitFields(db, set.NewSet("action", "new_spec"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to commit deployment")
+				return
+			}
+
+			return
+		}
+
+		migrated := false
+		defer func() {
+			if !migrated && len(reservedDisks) > 0 {
+				if d.unreserveDisks(db, deply, inst, reservedDisks) {
+					event.PublishDispatch(db, "disk.change")
+				}
+			}
+		}()
 
 		instFields := set.NewSet()
 
@@ -360,12 +406,13 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 		}
 		deply.Journals = jrnls
 
+		deply.Mounts = deplyMounts
 		deply.Action = ""
 		deply.Spec = newSpec.Id
 		deply.NewSpec = bson.NilObjectID
 		deply.SyncDomains = true
 		err = deply.CommitFields(db, set.NewSet("action", "spec",
-			"new_spec", "journals", "sync_domains"))
+			"new_spec", "journals", "sync_domains", "mounts"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"deployment_id": deply.Id.Hex(),
@@ -374,6 +421,13 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 				"error":         err,
 			}).Error("deploy: Failed to commit deployment")
 			return
+		}
+
+		migrated = true
+
+		disksChanged := d.unreserveDisks(db, deply, inst, releaseDisks)
+		if disksChanged || len(reservedDisks) > 0 {
+			event.PublishDispatch(db, "disk.change")
 		}
 
 		logrus.WithFields(logrus.Fields{
