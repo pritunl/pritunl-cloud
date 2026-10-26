@@ -19,17 +19,17 @@ import (
 )
 
 type shapeData struct {
-	Id               bson.ObjectID `json:"id"`
-	Name             string        `json:"name"`
-	Comment          string        `json:"comment"`
-	Type             string        `json:"type"`
-	DeleteProtection bool          `json:"delete_protection"`
-	Roles            []string      `json:"roles"`
-	Flexible         bool          `json:"flexible"`
-	DiskType         string        `json:"disk_type"`
-	DiskPool         bson.ObjectID `json:"disk_pool"`
-	Memory           int           `json:"memory"`
-	Processors       int           `json:"processors"`
+	Id               bson.ObjectID   `json:"id"`
+	Name             string          `json:"name"`
+	Comment          string          `json:"comment"`
+	Type             string          `json:"type"`
+	DeleteProtection bool            `json:"delete_protection"`
+	Roles            []string        `json:"roles"`
+	Flexible         bool            `json:"flexible"`
+	DisksPath        string          `json:"disks_path"`
+	DiskPools        []bson.ObjectID `json:"disk_pools"`
+	Memory           int             `json:"memory"`
+	Processors       int             `json:"processors"`
 }
 
 type shapesData struct {
@@ -69,8 +69,8 @@ func shapePut(c *gin.Context) {
 	shpe.DeleteProtection = data.DeleteProtection
 	shpe.Roles = data.Roles
 	shpe.Flexible = data.Flexible
-	shpe.DiskType = data.DiskType
-	shpe.DiskPool = data.DiskPool
+	shpe.DisksPath = data.DisksPath
+	shpe.DiskPools = data.DiskPools
 	shpe.Memory = data.Memory
 	shpe.Processors = data.Processors
 
@@ -81,8 +81,8 @@ func shapePut(c *gin.Context) {
 		"delete_protection",
 		"roles",
 		"flexible",
-		"disk_type",
-		"disk_pool",
+		"disks_path",
+		"disk_pools",
 		"memory",
 		"processors",
 	)
@@ -128,11 +128,12 @@ func shapePost(c *gin.Context) {
 	shpe := &shape.Shape{
 		Name:             data.Name,
 		Comment:          data.Comment,
+		Type:             data.Type,
 		DeleteProtection: data.DeleteProtection,
 		Roles:            data.Roles,
 		Flexible:         data.Flexible,
-		DiskType:         data.DiskType,
-		DiskPool:         data.DiskPool,
+		DisksPath:        data.DisksPath,
+		DiskPools:        data.DiskPools,
 		Memory:           data.Memory,
 		Processors:       data.Processors,
 	}
