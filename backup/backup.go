@@ -20,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/pritunl/pritunl-cloud/qmp"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ import (
 type Backup struct {
 	Destination string
 	node        *node.Node
-	virtPath    string
+	shapes      []*shape.Shape
 	errorCount  int
 }
 
@@ -94,8 +95,12 @@ func (b *Backup) backupDisk(db *database.Database,
 	}
 
 	if !online {
-		dskPth := path.Join(b.virtPath, "disks",
-			fmt.Sprintf("%s.qcow2", dsk.Id.Hex()))
+		dskPth, _, _, e := dsk.Locate(b.node, b.shapes)
+		if e != nil {
+			err = e
+			return
+		}
+
 		err = utils.Exec("", "cp", dskPth, dest)
 		if err != nil {
 			return
@@ -120,6 +125,14 @@ func (b *Backup) backupDisks(db *database.Database) (err error) {
 	disks, err := disk.GetAll(db, &bson.M{
 		"node": b.node.Id,
 	})
+	if err != nil {
+		return
+	}
+
+	b.shapes, err = shape.GetAllDisks(db)
+	if err != nil {
+		return
+	}
 
 	diskFilenames := set.NewSet()
 	for _, dsk := range disks {
@@ -202,7 +215,6 @@ func (b *Backup) Run() (err error) {
 	}
 
 	b.node = nde
-	b.virtPath = nde.GetVirtPath()
 
 	err = b.backupDisks(db)
 	if err != nil {
