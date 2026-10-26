@@ -440,6 +440,173 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 	}()
 }
 
+func (d *Deployments) migrateMounts(db *database.Database,
+	deply *deployment.Deployment, inst *instance.Instance,
+	curSpec, newSpec *spec.Spec, nodeId bson.ObjectID) (
+	mounts []*deployment.Mount, reserved []*disk.Disk,
+	release []*disk.Disk, errData *errortypes.ErrorData, err error) {
+
+	mounts = []*deployment.Mount{}
+	reserved = []*disk.Disk{}
+	release = []*disk.Disk{}
+
+	curDiskIds := set.NewSet()
+	curPathDisks := map[string]bson.ObjectID{}
+	for _, mnt := range deply.Mounts {
+		curDiskIds.Add(mnt.Disk)
+		curPathDisks[mnt.Path] = mnt.Disk
+	}
+	for _, mount := range curSpec.Instance.Mounts {
+		if mount.Type != spec.Disk {
+			continue
+		}
+
+		for _, dskId := range mount.Disks {
+			curDiskIds.Add(dskId)
+		}
+	}
+
+	newMounts := []spec.Mount{}
+	newDiskIds := []bson.ObjectID{}
+	for _, mount := range newSpec.Instance.Mounts {
+		if mount.Type != spec.Disk {
+			continue
+		}
+
+		newMounts = append(newMounts, mount)
+		newDiskIds = append(newDiskIds, mount.Disks...)
+	}
+
+	if curDiskIds.Len() == 0 && len(newMounts) == 0 {
+		return
+	}
+
+	instDisks, err := disk.GetInstance(db, inst.Id)
+	if err != nil {
+		return
+	}
+
+	index := 0
+	instDisksMap := map[bson.ObjectID]*disk.Disk{}
+	for _, dsk := range instDisks {
+		dskIndex, _ := strconv.Atoi(dsk.Index)
+		index = max(index, dskIndex)
+		instDisksMap[dsk.Id] = dsk
+	}
+
+	disksMap := map[bson.ObjectID]*disk.Disk{}
+	if len(newDiskIds) > 0 {
+		disksMap, err = disk.GetAllMap(db, &bson.M{
+			"_id": &bson.M{
+				"$in": newDiskIds,
+			},
+			"organization": newSpec.Organization,
+		})
+		if err != nil {
+			return
+		}
+	}
+
+	used := set.NewSet()
+	mountDisks := make([]*disk.Disk, len(newMounts))
+	for i, mount := range newMounts {
+		curDskId, ok := curPathDisks[mount.Path]
+		if !ok || used.Contains(curDskId) {
+			continue
+		}
+
+		dsk := instDisksMap[curDskId]
+		if dsk == nil {
+			continue
+		}
+
+		for _, dskId := range mount.Disks {
+			if dskId != curDskId {
+				continue
+			}
+
+			mountDisks[i] = dsk
+			used.Add(dsk.Id)
+			break
+		}
+	}
+
+	for i, mount := range newMounts {
+		index += 1
+
+		mountDsk := mountDisks[i]
+		if mountDsk == nil {
+			for _, dskId := range mount.Disks {
+				dsk := instDisksMap[dskId]
+				if dsk == nil || used.Contains(dskId) {
+					continue
+				}
+
+				mountDsk = dsk
+				break
+			}
+		}
+
+		if mountDsk == nil {
+			for _, dskId := range mount.Disks {
+				dsk := disksMap[dskId]
+				if dsk == nil || used.Contains(dskId) ||
+					dsk.Node != nodeId || !dsk.IsAvailable() {
+
+					continue
+				}
+
+				diskReserved, e := dsk.Reserve(db, inst.Id, index, deply.Id)
+				if e != nil {
+					err = e
+					d.unreserveDisks(db, deply, inst, reserved)
+					reserved = []*disk.Disk{}
+					return
+				}
+
+				if !diskReserved {
+					continue
+				}
+
+				reserved = append(reserved, dsk)
+				mountDsk = dsk
+				break
+			}
+		}
+
+		if mountDsk == nil {
+			d.unreserveDisks(db, deply, inst, reserved)
+			reserved = []*disk.Disk{}
+
+			errData = &errortypes.ErrorData{
+				Error: "instance_mount_disk_unavailable",
+				Message: "Cannot migrate mount without available disk (" +
+					mount.Path + ")",
+			}
+			return
+		}
+
+		used.Add(mountDsk.Id)
+		mounts = append(mounts, &deployment.Mount{
+			Disk: mountDsk.Id,
+			Path: mount.Path,
+			Uuid: mountDsk.Uuid,
+		})
+	}
+
+	for _, dsk := range instDisks {
+		if used.Contains(dsk.Id) || dsk.Deployment != deply.Id ||
+			!curDiskIds.Contains(dsk.Id) {
+
+			continue
+		}
+
+		release = append(release, dsk)
+	}
+
+	return
+}
+
 func (d *Deployments) destroy(deply *deployment.Deployment) {
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		deply.Id.Hex(), 3*time.Minute)
