@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"path"
 	"slices"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -12,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/cloudinit"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -590,6 +592,7 @@ func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 	node.Self.Zone = zones[0].Id
 	node.Self.Roles = []string{
 		"node-firewall",
+		"shape-gp1",
 		"shape-m2",
 	}
 	node.Self.HostNat = true
@@ -806,8 +809,7 @@ func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 		Roles: []string{
 			"shape-m2",
 		},
-		Type:     shape.Instance,
-		DiskType: shape.Qcow2,
+		Type: shape.Instance,
 	}
 
 	errData, err = shpe.Validate(db)
@@ -829,6 +831,88 @@ func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 	}).Info("defaults: Configured default node")
 
 	event.PublishDispatch(db, "node.change")
+
+	return
+}
+
+func initDiskShape(db *database.Database) (err error) {
+	shapes, err := shape.GetAllDisks(db)
+	if err != nil {
+		return
+	}
+
+	if len(shapes) != 0 {
+		return
+	}
+
+	role := "shape-gp1"
+
+	shpe := &shape.Shape{
+		Name:      "gp1",
+		Type:      shape.Disk,
+		DiskType:  shape.Qcow2,
+		DisksPath: path.Join(constants.DefaultRoot, "disks"),
+		Roles: []string{
+			role,
+		},
+	}
+
+	errData, err := shpe.Validate(db)
+	if err != nil {
+		return
+	}
+	if errData != nil {
+		err = &errortypes.ApiError{
+			errors.Newf(
+				"defaults: Shape validate error %s",
+				errData.Message,
+			),
+		}
+		return
+	}
+
+	err = shpe.Insert(db)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"shape": shpe.Id.Hex(),
+	}).Info("defaults: Created default disk shape")
+
+	event.PublishDispatch(db, "shape.change")
+
+	nodes, err := node.GetAll(db)
+	if err != nil {
+		return
+	}
+
+	for _, nde := range nodes {
+		if slices.Contains(nde.Roles, role) {
+			continue
+		}
+
+		nde.Roles = append(nde.Roles, role)
+		slices.Sort(nde.Roles)
+
+		err = nde.CommitFields(db, set.NewSet("roles"))
+		if err != nil {
+			return
+		}
+
+		if node.Self != nil && nde.Id == node.Self.Id {
+			node.Self.Roles = nde.Roles
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"node": nde.Id.Hex(),
+			"role": role,
+		}).Info("defaults: Added default disk shape role to node")
+	}
+
+	if len(nodes) > 0 {
+		event.PublishDispatch(db, "node.change")
+	}
 
 	return
 }
@@ -873,6 +957,11 @@ func Defaults() (err error) {
 	}
 
 	err = initNode(db, defaultOrg)
+	if err != nil {
+		return
+	}
+
+	err = initDiskShape(db)
 	if err != nil {
 		return
 	}
