@@ -28,6 +28,7 @@ type Item struct {
 	org       string
 	node      string
 	pool      string
+	shape     string
 	image     string
 }
 
@@ -187,6 +188,14 @@ func (i *Item) Info() []widget.InfoField {
 
 	fields = append(fields,
 		widget.InfoField{resourceLabel, resourceValue},
+	)
+
+	if !dsk.Shape.IsZero() {
+		fields = append(fields, widget.InfoField{"Shape",
+			widget.Default(i.shape, dsk.Shape.Hex())})
+	}
+
+	fields = append(fields,
 		widget.InfoField{"Size", fmt.Sprintf("%dGB", dsk.Size)},
 	)
 
