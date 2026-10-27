@@ -14,14 +14,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
-	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/nodeport"
-	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -30,11 +28,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var diskTypeOptions = []widget.SelectOption{
-	{Label: "QCOW", Value: disk.Qcow2},
-	{Label: "LVM", Value: disk.Lvm},
-}
-
 // createData are the select options of the new instance form loaded
 // once when the form opens.
 type createData struct {
@@ -42,9 +35,9 @@ type createData struct {
 	datacenters []*datacenter.Datacenter
 	zones       []*zone.Zone
 	shapes      []*shape.Shape
+	diskShapes  []*shape.Shape
 	nodes       []*node.Node
 	vpcs        []*vpc.Vpc
-	pools       []*pool.Pool
 
 	// images are keyed by datacenter, the image name query only returns
 	// name, key, signed and firmware so the datacenter storages are part
@@ -102,9 +95,22 @@ func loadCreateData(db *database.Database) (dta *createData, err error) {
 		return
 	}
 
-	dta.shapes, err = shape.GetAllNames(db, &bson.M{})
+	shapes, err := shape.GetAllNames(db, &bson.M{})
 	if err != nil {
 		return
+	}
+
+	// Instance shapes pick the node, disk shapes pick the storage of the
+	// first disk like the shape and disk shape selects of the web
+	// interface
+	dta.shapes = []*shape.Shape{}
+	dta.diskShapes = []*shape.Shape{}
+	for _, shpe := range shapes {
+		if shpe.GetType() == shape.Disk {
+			dta.diskShapes = append(dta.diskShapes, shpe)
+		} else {
+			dta.shapes = append(dta.shapes, shpe)
+		}
 	}
 
 	dta.nodes, err = node.GetAllHypervisors(db, &bson.M{})
@@ -113,11 +119,6 @@ func loadCreateData(db *database.Database) (dta *createData, err error) {
 	}
 
 	dta.vpcs, err = vpc.GetAllNames(db, &bson.M{})
-	if err != nil {
-		return
-	}
-
-	dta.pools, err = pool.GetAllNames(db, &bson.M{})
 	if err != nil {
 		return
 	}
@@ -159,8 +160,7 @@ type creator struct {
 	publicIp4      *form.Toggle
 	publicIp6      *form.Toggle
 	hostAddr       *form.Toggle
-	diskType       *form.Select
-	diskPool       *form.Select
+	diskShape      *form.Select
 	hiddenImages   *form.Toggle
 	image          *form.Select
 	roles          *form.Tokens
@@ -317,27 +317,26 @@ func newCreator(dta *createData) *creator {
 	c.publicIp6 = form.NewToggle("Public IPv6 address", true)
 	c.hostAddr = form.NewToggle("Host address", true)
 
-	c.diskType = form.NewSelect("Disk Type", diskTypeOptions, disk.Qcow2)
-	c.diskType.Lock = c.shapeSelected
-	c.diskPool = form.NewSelect("Pool", nil, "")
-	c.diskPool.Dynamic = func() []widget.SelectOption {
+	// The disk shape picks the storage of the first disk, with a node
+	// selected only the disk shapes available on the node are listed
+	// like the disk shape select of the web interface
+	c.diskShape = form.NewSelect("Disk Shape", nil, "")
+	c.diskShape.Dynamic = func() []widget.SelectOption {
 		opts := []widget.SelectOption{}
 		nde := c.selectedNode()
-		for _, pl := range dta.pools {
-			if nde == nil || !containsId(nde.Pools, pl.Id) {
+		for _, shpe := range dta.diskShapes {
+			if nde != nil && !shpe.MatchNode(nde) {
 				continue
 			}
 			opts = append(opts, widget.SelectOption{
-				Label: pl.Name,
-				Value: pl.Id.Hex(),
+				Label: shpe.Name,
+				Value: shpe.Id.Hex(),
 			})
 		}
-		return withSelect("Select Pool", opts)
-	}
-	// The server picks the pool of a shape, the pool is only chosen with
-	// a node and LVM disks
-	c.diskPool.Hide = func() bool {
-		return c.diskType.Value() != disk.Lvm || c.shapeSelected()
+		if len(opts) == 0 {
+			return withSelect("No Disk Shapes", nil)
+		}
+		return opts
 	}
 
 	c.hiddenImages = form.NewToggle("Show hidden images", false)
@@ -385,8 +384,7 @@ func newCreator(dta *createData) *creator {
 		c.publicIp4,
 		c.publicIp6,
 		c.hostAddr,
-		c.diskType,
-		c.diskPool,
+		c.diskShape,
 		c.hiddenImages,
 		c.image,
 		c.roles,
@@ -399,15 +397,6 @@ func newCreator(dta *createData) *creator {
 	)
 
 	return c
-}
-
-func containsId(ids []bson.ObjectID, id bson.ObjectID) bool {
-	for _, cur := range ids {
-		if cur == id {
-			return true
-		}
-	}
-	return false
 }
 
 func (c *creator) selectedShape() *shape.Shape {
@@ -431,19 +420,14 @@ func (c *creator) shapeFixed() bool {
 	return shpe != nil && !shpe.Flexible
 }
 
-// applyShape copies the disk type, pool, processors and memory of the
-// selected shape like the web interface.
+// applyShape copies the processors and memory of the selected shape
+// like the web interface.
 func (c *creator) applyShape() {
 	shpe := c.selectedShape()
 	if shpe == nil {
 		return
 	}
 
-	c.diskType.SetValue(widget.Default(shpe.DiskType, disk.Qcow2))
-	c.diskPool.SetValue(shpe.DiskPool.Hex())
-	if shpe.DiskPool.IsZero() {
-		c.diskPool.SetValue("")
-	}
 	if shpe.Processors > 0 {
 		c.processors.Set(shpe.Processors)
 	}
@@ -655,13 +639,10 @@ func (c *creator) Save(db *database.Database) (err error) {
 	orgId, _ := utils.ParseObjectId(c.organization.Value())
 	shapeId, _ := utils.ParseObjectId(c.shape.Value())
 	nodeId, _ := utils.ParseObjectId(c.node.Value())
-	diskType := c.diskType.Value()
-	diskPool, _ := utils.ParseObjectId(c.diskPool.Value())
+	diskShapeId, _ := utils.ParseObjectId(c.diskShape.Value())
 
 	if !shapeId.IsZero() {
 		nodeId = bson.NilObjectID
-		diskType = ""
-		diskPool = bson.NilObjectID
 	} else {
 		if nodeId.IsZero() {
 			err = createError("Missing required node")
@@ -676,11 +657,6 @@ func (c *creator) Save(db *database.Database) (err error) {
 
 		if nde.Zone != zne.Id {
 			err = createError("Node is not in the zone")
-			return
-		}
-
-		if diskType == disk.Lvm && !containsId(nde.Pools, diskPool) {
-			err = createError("Pool not found")
 			return
 		}
 	}
@@ -741,8 +717,7 @@ func (c *creator) Save(db *database.Database) (err error) {
 			Subnet:           parseId(c.subnet.Value()),
 			Shape:            shapeId,
 			Node:             nodeId,
-			DiskType:         diskType,
-			DiskPool:         diskPool,
+			DiskShape:        diskShapeId,
 			Image:            imageId,
 			Uefi:             c.uefi.Value(),
 			SecureBoot:       c.secureBoot.Value(),
