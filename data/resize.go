@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/guestfs"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qcow"
 	"github.com/sirupsen/logrus"
@@ -22,12 +21,11 @@ type partitionDevice struct {
 	size   int64
 }
 
-func getDiskSizeQcow(dsk *disk.Disk) (size int, err error) {
-	return qcow.Size(paths.GetDiskPath(dsk.Id))
-}
-
 func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
-	dskPth := paths.GetDiskPath(dsk.Id)
+	dskPth, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"disk_id":   dsk.Id.Hex(),
@@ -35,7 +33,7 @@ func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		"new_size":  dsk.NewSize,
 	}).Info("data: Expanding qcow disk")
 
-	curSize, err := getDiskSizeQcow(dsk)
+	curSize, err := qcow.Size(dskPth)
 	if err != nil {
 		return
 	}
@@ -58,7 +56,7 @@ func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	curSize, err = getDiskSizeQcow(dsk)
+	curSize, err = qcow.Size(dskPth)
 	if err != nil {
 		return
 	}
@@ -637,8 +635,11 @@ func resizePath(dsk *disk.Disk, pth, format string) (err error) {
 	return
 }
 
-func resizeDiskQcow(dsk *disk.Disk) (err error) {
-	diskPath := paths.GetDiskPath(dsk.Id)
+func resizeDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
+	diskPath, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
 
 	err = resizePath(dsk, diskPath, guestfs.Qcow2)
 	if err != nil {
@@ -711,7 +712,7 @@ func ResizeDisk(db *database.Database, dsk *disk.Disk) (err error) {
 		}
 		break
 	case "", disk.Qcow2:
-		err = resizeDiskQcow(dsk)
+		err = resizeDiskQcow(db, dsk)
 		if err != nil {
 			return
 		}
