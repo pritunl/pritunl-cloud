@@ -175,11 +175,13 @@ func (p *Provider) Load(db *database.Database, filter resource.Filter,
 	orgIds := resource.IdSet{}
 	nodeIds := resource.IdSet{}
 	poolIds := resource.IdSet{}
+	shapeIds := resource.IdSet{}
 	imageIds := resource.IdSet{}
 	for _, dsk := range disks {
 		orgIds.Add(dsk.Organization)
 		nodeIds.Add(dsk.Node)
 		poolIds.Add(dsk.Pool)
+		shapeIds.Add(dsk.Shape)
 		imageIds.Add(dsk.Image)
 	}
 
@@ -194,6 +196,11 @@ func (p *Provider) Load(db *database.Database, filter resource.Filter,
 	}
 
 	poolNames, err := resource.Names(db, db.Pools(), poolIds.List())
+	if err != nil {
+		return
+	}
+
+	shapeNames, err := resource.Names(db, db.Shapes(), shapeIds.List())
 	if err != nil {
 		return
 	}
@@ -240,6 +247,7 @@ func (p *Provider) Load(db *database.Database, filter resource.Filter,
 			org:       orgNames[dsk.Organization],
 			node:      nodeNames[dsk.Node],
 			pool:      poolNames[dsk.Pool],
+			shape:     shapeNames[dsk.Shape],
 			image:     imageNames[dsk.Image],
 		})
 	}
