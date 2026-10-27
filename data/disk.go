@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -9,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
@@ -18,7 +18,10 @@ import (
 func createDiskQcow(db *database.Database, dsk *disk.Disk) (
 	newSize int, err error) {
 
-	diskPath := paths.GetDiskPath(dsk.Id)
+	diskPath, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
 
 	if !dsk.Image.IsZero() {
 		newSize, err = writeImageQcow(db, dsk)
@@ -31,7 +34,7 @@ func createDiskQcow(db *database.Database, dsk *disk.Disk) (
 			return
 		}
 	} else {
-		err = utils.ExistsMkdir(paths.GetDisksPath(), 0755)
+		err = utils.ExistsMkdir(path.Dir(diskPath), 0755)
 		if err != nil {
 			return
 		}
