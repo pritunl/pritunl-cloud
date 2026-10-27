@@ -18,7 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/pool"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
@@ -39,7 +39,7 @@ type createData struct {
 	datacenters []*datacenter.Datacenter
 	zones       []*zone.Zone
 	nodes       []*node.Node
-	pools       []*pool.Pool
+	shapes      []*shape.Shape
 
 	// images are keyed by datacenter, the image name query only returns
 	// name, key, signed and firmware so the datacenter storages are part
@@ -106,7 +106,7 @@ func loadCreateData(db *database.Database) (dta *createData, err error) {
 		return
 	}
 
-	dta.pools, err = pool.GetAllNames(db, &bson.M{})
+	dta.shapes, err = shape.GetAllDisks(db)
 	if err != nil {
 		return
 	}
@@ -138,12 +138,11 @@ type creator struct {
 	form *form.Form
 
 	name             *form.Text
-	typ              *form.Select
+	shape            *form.Select
 	organization     *form.Select
 	datacenter       *form.Select
 	zone             *form.Select
 	node             *form.Select
-	pool             *form.Select
 	deleteProtection *form.Toggle
 	instance         *form.Select
 	index            *form.Number
@@ -160,7 +159,25 @@ func newCreator(dta *createData) *creator {
 	}
 
 	c.name = form.NewText("Name", "Enter name", "new-disk")
-	c.typ = form.NewSelect("Type", diskTypeOptions, disk.Qcow2)
+
+	// The disk shape replaces the disk type, a shape with a disks path
+	// stores a QCOW file on the node and a shape with disk pools uses
+	// an LVM pool of the zone
+	shapeOpts := []widget.SelectOption{}
+	for _, shpe := range dta.shapes {
+		shapeOpts = append(shapeOpts, widget.SelectOption{
+			Label: shpe.Name,
+			Value: shpe.Id.Hex(),
+		})
+	}
+	if len(shapeOpts) == 0 {
+		shapeOpts = resource.WithSelect("No Disk Shapes", nil)
+	}
+	c.shape = form.NewSelect("Shape", shapeOpts, "")
+	c.shape.OnChange = func() {
+		c.node.SetValue("")
+		c.instance.SetValue("")
+	}
 
 	orgOpts := resource.SelectOptions(dta.orgs)
 	if len(orgOpts) == 0 {
@@ -213,12 +230,18 @@ func newCreator(dta *createData) *creator {
 		c.instance.SetValue("")
 	}
 
+	// Only the nodes of the zone with a role of the selected shape are
+	// listed, LVM shapes pick a pool of the zone instead of a node
 	c.node = form.NewSelect("Node", nil, "")
 	c.node.Dynamic = func() []widget.SelectOption {
 		opts := []widget.SelectOption{}
 		zoneId := c.zone.Value()
+		shpe := c.selectedShape()
 		for _, nde := range dta.nodes {
 			if nde.Zone.Hex() != zoneId {
+				continue
+			}
+			if shpe != nil && !shpe.MatchRoles(nde.Roles) {
 				continue
 			}
 			opts = append(opts, widget.SelectOption{
@@ -232,32 +255,11 @@ func newCreator(dta *createData) *creator {
 		return resource.WithSelect("Select Node", opts)
 	}
 	c.node.Hide = func() bool {
-		return c.typ.Value() == disk.Lvm
+		shpe := c.selectedShape()
+		return shpe != nil && shpe.DiskType == shape.Lvm
 	}
 	c.node.OnChange = func() {
 		c.instance.SetValue("")
-	}
-
-	c.pool = form.NewSelect("Pool", nil, "")
-	c.pool.Dynamic = func() []widget.SelectOption {
-		opts := []widget.SelectOption{}
-		zoneId := c.zone.Value()
-		for _, pl := range dta.pools {
-			if pl.Zone.Hex() != zoneId {
-				continue
-			}
-			opts = append(opts, widget.SelectOption{
-				Label: pl.Name,
-				Value: pl.Id.Hex(),
-			})
-		}
-		if len(opts) == 0 {
-			return resource.WithSelect("No Pools", nil)
-		}
-		return resource.WithSelect("Select Pool", opts)
-	}
-	c.pool.Hide = func() bool {
-		return c.typ.Value() != disk.Lvm
 	}
 
 	c.deleteProtection = form.NewToggle("Delete protection", false)
@@ -307,12 +309,11 @@ func newCreator(dta *createData) *creator {
 
 	c.form = form.New(
 		c.name,
-		c.typ,
+		c.shape,
 		c.organization,
 		c.datacenter,
 		c.zone,
 		c.node,
-		c.pool,
 		c.deleteProtection,
 		c.instance,
 		c.index,
@@ -324,6 +325,16 @@ func newCreator(dta *createData) *creator {
 	)
 
 	return c
+}
+
+func (c *creator) selectedShape() *shape.Shape {
+	shapeId := c.shape.Value()
+	for _, shpe := range c.data.shapes {
+		if shpe.Id.Hex() == shapeId {
+			return shpe
+		}
+	}
+	return nil
 }
 
 // imageLabel returns the image name, signed image names already carry
@@ -418,17 +429,19 @@ func createError(message string) error {
 	}
 }
 
-// Save inserts the disk the same way as the admin disk create handler.
+// Save inserts the disk the same way as the admin disk create handler,
+// the shape picks the storage of the disk.
 func (c *creator) Save(db *database.Database) (err error) {
+	shapeId := resource.ParseId(c.shape.Value())
+	zoneId := resource.ParseId(c.zone.Value())
 	nodeId := resource.ParseId(c.node.Value())
-	if nodeId.IsZero() {
-		err = createError("Missing required node")
-		return
-	}
 
-	nde, err := node.Get(db, nodeId)
-	if err != nil {
-		return
+	var nde *node.Node
+	if !nodeId.IsZero() {
+		nde, err = node.Get(db, nodeId)
+		if err != nil {
+			return
+		}
 	}
 
 	orgId := resource.ParseId(c.organization.Value())
@@ -484,14 +497,9 @@ func (c *creator) Save(db *database.Database) (err error) {
 		Name:             c.name.Value(),
 		Organization:     orgId,
 		Instance:         instId,
-		Datacenter:       nde.Datacenter,
-		Zone:             nde.Zone,
 		Index:            index,
-		Type:             c.typ.Value(),
 		SystemType:       imgSystemType,
 		SystemKind:       imgSystemKind,
-		Node:             nodeId,
-		Pool:             resource.ParseId(c.pool.Value()),
 		Image:            imageId,
 		DeleteProtection: c.deleteProtection.Value(),
 		FileSystem:       fileSystem,
@@ -499,7 +507,16 @@ func (c *creator) Save(db *database.Database) (err error) {
 		LvSize:           lvSize,
 	}
 
-	errData, err := dsk.Validate(db)
+	errData, err := dsk.ApplyShapeId(db, shapeId, nde, zoneId)
+	if err != nil {
+		return
+	}
+	if errData != nil {
+		err = createError(errData.Message)
+		return
+	}
+
+	errData, err = dsk.Validate(db)
 	if err != nil {
 		return
 	}
