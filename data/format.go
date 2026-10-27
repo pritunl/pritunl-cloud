@@ -12,7 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/guestfs"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
@@ -170,9 +169,12 @@ func commitFormat(db *database.Database, dsk *disk.Disk,
 }
 
 func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
-	diskPath := paths.GetDiskPath(dsk.Id)
+	diskPath, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
 
-	err = utils.ExistsMkdir(paths.GetDisksPath(), 0755)
+	err = utils.ExistsMkdir(filepath.Dir(diskPath), 0755)
 	if err != nil {
 		return
 	}
