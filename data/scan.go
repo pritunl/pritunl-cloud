@@ -345,8 +345,13 @@ func scanPath(pth, format string) (info *disk.Metadata, err error) {
 	return
 }
 
-func scanDiskQcow(dsk *disk.Disk) (info *disk.Metadata, err error) {
-	diskPath := paths.GetDiskPath(dsk.Id)
+func scanDiskQcow(db *database.Database, dsk *disk.Disk) (
+	info *disk.Metadata, err error) {
+
+	diskPath, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
 
 	exists, err := utils.ExistsFile(diskPath)
 	if err != nil {
@@ -472,7 +477,7 @@ func ScanDisk(db *database.Database, dsk *disk.Disk) (err error) {
 		}
 		break
 	case "", disk.Qcow2:
-		info, err = scanDiskQcow(dsk)
+		info, err = scanDiskQcow(db, dsk)
 		if err != nil {
 			return
 		}
