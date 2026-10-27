@@ -646,11 +646,14 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 	newSize int, err error) {
 
 	size := dsk.Size
-	diskPath := paths.GetDiskPath(dsk.Id)
 	diskTempPath := paths.GetDiskTempPath()
-	disksPath := paths.GetDisksPath()
 
-	err = utils.ExistsMkdir(disksPath, 0755)
+	diskPath, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(path.Dir(diskPath), 0755)
 	if err != nil {
 		return
 	}
@@ -761,6 +764,11 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 	sourcePth := ""
 	diskTempPath := paths.GetDiskTempPath()
 	defer utils.Remove(diskTempPath)
+
+	err = utils.ExistsMkdir(paths.GetTempPath(), 0755)
+	if err != nil {
+		return
+	}
 
 	img, err := image.Get(db, dsk.Image)
 	if err != nil {
@@ -1095,8 +1103,8 @@ func exportDiskLive(dsk *disk.Disk, virt *vm.VirtualMachine,
 	return
 }
 
-func exportDisk(dsk *disk.Disk, virt *vm.VirtualMachine,
-	dstPth string) (err error) {
+func exportDisk(db *database.Database, dsk *disk.Disk,
+	virt *vm.VirtualMachine, dstPth string) (err error) {
 
 	if virt != nil && virt.Running() {
 		device, size, e := qmp.GetDiskNode(virt.Id, dsk.Id)
@@ -1120,7 +1128,12 @@ func exportDisk(dsk *disk.Disk, virt *vm.VirtualMachine,
 		}
 	}
 
-	err = qcow.Convert(paths.GetDiskPath(dsk.Id), dstPth)
+	dskPth, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
+
+	err = qcow.Convert(dskPth, dstPth)
 	if err != nil {
 		return
 	}
@@ -1131,7 +1144,11 @@ func exportDisk(dsk *disk.Disk, virt *vm.VirtualMachine,
 func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	virt *vm.VirtualMachine) (err error) {
 
-	dskPth := paths.GetDiskPath(dsk.Id)
+	dskPth, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
+
 	cacheDir := node.Self.GetCachePath()
 
 	nde, err := node.Get(db, dsk.Node)
@@ -1198,7 +1215,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 
 	defer utils.Remove(tmpPath)
 
-	err = exportDisk(dsk, virt, tmpPath)
+	err = exportDisk(db, dsk, virt, tmpPath)
 	if err != nil {
 		return
 	}
@@ -1315,7 +1332,11 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 func CreateBackup(db *database.Database, dsk *disk.Disk,
 	virt *vm.VirtualMachine) (err error) {
 
-	dskPth := paths.GetDiskPath(dsk.Id)
+	dskPth, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
+
 	cacheDir := node.Self.GetCachePath()
 
 	nde, err := node.Get(db, dsk.Node)
@@ -1382,7 +1403,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 
 	defer utils.Remove(tmpPath)
 
-	err = exportDisk(dsk, virt, tmpPath)
+	err = exportDisk(db, dsk, virt, tmpPath)
 	if err != nil {
 		return
 	}
@@ -1469,7 +1490,11 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 }
 
 func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
-	dskPth := paths.GetDiskPath(dsk.Id)
+	dskPth, err := dsk.GetPath(db)
+	if err != nil {
+		return
+	}
+
 	cacheDir := node.Self.GetCachePath()
 
 	img, err := image.Get(db, dsk.RestoreImage)
