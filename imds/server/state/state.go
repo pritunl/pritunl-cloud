@@ -22,6 +22,23 @@ type Store struct {
 	lock        sync.RWMutex
 }
 
+func (s *Store) GetState() (ste *types.State) {
+	s.lock.RLock()
+	ste = s.State.Copy()
+	s.lock.RUnlock()
+
+	return
+}
+
+func (s *Store) SetStatus(status string) {
+	s.lock.Lock()
+	if !s.State.Final() {
+		s.State.Status = status
+	}
+	s.State.Timestamp = time.Now()
+	s.lock.Unlock()
+}
+
 func (s *Store) SetPrimary() {
 	s.lock.Lock()
 	s.setPrimary = true
