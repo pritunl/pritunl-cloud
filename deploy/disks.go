@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/lock"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -121,6 +122,8 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			return
 		}
 
+		d.syncShape(db, dsk)
+
 		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
 				"disk_id":   dsk.Id.Hex(),
@@ -220,6 +223,8 @@ func (d *Disks) expand(dsk *disk.Disk) {
 			}
 		}
 
+		d.syncShape(db, dsk)
+
 		fields := set.NewSet("action", "size", "new_size")
 
 		err = data.ExpandDisk(db, dsk)
@@ -305,6 +310,8 @@ func (d *Disks) resize(dsk *disk.Disk) {
 				return
 			}
 
+			d.syncShape(db, dsk)
+
 			err = data.ResizeDisk(db, dsk)
 			if err != nil {
 				if _, ok := err.(*lock.LvmLockedError); ok {
@@ -382,6 +389,8 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		if dsk.Action != disk.Backup {
 			return
 		}
+
+		d.syncShape(db, dsk)
 
 		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
@@ -479,6 +488,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 			}
 		}
 
+		d.syncShape(db, dsk)
+
 		fields := set.NewSet("action")
 
 		if dsk.Type != disk.Qcow2 {
@@ -575,6 +586,8 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 			return
 		}
 
+		d.syncShape(db, dsk)
+
 		err = dsk.Destroy(db)
 		if err != nil {
 			if _, ok := err.(*lock.LvmLockedError); ok {
@@ -661,6 +674,8 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 
 		virt := d.stat.GetVirt(dsk.Instance)
 
+		d.syncShape(db, dsk)
+
 		fields := set.NewSet("action")
 
 		err = data.CreateBackup(db, dsk, virt)
@@ -703,6 +718,16 @@ func (d *Disks) owned(dsk *disk.Disk) bool {
 	}
 
 	return d.stat.GetInstace(dsk.Instance) != nil
+}
+
+func (d *Disks) syncShape(db *database.Database, dsk *disk.Disk) {
+	_, err := dsk.SyncShape(db, node.Self, d.stat.DiskShapes())
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+			"error":   err,
+		}).Error("deploy: Failed to sync disk shape")
+	}
 }
 
 func (d *Disks) Deploy(db *database.Database) (err error) {
