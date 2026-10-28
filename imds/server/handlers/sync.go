@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"time"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/dnss"
@@ -32,10 +30,7 @@ func syncPut(c *gin.Context) {
 		return
 	}
 
-	if !state.Global.State.Final() {
-		state.Global.State.Status = data.Status
-	}
-	state.Global.State.Timestamp = time.Now()
+	state.Global.SetStatus(data.Status)
 
 	if data.Metrics != nil {
 		telemetry.Metrics.Append(data.Metrics...)
@@ -92,7 +87,7 @@ func hostSyncPut(c *gin.Context) {
 		dnss.LoadConfig(data.DnsServers, data.DnsServers6, data.Domains)
 	}
 
-	ste := state.Global.State.Copy()
+	ste := state.Global.GetState()
 	ste.Hash = config.Config.Hash
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
@@ -105,7 +100,7 @@ func hostSyncPut(c *gin.Context) {
 }
 
 func hostSyncGet(c *gin.Context) {
-	ste := state.Global.State.Copy()
+	ste := state.Global.GetState()
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
 	ste.Metrics = telemetry.Metrics.GetAll()
@@ -116,7 +111,7 @@ func hostSyncGet(c *gin.Context) {
 }
 
 func hostStateGet(c *gin.Context) {
-	ste := state.Global.State.Copy()
+	ste := state.Global.GetState()
 
 	c.JSON(200, ste)
 }
