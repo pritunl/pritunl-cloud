@@ -11,6 +11,8 @@ import (
 )
 
 func (l *Lease) Renew4() (ok bool, err error) {
+	l.touch4()
+
 	if l.Address == nil || l.Address.IP == nil || l.ServerAddress == nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "dhcpc: Cannot call renew with unset address"),
@@ -69,17 +71,21 @@ func (l *Lease) Renew4() (ok bool, err error) {
 	renewed := extractDhLease(renewedLease)
 	if renewed != nil {
 		ok = true
+		l.lock.Lock()
 		l.Address = renewed.Address
 		l.Gateway = renewed.Gateway
 		l.ServerAddress = renewed.ServerAddress
 		l.LeaseTime = renewed.LeaseTime
 		l.TransactionId = renewed.TransactionId
+		l.lock.Unlock()
 	}
 
 	return
 }
 
 func (l *Lease) Exchange4() (ok bool, err error) {
+	l.touch4()
+
 	client, err := nclient4.New(
 		l.Iface,
 		nclient4.WithTimeout(DhcpTimeout),
@@ -119,11 +125,13 @@ func (l *Lease) Exchange4() (ok bool, err error) {
 	lease := extractDhLease(nclientLease)
 	if lease != nil {
 		ok = true
+		l.lock.Lock()
 		l.Address = lease.Address
 		l.Gateway = lease.Gateway
 		l.ServerAddress = lease.ServerAddress
 		l.LeaseTime = lease.LeaseTime
 		l.TransactionId = lease.TransactionId
+		l.lock.Unlock()
 	}
 
 	return
