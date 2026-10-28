@@ -92,6 +92,7 @@ func (d *Dhcpc) run4() (err error) {
 					"interface": d.DhcpIface,
 				}).Error("dhcpc: Failed to receive lease4")
 				time.Sleep(1000 * time.Millisecond)
+				continue
 			}
 
 			break
@@ -193,6 +194,7 @@ func (d *Dhcpc) run6() (err error) {
 					"interface6": d.DhcpIface6,
 				}).Error("dhcpc: Failed to receive lease6")
 				time.Sleep(1000 * time.Millisecond)
+				continue
 			}
 
 			break
