@@ -14,7 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
@@ -35,6 +34,7 @@ type Disk struct {
 	Zone             bson.ObjectID `bson:"zone" json:"zone"`
 	Node             bson.ObjectID `bson:"node" json:"node"`
 	Pool             bson.ObjectID `bson:"pool" json:"pool"`
+	Shape            bson.ObjectID `bson:"shape" json:"shape"`
 	Organization     bson.ObjectID `bson:"organization" json:"organization"`
 	Instance         bson.ObjectID `bson:"instance" json:"instance"`
 	SourceInstance   bson.ObjectID `bson:"source_instance" json:"source_instance"`
@@ -145,14 +145,6 @@ func (d *Disk) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_zone",
 			Message: "Missing required zone",
-		}
-		return
-	}
-
-	if d.Node.IsZero() {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_node",
-			Message: "Missing required node",
 		}
 		return
 	}
@@ -404,8 +396,6 @@ func (d *Disk) Insert(db *database.Database) (err error) {
 }
 
 func (d *Disk) Destroy(db *database.Database) (err error) {
-	dskPath := paths.GetDiskPath(d.Id)
-
 	if d.DeleteProtection {
 		logrus.WithFields(logrus.Fields{
 			"disk_id": d.Id.Hex(),
@@ -465,6 +455,12 @@ func (d *Disk) Destroy(db *database.Database) (err error) {
 			return
 		}
 	} else {
+		dskPath, e := d.GetPath(db)
+		if e != nil {
+			err = e
+			return
+		}
+
 		logrus.WithFields(logrus.Fields{
 			"disk_id":   d.Id.Hex(),
 			"disk_path": dskPath,
