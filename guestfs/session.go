@@ -18,6 +18,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -40,6 +41,8 @@ var (
 	environKeys = set.NewSet(
 		"LIBGUESTFS_BACKEND",
 		"LIBGUESTFS_ATTACH_METHOD",
+		"LIBGUESTFS_HV",
+		"LIBGUESTFS_QEMU",
 		"LIBGUESTFS_DEBUG",
 		"LIBGUESTFS_TRACE",
 		"LIBGUESTFS_TMPDIR",
@@ -117,8 +120,13 @@ func release() {
 	}
 }
 
-func environ() (env []string) {
+func environ() (env []string, err error) {
 	tempPath := paths.GetTempPath()
+
+	qemuPath, err := features.GetQemuPath()
+	if err != nil {
+		return
+	}
 
 	for _, item := range os.Environ() {
 		key := strings.SplitN(item, "=", 2)[0]
@@ -130,6 +138,7 @@ func environ() (env []string) {
 
 	env = append(env,
 		"LIBGUESTFS_BACKEND=direct",
+		"LIBGUESTFS_HV="+qemuPath,
 		"LIBGUESTFS_TMPDIR="+tempPath,
 		"TMPDIR="+tempPath,
 		"LC_ALL=C",
