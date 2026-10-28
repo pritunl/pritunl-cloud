@@ -23,7 +23,18 @@ type Dhcpc struct {
 	DhcpIp      *net.IPNet
 	DhcpIp6     *net.IPNet
 	lease       *Lease
+	ip4         bool
+	ip6         bool
 	syncTrigger chan struct{}
+}
+
+func sleepTouch(dur time.Duration, touch func()) {
+	for dur > 0 {
+		step := min(dur, 30*time.Second)
+		time.Sleep(step)
+		dur -= step
+		touch()
+	}
 }
 
 func (d *Dhcpc) startSync() {
@@ -37,20 +48,24 @@ func (d *Dhcpc) startSync() {
 	defer ticker.Stop()
 
 	for {
-		e := im.Sync(d.lease)
+		lease := d.lease.Copy()
+		lease.Timestamp = d.lease.heartbeat(d.ip4, d.ip6)
+
+		e := im.Sync(lease)
 		if e != nil {
 			logger.WithFields(logger.Fields{
 				"error": e,
 			}).Error("dhcpc: Failed to sync lease with imds")
-			time.Sleep(1 * time.Second)
+			time.Sleep(10 * time.Second)
+			continue
 		}
 
 		logger.WithFields(logger.Fields{
-			"interface": d.DhcpIface,
-			"address":   d.lease.Address.String(),
-			"gateway":   d.lease.Gateway.String(),
-			"server":    d.lease.ServerAddress.String(),
-			"time":      d.lease.LeaseTime.String(),
+			"interface": lease.Iface,
+			"address":   lease.Address.String(),
+			"gateway":   lease.Gateway.String(),
+			"server":    lease.ServerAddress.String(),
+			"time":      lease.LeaseTime.String(),
 		}).Info("dhcpc: Synced")
 
 		select {
@@ -69,10 +84,12 @@ func (d *Dhcpc) sync() {
 }
 
 func (d *Dhcpc) run4() (err error) {
+	d.lease.lock.Lock()
 	d.lease.Gateway = nil
 	d.lease.ServerAddress = nil
 	d.lease.LeaseTime = 0
 	d.lease.TransactionId = ""
+	d.lease.lock.Unlock()
 
 	for {
 		for {
@@ -126,7 +143,7 @@ func (d *Dhcpc) run4() (err error) {
 		}
 
 		for {
-			time.Sleep(d.Interval)
+			sleepTouch(d.Interval, d.lease.touch4)
 
 			ready4, _ := d.lease.IfaceReady()
 			if !ready4 {
@@ -170,11 +187,13 @@ func (d *Dhcpc) run4() (err error) {
 }
 
 func (d *Dhcpc) run6() (err error) {
+	d.lease.lock.Lock()
 	d.lease.ServerAddress6 = nil
 	d.lease.LeaseTime6 = 0
 	d.lease.TransactionId6 = ""
 	d.lease.IaId6 = [4]byte{}
 	d.lease.ServerId6 = nil
+	d.lease.lock.Unlock()
 
 	for {
 		for {
@@ -227,7 +246,7 @@ func (d *Dhcpc) run6() (err error) {
 		}
 
 		for {
-			time.Sleep(d.Interval)
+			sleepTouch(d.Interval, d.lease.touch6)
 
 			_, ready6 := d.lease.IfaceReady()
 			if !ready6 {
@@ -270,11 +289,16 @@ func (d *Dhcpc) run6() (err error) {
 }
 
 func (d *Dhcpc) Run(ip4, ip6 bool) {
+	now := time.Now()
+	d.ip4 = ip4
+	d.ip6 = ip6
 	d.lease = &Lease{
-		Iface:    d.DhcpIface,
-		Iface6:   d.DhcpIface6,
-		Address:  d.DhcpIp,
-		Address6: d.DhcpIp6,
+		Iface:     d.DhcpIface,
+		Iface6:    d.DhcpIface6,
+		Address:   d.DhcpIp,
+		Address6:  d.DhcpIp6,
+		progress4: now,
+		progress6: now,
 	}
 
 	go d.startSync()
