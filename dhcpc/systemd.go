@@ -182,3 +182,10 @@ func Stop(virt *vm.VirtualMachine) (err error) {
 
 	return
 }
+
+func Restart(vmId bson.ObjectID) (err error) {
+	unit := paths.GetUnitNameDhcpc(vmId)
+
+	err = systemd.Restart(unit)
+	return
+}
