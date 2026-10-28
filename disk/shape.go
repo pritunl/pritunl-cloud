@@ -5,14 +5,17 @@ import (
 	"slices"
 	"sort"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type location struct {
@@ -120,6 +123,59 @@ func (d *Disk) Locate(nde *node.Node, shapes []*shape.Shape) (
 			break
 		}
 	}
+
+	return
+}
+
+func (d *Disk) ShapePath(nde *node.Node, shapes []*shape.Shape) string {
+	if !d.Shape.IsZero() {
+		for _, shpe := range shapes {
+			if shpe.Id == d.Shape && shpe.DiskType == shape.Qcow2 &&
+				shpe.DisksPath != "" {
+
+				return shpe.GetDiskPath(d.Id)
+			}
+		}
+	}
+
+	return paths.JoinDiskPath(defaultDisksPath(nde), d.Id)
+}
+
+func (d *Disk) SyncShape(db *database.Database, nde *node.Node,
+	shapes []*shape.Shape) (pth string, err error) {
+
+	var shapeId bson.ObjectID
+	found := false
+
+	if d.Type == Lvm {
+		shapeId, found, err = d.FindShape(nde, shapes)
+		if err != nil {
+			return
+		}
+	} else {
+		pth, shapeId, found, err = d.Locate(nde, shapes)
+		if err != nil {
+			return
+		}
+	}
+
+	if !found || shapeId == d.Shape {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"disk_id":   d.Id.Hex(),
+		"old_shape": d.Shape.Hex(),
+		"new_shape": shapeId.Hex(),
+	}).Info("disk: Updating disk shape")
+
+	d.Shape = shapeId
+	err = d.CommitFields(db, set.NewSet("shape"))
+	if err != nil {
+		return
+	}
+
+	event.PublishDispatch(db, "disk.change")
 
 	return
 }
