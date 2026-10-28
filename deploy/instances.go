@@ -43,6 +43,34 @@ type Instances struct {
 	stat *state.State
 }
 
+func (s *Instances) syncDisks(db *database.Database,
+	inst *instance.Instance) {
+
+	shapes := s.stat.DiskShapes()
+
+	for _, dsk := range s.stat.GetInstaceDisks(inst.Id) {
+		pth, err := dsk.SyncShape(db, node.Self, shapes)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+				"error":       err,
+			}).Error("deploy: Failed to sync disk shape")
+			continue
+		}
+
+		if pth == "" || inst.Virt == nil {
+			continue
+		}
+
+		for _, virtDsk := range inst.Virt.Disks {
+			if virtDsk.Id == dsk.Id {
+				virtDsk.Path = pth
+			}
+		}
+	}
+}
+
 func (s *Instances) create(inst *instance.Instance) {
 	if !createLimiter.Acquire() {
 		return
@@ -65,6 +93,8 @@ func (s *Instances) create(inst *instance.Instance) {
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		s.syncDisks(db, inst)
 
 		err := qemu.Create(db, inst, inst.Virt)
 		if err != nil {
@@ -127,6 +157,8 @@ func (s *Instances) start(inst *instance.Instance) {
 				return
 			}
 		}
+
+		s.syncDisks(db, inst)
 
 		err := qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
@@ -273,6 +305,8 @@ func (s *Instances) restart(inst *instance.Instance) {
 			}
 		}
 
+		s.syncDisks(db, inst)
+
 		err = qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -398,6 +432,32 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		shapes := s.stat.DiskShapes()
+		instDisks := s.stat.GetInstaceDisks(inst.Id)
+
+		for _, dsk := range addDisks {
+			for _, instDsk := range instDisks {
+				if instDsk.Id != dsk.Id {
+					continue
+				}
+
+				pth, err := instDsk.SyncShape(db, node.Self, shapes)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": inst.Id.Hex(),
+						"disk_id":     dsk.Id.Hex(),
+						"error":       err,
+					}).Error("sync: Failed to sync disk shape")
+					return
+				}
+
+				if pth != "" {
+					dsk.Path = pth
+				}
+				break
+			}
+		}
 
 		sort.Sort(addDisks)
 
