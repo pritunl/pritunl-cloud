@@ -2,8 +2,9 @@ package drive
 
 import (
 	"crypto/md5"
-	"fmt"
+	"encoding/base32"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -45,5 +46,7 @@ func GetDevices() (devices []*Device, err error) {
 func GetDriveHashId(id string) string {
 	hash := md5.New()
 	hash.Write([]byte(id))
-	return fmt.Sprintf("%x", hash.Sum(nil))
+	hashSum := base32.StdEncoding.WithPadding(base32.NoPadding).
+		EncodeToString(hash.Sum(nil))
+	return strings.ToLower(hashSum)
 }
