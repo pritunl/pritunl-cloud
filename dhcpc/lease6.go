@@ -12,6 +12,8 @@ import (
 )
 
 func (l *Lease) Renew6() (ok bool, err error) {
+	l.touch6()
+
 	if l.Address6 == nil || l.Address6.IP == nil || l.ServerAddress6 == nil {
 		err = &errortypes.ReadError{
 			errors.New("dhcpc: Cannot call renew with unset address"),
@@ -107,6 +109,7 @@ func (l *Lease) Renew6() (ok bool, err error) {
 	renewed := extractDhcpv6Lease(reply, l.Iface)
 	if renewed != nil && renewed.Address6 != nil {
 		ok = true
+		l.lock.Lock()
 		l.Address6 = renewed.Address6
 		l.ServerAddress6 = renewed.ServerAddress6
 		l.PreferredLifetime6 = renewed.PreferredLifetime6
@@ -114,12 +117,15 @@ func (l *Lease) Renew6() (ok bool, err error) {
 		l.LeaseTime6 = renewed.LeaseTime6
 		l.TransactionId6 = renewed.TransactionId6
 		l.ServerId6 = renewed.ServerId6
+		l.lock.Unlock()
 	}
 
 	return
 }
 
 func (l *Lease) Exchange6() (ok bool, err error) {
+	l.touch6()
+
 	iface, err := net.InterfaceByName(l.Iface)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -141,7 +147,9 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 	}
 	defer client.Close()
 
+	l.lock.Lock()
 	l.IaId6 = [4]byte{0, 0, 0, 1}
+	l.lock.Unlock()
 
 	modifiers := []dhcpv6.Modifier{
 		dhcpv6.WithClientID(&dhcpv6.DUIDLLT{
@@ -174,6 +182,8 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 	reply, err := client.RapidSolicit(rapidCtx, modifiers...)
 	rapidCancel()
 	if err != nil {
+		l.touch6()
+
 		solicitCtx, solicitCancel := context.WithTimeout(
 			context.Background(), DhcpExchangeTimeout)
 		reply, err = client.Solicit(solicitCtx, modifiers...)
@@ -189,6 +199,7 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 	lease := extractDhcpv6Lease(reply, l.Iface)
 	if lease != nil && lease.Address6 != nil {
 		ok = true
+		l.lock.Lock()
 		l.Address6 = lease.Address6
 		l.ServerAddress6 = lease.ServerAddress6
 		l.PreferredLifetime6 = lease.PreferredLifetime6
@@ -196,6 +207,7 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 		l.LeaseTime6 = lease.LeaseTime6
 		l.TransactionId6 = lease.TransactionId6
 		l.ServerId6 = lease.ServerId6
+		l.lock.Unlock()
 	}
 
 	return
