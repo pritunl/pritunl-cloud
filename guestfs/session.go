@@ -28,6 +28,8 @@ const (
 	closeTimeout   = 10 * time.Minute
 	acquireTimeout = 30 * time.Minute
 	outputLimit    = 4 * 1024 * 1024
+	tracePrefix    = "libguestfs: trace: "
+	errorPrefix    = "*stdin*:"
 )
 
 var (
@@ -51,6 +53,8 @@ var (
 
 	sessionsLock = sync.Mutex{}
 	sessionsSem  chan struct{}
+
+	Debug = false
 )
 
 type Session struct {
@@ -142,7 +146,35 @@ func environ() (env []string) {
 			settings.Hypervisor.GuestfsMemory))
 	}
 
+	if Debug {
+		env = append(env,
+			"LIBGUESTFS_DEBUG=1",
+			"LIBGUESTFS_TRACE=1",
+		)
+	}
+
 	return
+}
+
+func debugLog(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, "[%s] guestfs: %s\n",
+		time.Now().Format("15:04:05.000"), fmt.Sprintf(format, args...))
+}
+
+func debugEnv(item string) bool {
+	key := strings.SplitN(item, "=", 2)[0]
+	if strings.HasPrefix(key, "LIBGUESTFS_") ||
+		strings.HasPrefix(key, "SUPERMIN_") {
+
+		return true
+	}
+
+	switch key {
+	case "TMPDIR", "LANG", "LC_ALL", "PATH", "HOME", "XDG_RUNTIME_DIR":
+		return true
+	}
+
+	return false
 }
 
 func newToken() (token string, err error) {
@@ -262,9 +294,29 @@ func (s *Session) start() (err error) {
 		"--format="+s.format,
 		"-a", s.path,
 	)
-	cmd.Env = environ()
+	env, err := environ()
+	if err != nil {
+		return
+	}
+	cmd.Env = env
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
+	}
+
+	if Debug {
+		guestfishPath, e := exec.LookPath("guestfish")
+		if e != nil {
+			guestfishPath = e.Error()
+		}
+
+		debugLog("Starting guestfish uid=%d path=%s",
+			os.Geteuid(), guestfishPath)
+		debugLog("Command: %s", strings.Join(cmd.Args, " "))
+		for _, item := range cmd.Env {
+			if debugEnv(item) {
+				debugLog("Env: %s", item)
+			}
+		}
 	}
 
 	stdin, err := cmd.StdinPipe()
@@ -311,7 +363,11 @@ func (s *Session) reader(pipeRead *os.File) {
 	for {
 		line, err := reader.ReadString('\n')
 		if line != "" {
-			s.lines <- strings.TrimRight(line, "\r\n")
+			text := strings.TrimRight(line, "\r\n")
+			if Debug {
+				fmt.Fprintln(os.Stderr, text)
+			}
+			s.lines <- text
 		}
 		if err != nil {
 			break
@@ -446,27 +502,49 @@ func (s *Session) run(optional bool, args []string) (
 		return
 	}
 
+	start := time.Now()
+	if Debug {
+		debugLog("Send %d: %s", lineNo, line)
+	}
+
 	timer := time.NewTimer(s.timeout)
 	defer timer.Stop()
 
 	buf := strings.Builder{}
+	errBuf := strings.Builder{}
 	failed := false
-	errPrefix := fmt.Sprintf("*stdin*:%d:", lineNo)
+	errPrefix := fmt.Sprintf("%s%d:", errorPrefix, lineNo)
+
+	failOutput := func() string {
+		if Debug && errBuf.Len() > 0 {
+			return errBuf.String()
+		}
+		return buf.String()
+	}
 
 	for {
 		select {
 		case text, alive := <-s.lines:
 			if !alive {
 				s.dead = true
+				if Debug {
+					debugLog("Exit %d: guestfish exited after %s", lineNo,
+						time.Since(start).Round(time.Millisecond))
+				}
 				err = &errortypes.ExecError{
 					errors.Newf("guestfs: Command '%s' failed: %s",
-						args[0], strings.TrimSpace(buf.String())),
+						args[0], strings.TrimSpace(failOutput())),
 				}
-				s.logError(args, buf.String())
+				s.logError(args, failOutput())
 				return
 			}
 
 			if text == sentinel {
+				if Debug {
+					debugLog("Done %d: ok=%t elapsed=%s", lineNo, !failed,
+						time.Since(start).Round(time.Millisecond))
+				}
+
 				if failed {
 					ok = false
 					output = ""
@@ -482,6 +560,18 @@ func (s *Session) run(optional bool, args []string) (
 				failed = true
 			}
 
+			if Debug {
+				if strings.HasPrefix(text, errorPrefix) {
+					errBuf.WriteString(text)
+					errBuf.WriteString("\n")
+				}
+
+				if strings.HasPrefix(text, tracePrefix) {
+					buf.Reset()
+					continue
+				}
+			}
+
 			if buf.Len() < outputLimit {
 				buf.WriteString(text)
 				buf.WriteString("\n")
@@ -489,10 +579,14 @@ func (s *Session) run(optional bool, args []string) (
 		case <-timer.C:
 			s.dead = true
 			s.kill()
+			if Debug {
+				debugLog("Timeout %d: no response after %s", lineNo,
+					time.Since(start).Round(time.Millisecond))
+			}
 			err = &errortypes.TimeoutError{
 				errors.Newf("guestfs: Command '%s' timed out", args[0]),
 			}
-			s.logError(args, buf.String())
+			s.logError(args, failOutput())
 			return
 		}
 	}
@@ -532,6 +626,10 @@ func (s *Session) Close() (err error) {
 	}
 
 	if !s.dead {
+		if Debug {
+			debugLog("Close: sending exit")
+		}
+
 		_, e := s.write("exit")
 		if e != nil {
 			s.kill()
@@ -543,6 +641,11 @@ func (s *Session) Close() (err error) {
 	s.drain(closeTimeout)
 
 	<-s.exited
+
+	if Debug {
+		debugLog("Close: guestfish exited dead=%t err=%v",
+			s.dead, s.waitErr)
+	}
 
 	if !s.dead && s.waitErr != nil {
 		err = &errortypes.ExecError{
