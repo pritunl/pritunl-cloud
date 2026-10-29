@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"crypto/md5"
+	"encoding/base32"
 	"fmt"
 	"math"
 	"path"
@@ -612,7 +613,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 			iscsiHash := md5.New()
 			iscsiHash.Write([]byte(device.Uri))
-			iscsiId := fmt.Sprintf("%x", iscsiHash.Sum(nil))
+			iscsiId := base32.StdEncoding.WithPadding(base32.NoPadding).
+				EncodeToString(iscsiHash.Sum(nil))
 
 			dskId := fmt.Sprintf("id_%s", iscsiId)
 			dskFileId := fmt.Sprintf("idf_%s", iscsiId)
