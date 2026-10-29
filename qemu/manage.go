@@ -508,14 +508,9 @@ func Create(db *database.Database, inst *instance.Instance,
 			Id:               bson.NewObjectID(),
 			Name:             inst.Name,
 			State:            disk.Available,
-			Type:             virt.DiskType,
-			Pool:             virt.DiskPool,
-			Node:             node.Self.Id,
 			Deployment:       inst.Deployment,
 			Organization:     inst.Organization,
 			Instance:         inst.Id,
-			Datacenter:       node.Self.Datacenter,
-			Zone:             node.Self.Zone,
 			SourceInstance:   inst.Id,
 			Image:            virt.Image,
 			Index:            "0",
@@ -523,7 +518,18 @@ func Create(db *database.Database, inst *instance.Instance,
 			DeleteProtection: inst.DeleteProtection,
 		}
 
-		errData, e := dsk.Validate(db)
+		errData, e := dsk.ApplyShapeId(db, virt.DiskShape,
+			node.Self, node.Self.Zone)
+		if e != nil {
+			err = e
+			return
+		}
+		if errData != nil {
+			err = errData.GetError()
+			return
+		}
+
+		errData, e = dsk.Validate(db)
 		if e != nil {
 			err = e
 			return
@@ -569,7 +575,7 @@ func Create(db *database.Database, inst *instance.Instance,
 
 		_ = event.PublishDispatch(db, "disk.change")
 
-		if virt.DiskType == disk.Lvm {
+		if dsk.Type == disk.Lvm {
 			pl, e := pool.Get(db, dsk.Pool)
 			if e != nil {
 				err = e
@@ -583,10 +589,16 @@ func Create(db *database.Database, inst *instance.Instance,
 				LvName: dsk.Id.Hex(),
 			})
 		} else {
+			dskPath, e := dsk.GetPath(db)
+			if e != nil {
+				err = e
+				return
+			}
+
 			virt.Disks = append(virt.Disks, &vm.Disk{
 				Id:    dsk.Id,
 				Index: 0,
-				Path:  paths.GetDiskPath(dsk.Id),
+				Path:  dskPath,
 			})
 		}
 	}
