@@ -4,7 +4,7 @@ import (
 	"text/template"
 )
 
-const redirectConfTempl = `# pritunl-zero redirect server environment
+const redirectConfTempl = `# pritunl-cloud redirect server environment
 WEB_PORT={{.WebPort}}
 PUBLIC_KEY={{.PublicKey}}
 KEY={{.Key}}
