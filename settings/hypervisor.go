@@ -57,6 +57,7 @@ type hypervisor struct {
 	RefreshRate            int    `bson:"refresh_rate" default:"90"`
 	SplashTime             int    `bson:"splash_time" default:"60"`
 	DhcpRenewTtl           int    `bson:"dhcp_renew_ttl" default:"60"`
+	DhcpSyncTimeout        int    `bson:"dhcp_sync_timeout" default:"120"`
 	NoIpv6PingInit         bool   `bson:"no_ipv6_ping_init"`
 	Ipv6PingHost           string `bson:"ipv6_ping_host" default:"2001:4860:4860::8888"`
 	ImdsAddress            string `bson:"imds_address" default:"169.254.169.254/32"`
