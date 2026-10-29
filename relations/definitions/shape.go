@@ -17,8 +17,20 @@ var Shape = relations.Query{
 		Key:   "name",
 		Label: "Name",
 	}, {
+		Key:   "type",
+		Label: "Type",
+	}, {
 		Key:   "roles",
 		Label: "Roles",
+	}, {
+		Key:   "disk_type",
+		Label: "Disk Type",
+	}, {
+		Key:   "disks_path",
+		Label: "Disks Path",
+	}, {
+		Key:   "disk_pools",
+		Label: "Disk Pools",
 	}},
 	Relations: []relations.Relation{{
 		Key:          "nodes",
@@ -36,6 +48,9 @@ var Shape = relations.Query{
 			Key:   "types",
 			Label: "Modes",
 		}, {
+			Key:   "roles",
+			Label: "Roles",
+		}, {
 			Key:   "admin_domain",
 			Label: "Admin Domain",
 		}, {
@@ -52,12 +67,63 @@ var Shape = relations.Query{
 			Label: "Network Mode IPv6",
 		}},
 	}, {
-		Key:          "instances",
-		Label:        "Instance",
-		From:         "instances",
+		Key:          "pools",
+		Label:        "Pool",
+		From:         "pools",
+		LocalField:   "disk_pools",
+		ForeignField: "_id",
+		Sort: map[string]int{
+			"name": 1,
+		},
+		Project: []relations.Project{{
+			Key:   "name",
+			Label: "Name",
+		}, {
+			Key:   "type",
+			Label: "Type",
+		}, {
+			Key:   "vg_name",
+			Label: "VG Name",
+		}},
+	}, {
+		Key:          "disks",
+		Label:        "Disk",
+		From:         "disks",
 		LocalField:   "_id",
 		ForeignField: "shape",
 		BlockDelete:  true,
+		Sort: map[string]int{
+			"name": 1,
+		},
+		Project: []relations.Project{{
+			Key:   "name",
+			Label: "Name",
+		}, {
+			Key:   "type",
+			Label: "Type",
+		}, {
+			Key:   "state",
+			Label: "State",
+		}, {
+			Key:   "size",
+			Label: "Size",
+		}},
+	}, {
+		Key:   "instances",
+		Label: "Instance",
+		From:  "instances",
+		Let: bson.M{
+			"shape_id": "$_id",
+		},
+		Match: bson.M{
+			"$expr": bson.M{
+				"$or": bson.A{
+					bson.M{"$eq": bson.A{"$shape", "$$shape_id"}},
+					bson.M{"$eq": bson.A{"$disk_shape", "$$shape_id"}},
+				},
+			},
+		},
+		BlockDelete: true,
 		Sort: map[string]int{
 			"name": 1,
 		},
