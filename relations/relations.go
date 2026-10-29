@@ -39,10 +39,13 @@ type Project struct {
 
 func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
 	lookup := bson.M{
-		"from":         relation.From,
-		"localField":   relation.LocalField,
-		"foreignField": relation.ForeignField,
-		"as":           relation.From,
+		"from": relation.From,
+		"as":   relation.From,
+	}
+
+	if relation.LocalField != "" || relation.ForeignField != "" {
+		lookup["localField"] = relation.LocalField
+		lookup["foreignField"] = relation.ForeignField
 	}
 
 	if len(relation.Let) > 0 {
