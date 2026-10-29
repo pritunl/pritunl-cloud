@@ -39,8 +39,16 @@ func GetVmPath(instId bson.ObjectID) string {
 		"instances", instId.Hex())
 }
 
-func GetDisksPath() string {
+func GetDefaultDisksPath() string {
 	return path.Join(node.Self.GetVirtPath(), "disks")
+}
+
+func GetDiskFileName(diskId bson.ObjectID) string {
+	return fmt.Sprintf("%s.qcow2", diskId.Hex())
+}
+
+func JoinDiskPath(disksPath string, diskId bson.ObjectID) string {
+	return path.Join(disksPath, GetDiskFileName(diskId))
 }
 
 func GetLocalIsosPath() string {
@@ -87,9 +95,8 @@ func GetOvmfDir() string {
 	return path.Join(node.Self.GetVirtPath(), "ovmf")
 }
 
-func GetDiskPath(diskId bson.ObjectID) string {
-	return path.Join(GetDisksPath(),
-		fmt.Sprintf("%s.qcow2", diskId.Hex()))
+func GetDefaultDiskPath(diskId bson.ObjectID) string {
+	return JoinDiskPath(GetDefaultDisksPath(), diskId)
 }
 
 func GetOvmfVarsPath(virtId bson.ObjectID) string {
