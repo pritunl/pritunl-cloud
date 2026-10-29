@@ -1,6 +1,7 @@
 package state
 
 import (
+	"net"
 	"sync"
 	"time"
 
@@ -36,6 +37,23 @@ func (s *Store) SetStatus(status string) {
 		s.State.Status = status
 	}
 	s.State.Timestamp = time.Now()
+	s.lock.Unlock()
+}
+
+func (s *Store) SetDhcp(iface, iface6 string, address, address6 *net.IPNet,
+	gateway net.IP, timestamp time.Time) {
+
+	if timestamp.IsZero() {
+		timestamp = time.Now()
+	}
+
+	s.lock.Lock()
+	s.State.DhcpIface = iface
+	s.State.DhcpIface6 = iface6
+	s.State.DhcpIp = address
+	s.State.DhcpGateway = gateway
+	s.State.DhcpIp6 = address6
+	s.State.DhcpTimestamp = timestamp
 	s.lock.Unlock()
 }
 
