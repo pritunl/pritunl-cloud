@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/pool"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
@@ -243,6 +244,11 @@ func GetAllVirt(db *database.Database, query *bson.M,
 		poolsMap[pl.Id] = pl
 	}
 
+	shapes, err := shape.GetAllDisks(db)
+	if err != nil {
+		return
+	}
+
 	instanceDisks := map[bson.ObjectID][]*disk.Disk{}
 	if disks != nil {
 		for _, dsk := range disks {
@@ -286,7 +292,7 @@ func GetAllVirt(db *database.Database, query *bson.M,
 			return
 		}
 
-		inst.LoadVirt(poolsMap, instanceDisks[inst.Id])
+		inst.LoadVirt(poolsMap, shapes, instanceDisks[inst.Id])
 		insts = append(insts, inst)
 	}
 
@@ -316,6 +322,11 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 	poolsMap := map[bson.ObjectID]*pool.Pool{}
 	for _, pl := range pools {
 		poolsMap[pl.Id] = pl
+	}
+
+	shapes, err := shape.GetAllDisks(db)
+	if err != nil {
+		return
 	}
 
 	for cursor.Next(db) {
@@ -349,7 +360,7 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 			}
 		}
 
-		inst.LoadVirt(poolsMap, virtDsks)
+		inst.LoadVirt(poolsMap, shapes, virtDsks)
 		insts = append(insts, inst)
 	}
 
@@ -363,6 +374,7 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 }
 
 func LoadAllVirt(insts []*Instance, pools []*pool.Pool,
+	shapes []*shape.Shape,
 	instanceDisks map[bson.ObjectID][]*disk.Disk) []*Instance {
 
 	poolsMap := map[bson.ObjectID]*pool.Pool{}
@@ -392,7 +404,7 @@ func LoadAllVirt(insts []*Instance, pools []*pool.Pool,
 			virtDsks = append(virtDsks, dsk)
 		}
 
-		inst.LoadVirt(poolsMap, virtDsks)
+		inst.LoadVirt(poolsMap, shapes, virtDsks)
 	}
 
 	return insts
