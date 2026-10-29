@@ -16,6 +16,7 @@ type State struct {
 	DhcpIp           *net.IPNet               `json:"dhcp_ip"`
 	DhcpIp6          *net.IPNet               `json:"dhcp_ip6"`
 	DhcpGateway      net.IP                   `json:"dhcp_gateway"`
+	DhcpTimestamp    time.Time                `json:"dhcp_timestamp"`
 	Updates          []*telemetry.Update      `json:"updates"`
 	Components       *telemetry.ComponentData `json:"components"`
 	Metrics          []*metric.Sample         `json:"metrics,omitempty"`
@@ -35,17 +36,18 @@ func (s *State) Final() bool {
 
 func (s *State) Copy() *State {
 	return &State{
-		Hash:        s.Hash,
-		Status:      s.Status,
-		DhcpIface:   s.DhcpIface,
-		DhcpIface6:  s.DhcpIface6,
-		DhcpIp:      s.DhcpIp,
-		DhcpIp6:     s.DhcpIp6,
-		DhcpGateway: s.DhcpGateway,
-		Updates:     s.Updates,
-		Components:  s.Components,
-		Metrics:     s.Metrics,
-		Timestamp:   s.Timestamp,
+		Hash:          s.Hash,
+		Status:        s.Status,
+		DhcpIface:     s.DhcpIface,
+		DhcpIface6:    s.DhcpIface6,
+		DhcpIp:        s.DhcpIp,
+		DhcpIp6:       s.DhcpIp6,
+		DhcpGateway:   s.DhcpGateway,
+		DhcpTimestamp: s.DhcpTimestamp,
+		Updates:       s.Updates,
+		Components:    s.Components,
+		Metrics:       s.Metrics,
+		Timestamp:     s.Timestamp,
 	}
 }
 
