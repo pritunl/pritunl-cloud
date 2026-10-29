@@ -26,7 +26,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/nodeport"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -56,8 +55,7 @@ type Instance struct {
 	CloudVnic           string              `bson:"cloud_vnic" json:"cloud_vnic"`
 	CloudVnicAttach     string              `bson:"cloud_vnic_attach" json:"cloud_vnic_attach"`
 	Image               bson.ObjectID       `bson:"image" json:"image"`
-	DiskType            string              `bson:"disk_type" json:"disk_type"`
-	DiskPool            bson.ObjectID       `bson:"disk_pool" json:"disk_pool"`
+	DiskShape           bson.ObjectID       `bson:"disk_shape" json:"disk_shape"`
 	Status              string              `bson:"-" json:"status"`
 	StatusInfo          *StatusInfo         `bson:"status_info,omitempty" json:"status_info"`
 	Uptime              string              `bson:"-" json:"uptime"`
@@ -258,6 +256,29 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
+	var dskShpe *shape.Shape
+	if i.Id.IsZero() && !i.DiskShape.IsZero() {
+		dskShpe, err = shape.Get(db, i.DiskShape)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+				errData = &errortypes.ErrorData{
+					Error:   "disk_shape_not_found",
+					Message: "Disk shape not found",
+				}
+			}
+			return
+		}
+
+		if dskShpe.GetType() != shape.Disk || dskShpe.DiskType == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_disk_shape",
+				Message: "Shape is not a disk shape",
+			}
+			return
+		}
+	}
+
 	if i.Node.IsZero() {
 		if i.Shape.IsZero() {
 			errData = &errortypes.ErrorData{
@@ -273,20 +294,48 @@ func (i *Instance) Validate(db *database.Database) (
 			return
 		}
 
+		if shpe.GetType() != shape.Instance {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_shape",
+				Message: "Shape is not an instance shape",
+			}
+			return
+		}
+
 		if !shpe.Flexible {
 			i.Processors = shpe.Processors
 			i.Memory = shpe.Memory
 		}
 
-		nde, e := shpe.FindNode(db, i.Zone, i.Processors, i.Memory)
+		nde, e := shpe.FindNode(db, i.Zone, dskShpe,
+			i.Processors, i.Memory)
 		if e != nil {
 			err = e
 			return
 		}
 
 		i.Node = nde.Id
-		i.DiskType = shpe.DiskType
-		i.DiskPool = shpe.DiskPool
+	} else if dskShpe != nil {
+		nde, e := node.Get(db, i.Node)
+		if e != nil {
+			if _, ok := e.(*database.NotFoundError); ok {
+				errData = &errortypes.ErrorData{
+					Error:   "node_not_found",
+					Message: "Node not found",
+				}
+				return
+			}
+			err = e
+			return
+		}
+
+		if !dskShpe.MatchNode(nde) {
+			errData = &errortypes.ErrorData{
+				Error:   "disk_shape_unavailable",
+				Message: "Disk shape not available on node",
+			}
+			return
+		}
 	}
 
 	if i.Vpc.IsZero() {
@@ -299,20 +348,6 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.UnixId == 0 {
 		i.GenerateUnixId()
-	}
-
-	switch i.DiskType {
-	case disk.Lvm:
-		if i.DiskPool.IsZero() {
-			errData = &errortypes.ErrorData{
-				Error:   "pool_required",
-				Message: "Missing required disk pool",
-			}
-			return
-		}
-		break
-	case disk.Qcow2, "":
-		i.DiskType = disk.Qcow2
 	}
 
 	vc, err := vpc.Get(db, i.Vpc)
@@ -1216,14 +1251,13 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 }
 
 func (i *Instance) LoadVirt(poolsMap map[bson.ObjectID]*pool.Pool,
-	disks []*disk.Disk) {
+	shapes []*shape.Shape, disks []*disk.Disk) {
 
 	i.Virt = &vm.VirtualMachine{
 		Id:            i.Id,
 		Organization:  i.Organization,
 		UnixId:        i.UnixId,
-		DiskType:      i.DiskType,
-		DiskPool:      i.DiskPool,
+		DiskShape:     i.DiskShape,
 		Image:         i.Image,
 		Processors:    i.Processors,
 		Memory:        i.Memory,
@@ -1299,7 +1333,7 @@ func (i *Instance) LoadVirt(poolsMap map[bson.ObjectID]*pool.Pool,
 				i.Virt.Disks = append(i.Virt.Disks, &vm.Disk{
 					Id:    dsk.Id,
 					Index: index,
-					Path:  paths.GetDiskPath(dsk.Id),
+					Path:  dsk.ShapePath(node.Self, shapes),
 				})
 				break
 			}
