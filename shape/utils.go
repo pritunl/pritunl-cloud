@@ -194,7 +194,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 				{"zone", 1},
 				{"flexible", 1},
 				{"disk_type", 1},
-				{"disk_pool", 1},
+				{"disk_pools", 1},
 				{"memory", 1},
 				{"processors", 1},
 			}),
