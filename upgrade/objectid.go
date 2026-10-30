@@ -348,20 +348,6 @@ func objectIdUpgrade(db *database.Database) (err error) {
 
 	coll = db.Instances()
 	_, err = coll.UpdateMany(db, bson.M{
-		"disk_pool": bson.M{
-			"$exists": false,
-		},
-	}, bson.M{
-		"$set": bson.M{
-			"disk_pool": nilObjectID,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	_, err = coll.UpdateMany(db, bson.M{
 		"node": bson.M{
 			"$exists": false,
 		},
