@@ -19,8 +19,7 @@ type VirtualMachine struct {
 	State               string            `json:"state"`
 	Timestamp           time.Time         `json:"timestamp"`
 	QemuVersion         string            `json:"qemu_version"`
-	DiskType            string            `json:"disk_type"`
-	DiskPool            bson.ObjectID     `json:"disk_pool"`
+	DiskShape           bson.ObjectID     `json:"disk_shape"`
 	Image               bson.ObjectID     `json:"image"`
 	Processors          int               `json:"processors"`
 	Memory              int               `json:"memory"`
