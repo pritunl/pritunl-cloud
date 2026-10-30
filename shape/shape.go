@@ -43,6 +43,47 @@ type Completion struct {
 	Processors int           `bson:"processors" json:"processors"`
 }
 
+func (s *Shape) GetType() string {
+	if s.Type == "" {
+		return Instance
+	}
+	return s.Type
+}
+
+func (s *Shape) HasPool(poolId bson.ObjectID) bool {
+	return slices.Contains(s.DiskPools, poolId)
+}
+
+func (s *Shape) GetDiskPath(diskId bson.ObjectID) string {
+	return paths.JoinDiskPath(s.DisksPath, diskId)
+}
+
+func (s *Shape) MatchRoles(roles []string) bool {
+	for _, role := range s.Roles {
+		if slices.Contains(roles, role) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Shape) MatchNode(nde *node.Node) bool {
+	if nde == nil || !s.MatchRoles(nde.Roles) {
+		return false
+	}
+
+	if s.GetType() == Disk && s.DiskType == Lvm {
+		for _, poolId := range s.DiskPools {
+			if slices.Contains(nde.Pools, poolId) {
+				return true
+			}
+		}
+		return false
+	}
+
+	return true
+}
+
 func (s *Shape) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -191,6 +232,10 @@ func (s *Shape) FindNode(db *database.Database, zneId bson.ObjectID,
 	Nodes(ndes).Sort()
 
 	for _, nd := range ndes {
+		if dskShpe != nil && !dskShpe.MatchNode(nd) {
+			continue
+		}
+
 		nde = nd
 		return
 	}
