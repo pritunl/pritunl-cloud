@@ -32,6 +32,7 @@ type Instance struct {
 	PublicAddress6      *bool           `bson:"public_address6,omitempty" json:"public_address6"`     // soft
 	DhcpServer          bool            `bson:"dhcp_server" json:"dhcp_server"`                       // soft
 	Image               bson.ObjectID   `bson:"image" json:"image"`                                   // hard
+	DiskShape           bson.ObjectID   `bson:"disk_shape,omitempty" json:"disk_shape"`               // hard
 	DiskSize            int             `bson:"disk_size" json:"disk_size"`                           // hard
 	Mounts              []Mount         `bson:"mounts" json:"mounts"`                                 // hard
 	NodePorts           []NodePort      `bson:"node_ports" json:"node_ports"`                         // soft
@@ -173,6 +174,7 @@ type InstanceYaml struct {
 	Certificates        []string               `yaml:"certificates"`
 	Secrets             []string               `yaml:"secrets"`
 	Pods                []string               `yaml:"pods"`
+	DiskShape           string                 `yaml:"diskShape,omitempty"`
 	DiskSize            int                    `yaml:"diskSize"`
 }
 
