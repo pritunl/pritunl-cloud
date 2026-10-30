@@ -151,7 +151,6 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 				{"name", 1},
 				{"types", 1},
 				{"gui", 1},
-				{"pools", 1},
 				{"available_vpcs", 1},
 				{"cloud_subnets", 1},
 				{"default_no_public_address", 1},
