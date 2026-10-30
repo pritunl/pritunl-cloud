@@ -100,6 +100,19 @@ func (s *Spec) GetAllNodes(db *database.Database, rlm *Realm) (ndes Nodes,
 		return
 	}
 
+	var dskShpe *shape.Shape
+	if !s.Instance.DiskShape.IsZero() {
+		dskShpe, err = shape.Get(db, s.Instance.DiskShape)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+				dskShpe = nil
+			} else {
+				return
+			}
+		}
+	}
+
 	var mountNodes []set.Set
 	if len(s.Instance.Mounts) > 0 {
 		diskIds := []bson.ObjectID{}
@@ -154,6 +167,10 @@ func (s *Spec) GetAllNodes(db *database.Database, rlm *Realm) (ndes Nodes,
 	for _, nde := range allNdes {
 		if !nde.IsOnline() {
 			offlineCount += 1
+			continue
+		}
+
+		if dskShpe != nil && !dskShpe.MatchNode(nde) {
 			continue
 		}
 
@@ -576,8 +593,42 @@ func (s *Spec) parseInstance(db *database.Database,
 			return
 		}
 		if kind == finder.ShapeKind && resources.Shape != nil {
+			if resources.Shape.GetType() != shape.Instance {
+				errData = &errortypes.ErrorData{
+					Error: "unit_shape_invalid",
+					Message: s.errMsg(
+						"Unit shape is not an instance shape"),
+				}
+				return
+			}
 			shpe = resources.Shape
 			data.Shape = resources.Shape.Id
+		}
+	}
+	if dataYaml.DiskShape != "" {
+		kind, e := resources.Find(db, dataYaml.DiskShape)
+		if e != nil {
+			err = e
+			return
+		}
+		if kind == finder.ShapeKind && resources.Shape != nil {
+			if resources.Shape.GetType() != shape.Disk {
+				errData = &errortypes.ErrorData{
+					Error: "unit_disk_shape_invalid",
+					Message: s.errMsg(
+						"Unit disk shape is not a disk shape"),
+				}
+				return
+			}
+			data.DiskShape = resources.Shape.Id
+		}
+
+		if data.DiskShape.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "unit_disk_shape_missing",
+				Message: s.errMsg("Unit disk shape not found"),
+			}
+			return
 		}
 	}
 
@@ -1350,30 +1401,6 @@ func (s *Spec) CanMigrate(db *database.Database,
 			}
 			return
 		}
-	}
-
-	curMountPaths := set.NewSet()
-	for _, mnt := range s.Instance.Mounts {
-		if mnt.Type == HostPath {
-			continue
-		}
-		curMountPaths.Add(mnt.Path)
-	}
-
-	newMountPaths := set.NewSet()
-	for _, mnt := range spc.Instance.Mounts {
-		if mnt.Type == HostPath {
-			continue
-		}
-		newMountPaths.Add(mnt.Path)
-	}
-
-	if !curMountPaths.IsEqual(newMountPaths) {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_mount_coflict",
-			Message: s.errMsg("Cannot migrate to different instance mounts"),
-		}
-		return
 	}
 
 	return
