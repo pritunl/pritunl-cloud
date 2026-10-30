@@ -28,15 +28,6 @@ type Dhcpc struct {
 	syncTrigger chan struct{}
 }
 
-func sleepTouch(dur time.Duration, touch func()) {
-	for dur > 0 {
-		step := min(dur, 30*time.Second)
-		time.Sleep(step)
-		dur -= step
-		touch()
-	}
-}
-
 func (d *Dhcpc) startSync() {
 	im := &Imds{
 		Address: d.ImdsAddress,
@@ -91,6 +82,11 @@ func (d *Dhcpc) run4() (err error) {
 	d.lease.TransactionId = ""
 	d.lease.lock.Unlock()
 
+	sleeper := &Sleeper{
+		Interval: d.Interval,
+		Touch:    d.lease.touch4,
+	}
+
 	for {
 		for {
 			ok, e := d.lease.Exchange4()
@@ -143,7 +139,7 @@ func (d *Dhcpc) run4() (err error) {
 		}
 
 		for {
-			sleepTouch(d.Interval, d.lease.touch4)
+			sleeper.Sleep()
 
 			ready4, _ := d.lease.IfaceReady()
 			if !ready4 {
@@ -194,6 +190,11 @@ func (d *Dhcpc) run6() (err error) {
 	d.lease.IaId6 = [4]byte{}
 	d.lease.ServerId6 = nil
 	d.lease.lock.Unlock()
+
+	sleeper := &Sleeper{
+		Interval: d.Interval,
+		Touch:    d.lease.touch6,
+	}
 
 	for {
 		for {
@@ -246,7 +247,7 @@ func (d *Dhcpc) run6() (err error) {
 		}
 
 		for {
-			sleepTouch(d.Interval, d.lease.touch6)
+			sleeper.Sleep()
 
 			_, ready6 := d.lease.IfaceReady()
 			if !ready6 {
