@@ -67,6 +67,47 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllDisks(db *database.Database) (shapes []*Shape, err error) {
+	coll := db.Shapes()
+	shapes = []*Shape{}
+
+	cursor, err := coll.Find(
+		db,
+		&bson.M{
+			"type": Disk,
+		},
+		options.Find().
+			SetSort(&bson.D{
+				{"name", 1},
+				{"_id", 1},
+			}),
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		shpe := &Shape{}
+		err = cursor.Decode(shpe)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		shapes = append(shapes, shpe)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (shapes []*Shape, count int64, err error) {
 
