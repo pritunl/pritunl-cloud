@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/secret"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -52,6 +53,9 @@ type State struct {
 
 	// Pools
 	NodePools func() []*pool.Pool
+
+	// Shapes
+	DiskShapes func() []*shape.Shape
 
 	// Disks
 	Disks              func() []*disk.Disk
