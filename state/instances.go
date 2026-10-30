@@ -41,7 +41,7 @@ func (p *InstancesState) Refresh(pkg *Package,
 
 	instances := InstancesPreload.GetInstances()
 	instances = instance.LoadAllVirt(instances,
-		Pools.NodePools(), Disks.InstaceDisksMap())
+		Pools.NodePools(), Shapes.DiskShapes(), Disks.InstaceDisksMap())
 
 	p.instances = instances
 
@@ -71,5 +71,6 @@ func init() {
 	InstancesPkg.
 		After(InstancesPreload).
 		After(Disks).
-		After(Pools)
+		After(Pools).
+		After(Shapes)
 }
