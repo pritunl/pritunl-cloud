@@ -1,9 +1,7 @@
 package task
 
 import (
-	"fmt"
 	"sync"
-	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -58,8 +56,6 @@ func freezeRecoverHandler(db *database.Database) (err error) {
 		return
 	}
 
-	start := time.Now()
-
 	waiter := &sync.WaitGroup{}
 	limiter := make(chan struct{}, 8)
 
@@ -82,7 +78,6 @@ func freezeRecoverHandler(db *database.Database) (err error) {
 	}
 
 	waiter.Wait()
-	fmt.Println(time.Since(start))
 
 	return
 }
