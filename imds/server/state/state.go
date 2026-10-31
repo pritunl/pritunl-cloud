@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
@@ -27,6 +28,8 @@ func (s *Store) GetState() (ste *types.State) {
 	s.lock.RLock()
 	ste = s.State.Copy()
 	s.lock.RUnlock()
+
+	ste.Version = constants.ImdsVersion
 
 	return
 }
