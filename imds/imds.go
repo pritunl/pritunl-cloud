@@ -15,8 +15,10 @@ import (
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
@@ -26,7 +28,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
+	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/unit"
 	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
@@ -35,13 +39,18 @@ import (
 )
 
 var (
-	hashes     = map[bson.ObjectID]uint32{}
-	hashesLock = sync.Mutex{}
-	counter    = atomic.Uint64{}
+	hashes              = map[bson.ObjectID]uint32{}
+	hashesLock          = sync.Mutex{}
+	dhcpFails           = map[bson.ObjectID]time.Time{}
+	dhcpFailsLock       = sync.Mutex{}
+	versionRestarts     = map[bson.ObjectID]time.Time{}
+	versionRestartsLock = sync.Mutex{}
+	counter             = atomic.Uint64{}
 )
 
 const (
-	counterMax = 2000000000
+	counterMax        = 2000000000
+	versionRestartTtl = 1 * time.Hour
 )
 
 func Sync(db *database.Database, namespace string,
@@ -148,6 +157,39 @@ func Sync(db *database.Database, namespace string,
 	hashesLock.Lock()
 	hashes[instId] = ste.Hash
 	hashesLock.Unlock()
+
+	if ste.Version != constants.ImdsVersion {
+		versionRestartsLock.Lock()
+		lastRestart := versionRestarts[instId]
+		restart := lastRestart.IsZero() ||
+			time.Since(lastRestart) > versionRestartTtl
+		if restart {
+			versionRestarts[instId] = time.Now()
+		}
+		versionRestartsLock.Unlock()
+
+		if restart {
+			logrus.WithFields(logrus.Fields{
+				"instance":     instId.Hex(),
+				"imds_version": ste.Version,
+				"node_version": constants.ImdsVersion,
+			}).Warn("imds: Imds version mismatch, restarting")
+
+			e := Restart(instId)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": instId.Hex(),
+					"error":    e,
+				}).Error("imds: Failed to restart imds")
+			}
+
+			return
+		}
+	} else {
+		versionRestartsLock.Lock()
+		delete(versionRestarts, instId)
+		versionRestartsLock.Unlock()
+	}
 
 	if ste.Status != "" {
 		coll := db.Instances()
