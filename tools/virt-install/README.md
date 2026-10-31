@@ -51,8 +51,8 @@ sh rockylinux8.sh
 sh rockylinux9.sh
 sh rockylinux10.sh
 
-sh fedora43.sh
 sh fedora44.sh
+sh fedora45.sh
 
 sh alpinelinux.sh
 sh archlinux.sh
@@ -132,10 +132,10 @@ s3c cp alpinelinux_$(date +%y%m%d).qcow2 pritunl-images:/unstable/alpinelinux_$(
 s3c cp alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/alpinelinux_$(date +%y%m%d).qcow2.sig
 s3c cp archlinux_$(date +%y%m%d).qcow2 pritunl-images:/unstable/archlinux_$(date +%y%m%d).qcow2
 s3c cp archlinux_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/archlinux_$(date +%y%m%d).qcow2.sig
-s3c cp fedora43_$(date +%y%m%d).qcow2 pritunl-images:/unstable/fedora43_$(date +%y%m%d).qcow2
-s3c cp fedora43_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/fedora43_$(date +%y%m%d).qcow2.sig
 s3c cp fedora44_$(date +%y%m%d).qcow2 pritunl-images:/unstable/fedora44_$(date +%y%m%d).qcow2
 s3c cp fedora44_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/fedora44_$(date +%y%m%d).qcow2.sig
+s3c cp fedora45_$(date +%y%m%d).qcow2 pritunl-images:/unstable/fedora45_$(date +%y%m%d).qcow2
+s3c cp fedora45_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/fedora45_$(date +%y%m%d).qcow2.sig
 s3c cp freebsd_$(date +%y%m%d).qcow2 pritunl-images:/unstable/freebsd_$(date +%y%m%d).qcow2
 s3c cp freebsd_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/freebsd_$(date +%y%m%d).qcow2.sig
 s3c cp oraclelinux7_$(date +%y%m%d).qcow2 pritunl-images:/unstable/oraclelinux7_$(date +%y%m%d).qcow2
@@ -173,10 +173,10 @@ s3c cp alpinelinux_$(date +%y%m%d).qcow2 pritunl-images:/stable/alpinelinux_$(da
 s3c cp alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/alpinelinux_$(date +%y%m%d).qcow2.sig
 s3c cp archlinux_$(date +%y%m%d).qcow2 pritunl-images:/stable/archlinux_$(date +%y%m%d).qcow2
 s3c cp archlinux_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/archlinux_$(date +%y%m%d).qcow2.sig
-s3c cp fedora43_$(date +%y%m%d).qcow2 pritunl-images:/stable/fedora43_$(date +%y%m%d).qcow2
-s3c cp fedora43_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/fedora43_$(date +%y%m%d).qcow2.sig
 s3c cp fedora44_$(date +%y%m%d).qcow2 pritunl-images:/stable/fedora44_$(date +%y%m%d).qcow2
 s3c cp fedora44_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/fedora44_$(date +%y%m%d).qcow2.sig
+s3c cp fedora45_$(date +%y%m%d).qcow2 pritunl-images:/stable/fedora45_$(date +%y%m%d).qcow2
+s3c cp fedora45_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/fedora45_$(date +%y%m%d).qcow2.sig
 s3c cp freebsd_$(date +%y%m%d).qcow2 pritunl-images:/stable/freebsd_$(date +%y%m%d).qcow2
 s3c cp freebsd_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/freebsd_$(date +%y%m%d).qcow2.sig
 s3c cp oraclelinux7_$(date +%y%m%d).qcow2 pritunl-images:/stable/oraclelinux7_$(date +%y%m%d).qcow2
