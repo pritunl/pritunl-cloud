@@ -2,7 +2,6 @@ package qemu
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strings"
@@ -136,14 +135,9 @@ func GetVmInfo(db *database.Database, vmId bson.ObjectID,
 						break
 					}
 
-					virt.QemuVersion = fmt.Sprintf(
-						"%d.%d.%d",
-						info.VersionMajor,
-						info.VersionMinor,
-						info.VersionMicro,
-					)
+					virt.QemuVersion = info.Version()
 					virt.Disks = disks
-					store.SetDisks(vmId, disks)
+					store.SetDisks(vmId, disks, virt.QemuVersion)
 					disksUpdated = true
 				}
 
@@ -156,6 +150,7 @@ func GetVmInfo(db *database.Database, vmId bson.ObjectID,
 			for _, dsk := range disksStore.Disks {
 				disks = append(disks, dsk.Copy())
 			}
+			virt.QemuVersion = disksStore.QemuVersion
 			virt.Disks = disks
 		}
 	}
