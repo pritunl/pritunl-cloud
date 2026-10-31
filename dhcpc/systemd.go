@@ -177,8 +177,11 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 
 func Stop(virt *vm.VirtualMachine) (err error) {
 	unit := paths.GetUnitNameDhcpc(virt.Id)
+	unitPath := paths.GetUnitPathDhcpc(virt.Id)
 
 	_ = systemd.Stop(unit)
+
+	_ = utils.RemoveAll(unitPath)
 
 	return
 }
