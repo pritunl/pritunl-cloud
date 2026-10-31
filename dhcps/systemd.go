@@ -484,10 +484,17 @@ func Stop(virt *vm.VirtualMachine) (err error) {
 	unitServer4 := paths.GetUnitNameDhcp4(virt.Id, 0)
 	unitServer6 := paths.GetUnitNameDhcp6(virt.Id, 0)
 	unitServerNdp := paths.GetUnitNameNdp(virt.Id, 0)
+	unitPathServer4 := paths.GetUnitPathDhcp4(virt.Id, 0)
+	unitPathServer6 := paths.GetUnitPathDhcp6(virt.Id, 0)
+	unitPathServerNdp := paths.GetUnitPathNdp(virt.Id, 0)
 
 	_ = systemd.Stop(unitServer4)
 	_ = systemd.Stop(unitServer6)
 	_ = systemd.Stop(unitServerNdp)
+
+	_ = utils.RemoveAll(unitPathServer4)
+	_ = utils.RemoveAll(unitPathServer6)
+	_ = utils.RemoveAll(unitPathServerNdp)
 
 	err = ClearEbtables(virt.Id, namespace)
 	if err != nil {
