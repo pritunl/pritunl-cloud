@@ -544,6 +544,62 @@ func Sync(db *database.Database, namespace string,
 		if clearIpCache {
 			store.RemAddress(instId)
 		}
+
+		restartTtl := time.Duration(
+			settings.Hypervisor.DhcpSyncTimeout) * time.Second
+
+		if ste.DhcpTimestamp.IsZero() ||
+			time.Since(ste.DhcpTimestamp) > restartTtl {
+
+			dhcpcExists, _ := utils.Exists(paths.GetUnitPathDhcpc(instId))
+			if dhcpcExists {
+				dhcpFailsLock.Lock()
+				failTimestamp, ok := dhcpFails[instId]
+				if !ok {
+					if ste.DhcpTimestamp.IsZero() {
+						failTimestamp = time.Now()
+					} else {
+						failTimestamp = ste.DhcpTimestamp
+					}
+					dhcpFails[instId] = failTimestamp
+				}
+				dhcpFailsLock.Unlock()
+
+				if time.Since(failTimestamp) > restartTtl {
+					dhcpFailsLock.Lock()
+					dhcpFails[instId] = time.Now()
+					dhcpFailsLock.Unlock()
+
+					unit := paths.GetUnitNameDhcpc(instId)
+					unitState, _, e := systemd.GetState(unit)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"instance": instId.Hex(),
+							"unit":     unit,
+							"error":    e,
+						}).Error("imds: Failed to get dhcpc state")
+					} else if unitState == "active" {
+						logrus.WithFields(logrus.Fields{
+							"action":    conf.Instance.Action,
+							"instance":  instId.Hex(),
+							"timestamp": ste.DhcpTimestamp,
+						}).Error("imds: Dhcp client sync timeout, restarting")
+
+						e = dhcpc.Restart(instId)
+						if e != nil {
+							logrus.WithFields(logrus.Fields{
+								"instance": instId.Hex(),
+								"error":    e,
+							}).Error("imds: Failed to restart dhcpc")
+						}
+					}
+				}
+			}
+		} else {
+			dhcpFailsLock.Lock()
+			delete(dhcpFails, instId)
+			dhcpFailsLock.Unlock()
+		}
 	}
 
 	return
