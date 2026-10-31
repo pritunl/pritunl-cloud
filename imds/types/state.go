@@ -9,6 +9,7 @@ import (
 )
 
 type State struct {
+	Version          int                      `json:"version"`
 	Hash             uint32                   `json:"hash"`
 	Status           string                   `json:"status"`
 	DhcpIface        string                   `json:"dhcp_iface"`
@@ -36,6 +37,7 @@ func (s *State) Final() bool {
 
 func (s *State) Copy() *State {
 	return &State{
+		Version:       s.Version,
 		Hash:          s.Hash,
 		Status:        s.Status,
 		DhcpIface:     s.DhcpIface,
