@@ -23,6 +23,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/manifest"
@@ -192,26 +193,31 @@ func Sync(db *database.Database, namespace string,
 	}
 
 	if ste.Status != "" {
-		coll := db.Instances()
-
 		data := bson.M{
-			"guest.status":    ste.Status,
-			"guest.timestamp": time.Now(),
-			"guest.heartbeat": ste.Timestamp,
+			"status":    ste.Status,
+			"timestamp": time.Now(),
+			"heartbeat": ste.Timestamp,
 		}
 
+		instFields := bson.M{}
 		if ste.DhcpIp != nil {
-			data["dhcp_ip"] = ste.DhcpIp.String()
+			dhcpIp := ste.DhcpIp.String()
+			if conf.Instance == nil || conf.Instance.DhcpIp != dhcpIp {
+				instFields["dhcp_ip"] = dhcpIp
+			}
 		}
 		if ste.DhcpIp6 != nil {
-			data["dhcp_ip6"] = ste.DhcpIp6.String()
+			dhcpIp6 := ste.DhcpIp6.String()
+			if conf.Instance == nil || conf.Instance.DhcpIp6 != dhcpIp6 {
+				instFields["dhcp_ip6"] = dhcpIp6
+			}
 		}
 		if len(ste.Metrics) > 0 {
 			latest := ste.Metrics[len(ste.Metrics)-1]
 
 			staticData := latest.StaticData()
 			for key, val := range staticData {
-				data["guest."+key] = val
+				data[key] = val
 			}
 
 			e := metric.InsertSamples(db, instId, ste.Metrics)
@@ -226,18 +232,13 @@ func Sync(db *database.Database, namespace string,
 		var components *telemetry.ComponentData
 		if ste.Components != nil {
 			components = validateComponents(db, instId, ste.Components)
-			data["guest.processes"] = components.Processes
-			data["guest.modules"] = components.Modules
-			data["guest.ports"] = components.Ports
+			data["processes"] = components.Processes
+			data["modules"] = components.Modules
+			data["ports"] = components.Ports
 		}
 
-		_, err = coll.UpdateOne(db, &bson.M{
-			"_id": instId,
-		}, bson.M{
-			"$set": data,
-		})
+		err = instance.UpdateRuntime(db, instId, data)
 		if err != nil {
-			err = database.ParseError(err)
 			return
 		}
 
