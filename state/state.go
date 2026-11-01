@@ -133,6 +133,12 @@ func (s *State) Wait() {
 	s.waiter.Wait()
 }
 
+func NewState() *State {
+	return &State{
+		waiter: &sync.WaitGroup{},
+	}
+}
+
 func GetState(runtimes *Runtimes) (stat *State, err error) {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -142,9 +148,7 @@ func GetState(runtimes *Runtimes) (stat *State, err error) {
 		return
 	}
 
-	stat = &State{
-		waiter: &sync.WaitGroup{},
-	}
+	stat = NewState()
 	ApplyAll(stat)
 
 	return
