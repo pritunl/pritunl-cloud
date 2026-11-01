@@ -67,6 +67,11 @@ type QemuInfo struct {
 	VersionMicro int
 }
 
+func (i *QemuInfo) Version() string {
+	return fmt.Sprintf("%d.%d.%d",
+		i.VersionMajor, i.VersionMinor, i.VersionMicro)
+}
+
 type CommandError struct {
 	Class string `json:"class"`
 	Desc  string `json:"desc"`
