@@ -201,6 +201,11 @@ func (d *Database) Nodes() (coll *Collection) {
 	return
 }
 
+func (d *Database) NodesRuntime() (coll *Collection) {
+	coll = d.getCollectionWeak("nodes_runtime")
+	return
+}
+
 func (d *Database) NodePorts() (coll *Collection) {
 	coll = d.GetCollection("node_ports")
 	return
