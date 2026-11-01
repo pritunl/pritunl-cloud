@@ -39,6 +39,8 @@ type Instance struct {
 	CloudPublicIps6     []string      `json:"cloud_public_ips6"`
 	HostIps             []string      `json:"host_ips"`
 	NodePortIps         []string      `json:"node_port_ips"`
+	DhcpIp              string        `json:"dhcp_ip"`
+	DhcpIp6             string        `json:"dhcp_ip6"`
 	NetworkNamespace    string        `json:"network_namespace"`
 	NoPublicAddress     bool          `json:"no_public_address"`
 	NoPublicAddress6    bool          `json:"no_public_address6"`
@@ -93,6 +95,8 @@ func NewInstance(inst *instance.Instance) *Instance {
 		CloudPublicIps6:     inst.CloudPublicIps6,
 		HostIps:             inst.HostIps,
 		NodePortIps:         inst.NodePortIps,
+		DhcpIp:              inst.DhcpIp,
+		DhcpIp6:             inst.DhcpIp6,
 		NetworkNamespace:    inst.NetworkNamespace,
 		NoPublicAddress:     inst.NoPublicAddress,
 		NoPublicAddress6:    inst.NoPublicAddress6,
