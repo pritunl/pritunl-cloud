@@ -242,6 +242,37 @@ func Sync(db *database.Database, namespace string,
 			return
 		}
 
+		if len(instFields) > 0 {
+			coll := db.Instances()
+
+			_, err = coll.UpdateOne(db, &bson.M{
+				"_id": instId,
+			}, bson.M{
+				"$set": instFields,
+			})
+			if err != nil {
+				err = database.ParseError(err)
+				return
+			}
+		}
+
+		if ste.Status == types.Imaged && !deplyId.IsZero() {
+			updated, e := deployment.SetImageReady(db, deplyId)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if updated {
+				logrus.WithFields(logrus.Fields{
+					"instance":   instId.Hex(),
+					"deployment": deplyId.Hex(),
+				}).Info("imds: Deployment image ready")
+
+				event.PublishDispatch(db, "pod.change")
+			}
+		}
+
 		if ste.Updates != nil {
 			updts := validateUpdates(db, instId, ste.Updates)
 
