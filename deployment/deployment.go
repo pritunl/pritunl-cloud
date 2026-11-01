@@ -285,7 +285,7 @@ func (d *Deployment) GetImageState() string {
 	return d.ImageData.State
 }
 
-func (d *Deployment) ImageReady() bool {
+func (d *Deployment) ImageComplete() bool {
 	return !d.Image.IsZero() && d.ImageData != nil &&
 		d.ImageData.State == Complete
 }
