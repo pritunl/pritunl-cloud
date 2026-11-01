@@ -266,6 +266,11 @@ func (d *Database) Instances() (coll *Collection) {
 	return
 }
 
+func (d *Database) InstancesInfo() (coll *Collection) {
+	coll = d.getCollectionWeak("instances_info")
+	return
+}
+
 func (d *Database) Pools() (coll *Collection) {
 	coll = d.GetCollection("pools")
 	return
