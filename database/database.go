@@ -266,6 +266,11 @@ func (d *Database) Instances() (coll *Collection) {
 	return
 }
 
+func (d *Database) InstancesRuntime() (coll *Collection) {
+	coll = d.getCollectionWeak("instances_runtime")
+	return
+}
+
 func (d *Database) InstancesInfo() (coll *Collection) {
 	coll = d.getCollectionWeak("instances_info")
 	return
