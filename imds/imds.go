@@ -717,26 +717,25 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 	}
 
 	if ste.Status != "" {
-		coll := db.Instances()
-
 		data := bson.M{
-			"guest.status":    ste.Status,
-			"guest.timestamp": time.Now(),
-			"guest.heartbeat": ste.Timestamp,
+			"status":    ste.Status,
+			"timestamp": time.Now(),
+			"heartbeat": ste.Timestamp,
 		}
 
+		instFields := bson.M{}
 		if ste.DhcpIp != nil {
-			data["dhcp_ip"] = ste.DhcpIp.String()
+			instFields["dhcp_ip"] = ste.DhcpIp.String()
 		}
 		if ste.DhcpIp6 != nil {
-			data["dhcp_ip6"] = ste.DhcpIp6.String()
+			instFields["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
 		if len(ste.Metrics) > 0 {
 			latest := ste.Metrics[len(ste.Metrics)-1]
 
 			staticData := latest.StaticData()
 			for key, val := range staticData {
-				data["guest."+key] = val
+				data[key] = val
 			}
 
 			e := metric.InsertSamples(db, instId, ste.Metrics)
@@ -751,19 +750,28 @@ func Pull(db *database.Database, instId, orgId, deplyId bson.ObjectID,
 		var components *telemetry.ComponentData
 		if ste.Components != nil {
 			components = validateComponents(db, instId, ste.Components)
-			data["guest.processes"] = components.Processes
-			data["guest.modules"] = components.Modules
-			data["guest.ports"] = components.Ports
+			data["processes"] = components.Processes
+			data["modules"] = components.Modules
+			data["ports"] = components.Ports
 		}
 
-		_, err = coll.UpdateOne(db, &bson.M{
-			"_id": instId,
-		}, bson.M{
-			"$set": data,
-		})
+		err = instance.UpdateRuntime(db, instId, data)
 		if err != nil {
-			err = database.ParseError(err)
 			return
+		}
+
+		if len(instFields) > 0 {
+			coll := db.Instances()
+
+			_, err = coll.UpdateOne(db, &bson.M{
+				"_id": instId,
+			}, bson.M{
+				"$set": instFields,
+			})
+			if err != nil {
+				err = database.ParseError(err)
+				return
+			}
 		}
 
 		if ste.Updates != nil {
