@@ -14,8 +14,9 @@ var (
 )
 
 type DisksStore struct {
-	Disks     []vm.Disk
-	Timestamp time.Time
+	Disks       []vm.Disk
+	QemuVersion string
+	Timestamp   time.Time
 }
 
 func GetDisks(virtId bson.ObjectID) (disksStore DisksStore, ok bool) {
@@ -30,7 +31,7 @@ func GetDisks(virtId bson.ObjectID) (disksStore DisksStore, ok bool) {
 	return
 }
 
-func SetDisks(virtId bson.ObjectID, disks []*vm.Disk) {
+func SetDisks(virtId bson.ObjectID, disks []*vm.Disk, qemuVersion string) {
 	disksRef := []vm.Disk{}
 	for _, dsk := range disks {
 		disksRef = append(disksRef, *dsk)
@@ -38,8 +39,9 @@ func SetDisks(virtId bson.ObjectID, disks []*vm.Disk) {
 
 	disksStoresLock.Lock()
 	disksStores[virtId] = DisksStore{
-		Disks:     disksRef,
-		Timestamp: time.Now(),
+		Disks:       disksRef,
+		QemuVersion: qemuVersion,
+		Timestamp:   time.Now(),
 	}
 	disksStoresLock.Unlock()
 }
