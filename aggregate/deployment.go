@@ -20,6 +20,7 @@ type DeploymentPipe struct {
 	Deployment   `bson:",inline"`
 	SpecDocs     []*spec.Spec         `bson:"spec_docs"`
 	InstanceDocs []*instance.Instance `bson:"instance_docs"`
+	RuntimeDocs  []*instance.Runtime  `bson:"runtime_docs"`
 	ZoneDocs     []*zone.Zone         `bson:"zone_docs"`
 	NodeDocs     []*node.Node         `bson:"node_docs"`
 	ImageDocs    []*image.Image       `bson:"image_docs"`
@@ -101,6 +102,14 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 		},
 		&bson.M{
 			"$lookup": &bson.M{
+				"from":         "instances_runtime",
+				"localField":   "instance",
+				"foreignField": "_id",
+				"as":           "runtime_docs",
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
 				"from":         "zones",
 				"localField":   "zone",
 				"foreignField": "_id",
@@ -151,7 +160,14 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 				{"instance_docs.timestamp", 1},
 				{"instance_docs.restart", 1},
 				{"instance_docs.restart_block_ip", 1},
-				{"instance_docs.guest", 1},
+				{"runtime_docs.status", 1},
+				{"runtime_docs.timestamp", 1},
+				{"runtime_docs.heartbeat", 1},
+				{"runtime_docs.memory", 1},
+				{"runtime_docs.hugepages", 1},
+				{"runtime_docs.load1", 1},
+				{"runtime_docs.load5", 1},
+				{"runtime_docs.load15", 1},
 				{"zone_docs.name", 1},
 				{"node_docs.name", 1},
 				{"image_docs._id", 1},
@@ -225,16 +241,18 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 			deply.InstanceState = inst.State
 			deply.InstanceAction = inst.Action
 
-			if inst.Guest != nil {
-				deply.InstanceGuestStatus = inst.Guest.Status
-				deply.InstanceTimestamp = inst.Guest.Timestamp
-				deply.InstanceHeartbeat = inst.Guest.Heartbeat
+			if len(doc.RuntimeDocs) > 0 {
+				rntm := doc.RuntimeDocs[0]
+
+				deply.InstanceGuestStatus = rntm.Status
+				deply.InstanceTimestamp = rntm.Timestamp
+				deply.InstanceHeartbeat = rntm.Heartbeat
 				if inst.IsActive() {
-					deply.InstanceMemoryUsage = inst.Guest.Memory
-					deply.InstanceHugePages = inst.Guest.HugePages
-					deply.InstanceLoad1 = inst.Guest.Load1
-					deply.InstanceLoad5 = inst.Guest.Load5
-					deply.InstanceLoad15 = inst.Guest.Load15
+					deply.InstanceMemoryUsage = rntm.Memory
+					deply.InstanceHugePages = rntm.HugePages
+					deply.InstanceLoad1 = rntm.Load1
+					deply.InstanceLoad5 = rntm.Load5
+					deply.InstanceLoad15 = rntm.Load15
 				} else {
 					deply.InstanceGuestStatus = types.Offline
 				}
