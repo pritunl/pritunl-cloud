@@ -48,5 +48,10 @@ func Upgrade() (err error) {
 		return
 	}
 
+	err = runtimeUpgrade(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
