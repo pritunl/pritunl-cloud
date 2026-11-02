@@ -254,6 +254,14 @@ func main() {
 			panic(err)
 		}
 		return
+	case "scan-disk":
+		flag.Parse()
+		InitLimited()
+		err := cmd.ScanDisk(flag.Args()[1])
+		if err != nil {
+			panic(err)
+		}
+		return
 	default:
 		fmt.Printf(help)
 	}
