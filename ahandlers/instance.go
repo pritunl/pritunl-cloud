@@ -577,9 +577,9 @@ func instanceGet(c *gin.Context) {
 			return
 		}
 
-		if inst.Guest != nil {
-			inst.Guest.Timestamp = time.Now()
-			inst.Guest.Heartbeat = time.Now()
+		if inst.Runtime != nil {
+			inst.Runtime.Timestamp = time.Now()
+			inst.Runtime.Heartbeat = time.Now()
 		}
 		c.JSON(200, inst)
 		return
@@ -587,7 +587,7 @@ func instanceGet(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 
-	inst, err := instance.Get(db, instanceId)
+	inst, err := aggregate.GetInstance(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -618,8 +618,10 @@ func instanceGet(c *gin.Context) {
 func instancesGet(c *gin.Context) {
 	if demo.IsDemo() {
 		for _, inst := range demo.Instances {
-			inst.Guest.Timestamp = time.Now()
-			inst.Guest.Heartbeat = time.Now()
+			if inst.Runtime != nil {
+				inst.Runtime.Timestamp = time.Now()
+				inst.Runtime.Heartbeat = time.Now()
+			}
 		}
 
 		data := &instancesData{
@@ -791,7 +793,7 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
-		instances, count, err := instance.GetAllPaged(
+		instances, count, err := aggregate.GetInstancesPaged(
 			db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -864,7 +866,7 @@ func instanceAdvisoryGet(c *gin.Context) {
 	c.JSON(200, advisories)
 }
 
-func instanceGuestGet(c *gin.Context) {
+func instanceRuntimeGet(c *gin.Context) {
 	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
@@ -878,23 +880,23 @@ func instanceGuestGet(c *gin.Context) {
 			return
 		}
 
-		guest := inst.Guest
-		if guest == nil {
-			guest = &instance.GuestData{}
+		rntm := inst.Runtime
+		if rntm == nil {
+			rntm = &instance.Runtime{}
 		}
-		c.JSON(200, guest)
+		c.JSON(200, rntm)
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 
-	guest, err := instance.GetGuest(db, instanceId)
+	rntm, err := aggregate.GetInstanceRuntime(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, guest)
+	c.JSON(200, rntm)
 }
 
 func instanceChartGet(c *gin.Context) {
