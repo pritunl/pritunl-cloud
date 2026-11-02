@@ -36,7 +36,6 @@ type AdvisoryNodeInfo struct {
 	Name       string        `json:"name"`
 	State      string        `json:"state"`
 	Dismissed  bool          `json:"dismissed"`
-	Timestamp  time.Time     `json:"timestamp"`
 	PublicIps  []string      `json:"public_ips"`
 	PublicIps6 []string      `json:"public_ips6"`
 	PrivateIps []string      `json:"private_ips"`
@@ -369,7 +368,6 @@ func getAdvisoryNodes(db *database.Database,
 			Name:       nde.Name,
 			State:      res.State,
 			Dismissed:  res.Dismissed,
-			Timestamp:  nde.Timestamp,
 			PublicIps:  nde.PublicIps,
 			PublicIps6: nde.PublicIps6,
 			PrivateIps: privateIps,
