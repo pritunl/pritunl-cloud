@@ -705,14 +705,16 @@ func nodeGet(c *gin.Context) {
 			return
 		}
 
-		nde.Timestamp = time.Now()
+		if nde.Runtime != nil {
+			nde.Runtime.Timestamp = time.Now()
+		}
 		c.JSON(200, nde)
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 
-	nde, err := node.Get(db, nodeId)
+	nde, err := aggregate.GetNode(db, nodeId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -744,7 +746,7 @@ func nodeAdvisoryGet(c *gin.Context) {
 	c.JSON(200, advisories)
 }
 
-func nodeMetricGet(c *gin.Context) {
+func nodeRuntimeGet(c *gin.Context) {
 	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
@@ -758,29 +760,31 @@ func nodeMetricGet(c *gin.Context) {
 			return
 		}
 
-		metric := nde.Metric
-		if metric == nil {
-			metric = &node.MetricData{}
+		rntm := nde.Runtime
+		if rntm == nil {
+			rntm = &node.Runtime{}
 		}
-		c.JSON(200, metric)
+		c.JSON(200, rntm)
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 
-	metric, err := node.GetMetric(db, nodeId)
+	rntm, err := node.GetRuntime(db, nodeId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, metric)
+	c.JSON(200, rntm)
 }
 
 func nodesGet(c *gin.Context) {
 	if demo.IsDemo() {
 		for _, nde := range demo.Nodes {
-			nde.Timestamp = time.Now()
+			if nde.Runtime != nil {
+				nde.Runtime.Timestamp = time.Now()
+			}
 		}
 
 		if c.Query("names") == "true" {
@@ -926,7 +930,8 @@ func nodesGet(c *gin.Context) {
 			query["types"] = &typesQuery
 		}
 
-		nodes, count, err := node.GetAllPaged(db, &query, page, pageCount)
+		nodes, count, err := aggregate.GetNodesPaged(
+			db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
