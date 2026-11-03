@@ -55,8 +55,8 @@ func (i *Item) active() bool {
 	if nde.RequestsMin != 0 || nde.Memory != 0 {
 		return true
 	}
-	if nde.Metric != nil && (nde.Metric.Load1 != 0 ||
-		nde.Metric.Load5 != 0 || nde.Metric.Load15 != 0) {
+	if nde.Runtime != nil && (nde.Runtime.Load1 != 0 ||
+		nde.Runtime.Load5 != 0 || nde.Runtime.Load15 != 0) {
 
 		return true
 	}
@@ -67,7 +67,7 @@ func (i *Item) status() (string, color.Color) {
 	if !i.active() {
 		return "Inactive", widget.ColorRed
 	}
-	return "Active " + formatTime(i.nde.Timestamp), widget.ColorGreen
+	return "Active " + formatTime(i.nde.GetTimestamp()), widget.ColorGreen
 }
 
 func formatTime(timestamp time.Time) string {
@@ -97,22 +97,22 @@ func (i *Item) types() string {
 }
 
 func (i *Item) load() string {
-	if i.nde.Metric == nil || !i.active() {
+	if i.nde.Runtime == nil || !i.active() {
 		return ""
 	}
 	return fmt.Sprintf("%.0f%% %.0f%% %.0f%%",
-		i.nde.Metric.Load1, i.nde.Metric.Load5, i.nde.Metric.Load15)
+		i.nde.Runtime.Load1, i.nde.Runtime.Load5, i.nde.Runtime.Load15)
 }
 
 func (i *Item) memory() string {
-	if i.nde.Metric == nil || !i.active() {
+	if i.nde.Runtime == nil || !i.active() {
 		return ""
 	}
 	if i.nde.Hugepages {
 		return fmt.Sprintf("%.0f%% (hugepages %.0f%%)",
-			i.nde.Metric.Memory, i.nde.Metric.HugePages)
+			i.nde.Runtime.Memory, i.nde.Runtime.HugePages)
 	}
-	return fmt.Sprintf("%.0f%%", i.nde.Metric.Memory)
+	return fmt.Sprintf("%.0f%%", i.nde.Runtime.Memory)
 }
 
 func (i *Item) privateIps() string {
@@ -160,7 +160,7 @@ func (i *Item) Fields() []resource.Field {
 func (i *Item) Info() []widget.InfoField {
 	nde := i.nde
 
-	timestamp := formatTime(nde.Timestamp)
+	timestamp := formatTime(nde.GetTimestamp())
 	if !i.active() {
 		timestamp = "Inactive"
 	}
