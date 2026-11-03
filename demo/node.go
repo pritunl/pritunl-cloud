@@ -43,7 +43,6 @@ var Nodes = []*node.Node{
 		Name:                 "pritunl-east0",
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
-		Timestamp:            time.Now(),
 		AdvisoryCount:        1,
 		AdvisoryMax:          4,
 		Port:                 443,
@@ -155,7 +154,8 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 2wIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
-		Metric: &node.MetricData{
+		Runtime: &node.Runtime{
+			Timestamp: time.Now(),
 			Memory:    41.02,
 			Swap:      4.12,
 			HugePages: 0,
@@ -190,7 +190,6 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 		Name:                 "pritunl-east1",
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
-		Timestamp:            time.Now(),
 		AdvisoryCount:        1,
 		AdvisoryMax:          4,
 		Port:                 443,
@@ -302,7 +301,8 @@ mK9XwN2HgJ5YdL3RsP8VqT2MxK4NhR3JdY8WwL2TsM5QxN1PqK4YgJ7RxP8VsT3M
 PwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
-		Metric: &node.MetricData{
+		Runtime: &node.Runtime{
+			Timestamp: time.Now(),
 			Memory:    62.02,
 			Swap:      9.35,
 			HugePages: 0,
@@ -337,7 +337,6 @@ PwIDAQAB
 		Name:                 "pritunl-east2",
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
-		Timestamp:            time.Now(),
 		AdvisoryCount:        1,
 		AdvisoryMax:          4,
 		Port:                 443,
@@ -449,7 +448,8 @@ wR5TnM8LpJ2XgH4VsN9BwK3TmQ5RxL8JpY7NwH2VsR4KgM9TnL5BxJ3QwN8VpH7Y
 KwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
-		Metric: &node.MetricData{
+		Runtime: &node.Runtime{
+			Timestamp: time.Now(),
 			Memory:    41.02,
 			Swap:      6.71,
 			HugePages: 0,
@@ -484,7 +484,6 @@ KwIDAQAB
 		Name:                 "pritunl-east3",
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
-		Timestamp:            time.Now(),
 		AdvisoryCount:        1,
 		AdvisoryMax:          4,
 		Port:                 443,
@@ -596,7 +595,8 @@ wJ3BsT5HxL8KpN2YmF4DgR7VwQ3TsJ9KxH5BmL8NpY2FgT4RwK7VsH9JmQ3LxN8D
 FwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
-		Metric: &node.MetricData{
+		Runtime: &node.Runtime{
+			Timestamp: time.Now(),
 			Memory:    41.02,
 			Swap:      2.18,
 			HugePages: 0,
@@ -631,7 +631,6 @@ FwIDAQAB
 		Name:                 "pritunl-east4",
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
-		Timestamp:            time.Now(),
 		Port:                 443,
 		NoRedirectServer:     false,
 		Protocol:             "https",
@@ -743,7 +742,8 @@ xR2BgF8TpL7VsN3KwQ9YmH4DgJ5BxT2LsK8FpN3VwR7YgH4TmQ9KsL2BxJ5NpF8D
 RwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
-		Metric: &node.MetricData{
+		Runtime: &node.Runtime{
+			Timestamp: time.Now(),
 			Memory:    41.02,
 			Swap:      11.42,
 			HugePages: 0,
@@ -778,7 +778,6 @@ RwIDAQAB
 		Name:                 "pritunl-east5",
 		Comment:              "",
 		Types:                []string{"admin", "hypervisor"},
-		Timestamp:            time.Now(),
 		Port:                 443,
 		NoRedirectServer:     false,
 		Protocol:             "https",
@@ -890,7 +889,8 @@ gV4BsT9LmQ3KwR8YpN5DxH7FgJ2TsL4BwK9VmQ3NpY8RxT5LgH2DsK7BmF4JwN9Q
 TwIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
-		Metric: &node.MetricData{
+		Runtime: &node.Runtime{
+			Timestamp: time.Now(),
 			Memory:    41.02,
 			Swap:      5.67,
 			HugePages: 0,
