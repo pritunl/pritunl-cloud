@@ -562,7 +562,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -610,7 +610,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -658,7 +658,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -706,7 +706,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -754,7 +754,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -802,7 +802,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -850,7 +850,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -898,7 +898,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -946,7 +946,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -994,7 +994,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    2,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1040,7 +1040,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "oe2641r0vib1bq",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1086,7 +1086,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "zrz0kp1nydxe5t",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1132,7 +1132,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "tsusrdt4e4diyb",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1178,7 +1178,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "bvmmviq5cvx1zy",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1224,7 +1224,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "qbaoak9az3asxp",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1270,7 +1270,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "m4l3egi9yhfq9t",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1318,7 +1318,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    1,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1366,7 +1366,7 @@ var Instances = []*instance.Instance{
 		Timestamp:        time.Now(),
 		AdvisoryCount:    1,
 		AdvisoryMax:      4,
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1412,7 +1412,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "szy246vtwpjc3g",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
@@ -1458,7 +1458,7 @@ var Instances = []*instance.Instance{
 		NetworkNamespace: "ub53x6q05snrd8",
 		Created:          time.Now(),
 		Timestamp:        time.Now(),
-		Guest: &instance.GuestData{
+		Runtime: &instance.Runtime{
 			Status:    "running",
 			Timestamp: time.Now(),
 			Heartbeat: time.Now(),
