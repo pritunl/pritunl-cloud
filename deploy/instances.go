@@ -8,6 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -991,8 +992,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 	cpuUnits := 0
 	memoryUnits := 0.0
 
-	now := time.Now()
-	infoTtl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
+	infos := map[bson.ObjectID]*instance.Info{}
 	for _, inst := range instances {
 		virt := s.stat.GetVirt(inst.Id)
 		if virt != nil {
@@ -1027,22 +1027,9 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 			}
 		}
 
-		if inst.Info == nil || now.Sub(inst.Info.Timestamp) > infoTtl {
-			s.stat.WaitAdd()
-			go func(inst *instance.Instance) {
-				defer utils.RecoverLog("deploy: Panic in instance action")
-				defer s.stat.WaitDone()
-
-				inst.Info = info.NewInstance(s.stat, inst)
-				err := inst.CommitFields(db, set.NewSet("info"))
-				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"error": err,
-					}).Error("qemu: Failed to commit instance info")
-				}
-			}(inst)
-		}
+		infos[inst.Id] = info.NewInstance(s.stat, inst)
 	}
+	instance.SetInfos(infos)
 
 	instIds := set.NewSet()
 	for _, inst := range instances {
