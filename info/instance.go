@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/set"
 )
 
@@ -17,8 +15,6 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 	inf *instance.Info) {
 
 	inf = &instance.Info{
-		Timestamp: time.Now().Add(time.Duration(
-			utils.RandInt(0, 10)) * time.Second),
 		Disks:         []string{},
 		FirewallRules: map[string]string{},
 		Authorities:   []string{},
