@@ -79,7 +79,7 @@ func (i *Item) privateIp() string {
 }
 
 func (i *Item) guestActive() bool {
-	return i.inst.Guest != nil && i.inst.IsActive()
+	return i.inst.Runtime != nil && i.inst.IsActive()
 }
 
 func (i *Item) load() string {
@@ -87,14 +87,14 @@ func (i *Item) load() string {
 		return ""
 	}
 	return fmt.Sprintf("%.0f%% %.0f%% %.0f%%",
-		i.inst.Guest.Load1, i.inst.Guest.Load5, i.inst.Guest.Load15)
+		i.inst.Runtime.Load1, i.inst.Runtime.Load5, i.inst.Runtime.Load15)
 }
 
 func (i *Item) memory() string {
 	if !i.guestActive() {
 		return ""
 	}
-	return fmt.Sprintf("%.0f%%", i.inst.Guest.Memory)
+	return fmt.Sprintf("%.0f%%", i.inst.Runtime.Memory)
 }
 
 func (i *Item) Fields() []resource.Field {
@@ -179,8 +179,8 @@ func (i *Item) Info() []widget.InfoField {
 	}
 
 	heartbeat := ""
-	if inst.Guest != nil {
-		heartbeat = formatTime(inst.Guest.Heartbeat)
+	if inst.Runtime != nil {
+		heartbeat = formatTime(inst.Runtime.Heartbeat)
 	}
 
 	fields := []widget.InfoField{
