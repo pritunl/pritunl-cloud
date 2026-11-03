@@ -880,7 +880,7 @@ func GetCompletion(db *database.Database, orgId bson.ObjectID,
 	)
 
 	for _, deply := range deployments {
-		if !deply.ImageReady() {
+		if !deply.ImageComplete() {
 			return
 		}
 
