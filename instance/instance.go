@@ -50,7 +50,7 @@ type Instance struct {
 	Vpc                 bson.ObjectID       `bson:"vpc" json:"vpc"`
 	Subnet              bson.ObjectID       `bson:"subnet" json:"subnet"`
 	Created             time.Time           `bson:"created" json:"created"`
-	Guest               *GuestData          `bson:"guest,omitempty" json:"guest"`
+	Runtime             *Runtime            `bson:"-" json:"runtime"`
 	CloudSubnet         string              `bson:"cloud_subnet" json:"cloud_subnet"`
 	CloudVnic           string              `bson:"cloud_vnic" json:"cloud_vnic"`
 	CloudVnicAttach     string              `bson:"cloud_vnic_attach" json:"cloud_vnic_attach"`
@@ -124,7 +124,7 @@ type Instance struct {
 	SpicePort           int                 `bson:"spice_port" json:"spice_port"`
 	Gui                 bool                `bson:"gui" json:"gui"`
 	Deployment          bson.ObjectID       `bson:"deployment" json:"deployment"`
-	Info                *Info               `bson:"info,omitempty" json:"info"`
+	Info                *Info               `bson:"-" json:"info"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
 
 	curName             string                              `bson:"-" json:"-"`
@@ -159,40 +159,6 @@ type Mount struct {
 type StatusInfo struct {
 	DownloadProgress int     `bson:"download_progress,omitempty" json:"download_progress"`
 	DownloadSpeed    float64 `bson:"download_speed,omitempty" json:"download_speed"`
-}
-
-type GuestData struct {
-	Status     string                    `bson:"status" json:"status"`
-	Timestamp  time.Time                 `bson:"timestamp" json:"timestamp"`
-	Heartbeat  time.Time                 `bson:"heartbeat" json:"heartbeat"`
-	Memory     float64                   `bson:"memory" json:"memory"`
-	Swap       float64                   `bson:"swap" json:"swap"`
-	HugePages  float64                   `bson:"hugepages" json:"hugepages"`
-	Load1      float64                   `bson:"load1" json:"load1"`
-	Load5      float64                   `bson:"load5" json:"load5"`
-	Load15     float64                   `bson:"load15" json:"load15"`
-	Processes  []string                  `bson:"processes" json:"processes"`
-	Modules    []string                  `bson:"modules" json:"modules"`
-	Ports      []string                  `bson:"ports" json:"ports"`
-	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
-	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
-	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
-}
-
-type Info struct {
-	Node          string              `bson:"node" json:"node"`
-	NodePublicIp  string              `bson:"node_public_ip" json:"node_public_ip"`
-	Mtu           int                 `bson:"mtu" json:"mtu"`
-	Iscsi         bool                `bson:"iscsi" json:"iscsi"`
-	Disks         []string            `bson:"disks" json:"disks"`
-	FirewallRules map[string]string   `bson:"firewall_rules" json:"firewall_rules"`
-	Authorities   []string            `bson:"authorities" json:"authorities"`
-	Isos          []*iso.Iso          `bson:"isos" json:"isos"`
-	UsbDevices    []*usb.Device       `bson:"usb_devices" json:"usb_devices"`
-	PciDevices    []*pci.Device       `bson:"pci_devices" json:"pci_devices"`
-	DriveDevices  []*drive.Device     `bson:"drive_devices" json:"drive_devices"`
-	CloudSubnets  []*node.CloudSubnet `bson:"cloud_subnets" json:"cloud_subnets"`
-	Timestamp     time.Time           `bson:"timestamp" json:"timestamp"`
 }
 
 func (i *Instance) GenerateId() (err error) {
@@ -875,14 +841,14 @@ func (i *Instance) Json(short bool) {
 		i.Status = "Destroying"
 	}
 
-	if !i.IsActive() && i.Guest != nil {
-		i.Guest.Timestamp = time.Time{}
-		i.Guest.Heartbeat = time.Time{}
-		i.Guest.Memory = 0
-		i.Guest.HugePages = 0
-		i.Guest.Load1 = 0
-		i.Guest.Load5 = 0
-		i.Guest.Load15 = 0
+	if !i.IsActive() && i.Runtime != nil {
+		i.Runtime.Timestamp = time.Time{}
+		i.Runtime.Heartbeat = time.Time{}
+		i.Runtime.Memory = 0
+		i.Runtime.HugePages = 0
+		i.Runtime.Load1 = 0
+		i.Runtime.Load5 = 0
+		i.Runtime.Load15 = 0
 	}
 
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
