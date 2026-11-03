@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/cli/resource"
 	"github.com/pritunl/pritunl-cloud/cli/widget"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -152,7 +152,8 @@ func (p *Provider) Load(db *database.Database, filter resource.Filter,
 
 	query := buildQuery(filter)
 
-	insts, count, err := instance.GetAllPaged(db, &query, page, pageCount)
+	insts, count, err := aggregate.GetInstancesPaged(
+		db, &query, page, pageCount)
 	if err != nil {
 		return
 	}
