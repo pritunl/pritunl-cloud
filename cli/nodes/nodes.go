@@ -4,6 +4,7 @@ package nodes
 
 import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/cli/resource"
 	"github.com/pritunl/pritunl-cloud/cli/widget"
@@ -136,7 +137,7 @@ func (p *Provider) Load(db *database.Database, filter resource.Filter,
 
 	query := buildQuery(filter)
 
-	ndes, count, err := node.GetAllPaged(db, &query, page, pageCount)
+	ndes, count, err := aggregate.GetNodesPaged(db, &query, page, pageCount)
 	if err != nil {
 		return
 	}
