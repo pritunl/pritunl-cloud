@@ -54,7 +54,6 @@ func getAdvisoryNodesInfo() (infos []*aggregate.AdvisoryNodeInfo) {
 		infos = append(infos, &aggregate.AdvisoryNodeInfo{
 			Id:         nde.Id,
 			Name:       nde.Name,
-			Timestamp:  nde.Timestamp,
 			PublicIps:  nde.PublicIps,
 			PublicIps6: nde.PublicIps6,
 			PrivateIps: privateIps,
