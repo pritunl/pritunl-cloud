@@ -1126,7 +1126,7 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 }
 
 func (d *Deployments) imageShutdown(db *database.Database,
-	spc *spec.Spec, deply *deployment.Deployment, virt *vm.VirtualMachine) {
+	spc *spec.Spec, virt *vm.VirtualMachine) {
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": virt.Id.Hex(),
@@ -1153,18 +1153,6 @@ func (d *Deployments) imageShutdown(db *database.Database,
 		}).Error("deploy: Failed to set instance state")
 
 		return
-	}
-
-	if deply.GetImageState() == "" {
-		deply.SetImageState(deployment.Ready)
-		err = deply.CommitFields(db, set.NewSet("image_data.state"))
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": virt.Id.Hex(),
-				"error":       err,
-			}).Error("deploy: Failed to commit deployment state")
-			return
-		}
 	}
 
 	event.PublishDispatch(db, "pod.change")
@@ -1198,25 +1186,21 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 
 		virt := d.stat.GetVirt(inst.Id)
 		spc := d.stat.Spec(deply.Spec)
+		imageState := deply.GetImageState()
 
-		if inst.Guest == nil {
-			return
-		}
-
-		if inst.IsActive() && inst.Guest.Status == types.Imaged &&
+		if inst.IsActive() && imageState == deployment.Ready &&
 			inst.Action != instance.Stop {
 
 			if virt == nil {
 				return
 			}
 
-			d.imageShutdown(db, spc, deply, virt)
+			d.imageShutdown(db, spc, virt)
 			return
 		}
 
 		if deply.State == deployment.Deployed &&
-			deply.GetImageState() == deployment.Ready &&
-			!inst.IsActive() && inst.Guest.Status == types.Imaged {
+			imageState == deployment.Ready && !inst.IsActive() {
 
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
