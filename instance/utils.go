@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/manifest"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/shape"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
@@ -42,63 +41,6 @@ func GetOrg(db *database.Database, orgId, instId bson.ObjectID) (
 	if err != nil {
 		err = database.ParseError(err)
 		return
-	}
-
-	return
-}
-
-func GetGuest(db *database.Database, instId bson.ObjectID) (
-	guest *GuestData, err error) {
-
-	coll := db.Instances()
-	inst := &Instance{}
-
-	err = coll.FindOne(
-		db,
-		&bson.M{
-			"_id": instId,
-		},
-		options.FindOne().SetProjection(&bson.D{
-			{"guest", 1},
-		}),
-	).Decode(inst)
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	guest = inst.Guest
-	if guest == nil {
-		guest = &GuestData{}
-	}
-
-	return
-}
-
-func GetGuestOrg(db *database.Database, orgId, instId bson.ObjectID) (
-	guest *GuestData, err error) {
-
-	coll := db.Instances()
-	inst := &Instance{}
-
-	err = coll.FindOne(
-		db,
-		&bson.M{
-			"_id":          instId,
-			"organization": orgId,
-		},
-		options.FindOne().SetProjection(&bson.D{
-			{"guest", 1},
-		}),
-	).Decode(inst)
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	guest = inst.Guest
-	if guest == nil {
-		guest = &GuestData{}
 	}
 
 	return
@@ -435,77 +377,6 @@ func GetAllName(db *database.Database, query *bson.M) (
 		}
 
 		instances = append(instances, inst)
-	}
-
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
-
-func GetAllPaged(db *database.Database, query *bson.M,
-	page, pageCount int64) (insts []*Instance, count int64, err error) {
-
-	coll := db.Instances()
-	insts = []*Instance{}
-
-	if len(*query) == 0 {
-		count, err = coll.EstimatedDocumentCount(db)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	} else {
-		count, err = coll.CountDocuments(db, query)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	}
-
-	if pageCount == 0 {
-		pageCount = 20
-	}
-	maxPage := count / pageCount
-	if count == pageCount {
-		maxPage = 0
-	}
-	page = utils.Min64(page, maxPage)
-	skip := utils.Min64(page*pageCount, count)
-
-	cursor, err := coll.Find(
-		db,
-		query,
-		options.Find().
-			SetSort(&bson.D{
-				{"name", 1},
-			}).
-			SetProjection(&bson.D{
-				{"guest.processes", 0},
-				{"guest.modules", 0},
-				{"guest.ports", 0},
-			}).
-			SetSkip(skip).
-			SetLimit(pageCount),
-	)
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-	defer cursor.Close(db)
-
-	for cursor.Next(db) {
-		inst := &Instance{}
-		err = cursor.Decode(inst)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		insts = append(insts, inst)
 	}
 
 	err = cursor.Err()
