@@ -19,9 +19,9 @@ func buildEvalData(unt *unit.Unit,
 		now := time.Now()
 
 		uptime := int(now.Sub(inst.Timestamp).Seconds())
-		if inst.Guest != nil {
-			lastTimestamp = int(now.Sub(inst.Guest.Timestamp).Seconds())
-			lastHeartbeat = int(now.Sub(inst.Guest.Heartbeat).Seconds())
+		if inst.Runtime != nil {
+			lastTimestamp = int(now.Sub(inst.Runtime.Timestamp).Seconds())
+			lastHeartbeat = int(now.Sub(inst.Runtime.Heartbeat).Seconds())
 		}
 		lastTimestamp = utils.Min(lastTimestamp, uptime)
 		lastHeartbeat = utils.Min(lastHeartbeat, uptime)
