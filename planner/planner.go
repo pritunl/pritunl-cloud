@@ -6,6 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -88,7 +89,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	inst, err := instance.Get(db, deply.Instance)
+	inst, err := aggregate.GetInstance(db, deply.Instance)
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
 			inst = nil
@@ -140,17 +141,17 @@ func (p *Planner) checkInstance(db *database.Database,
 	}
 
 	status := deployment.Unhealthy
-	if inst.Guest != nil {
-		if inst.Guest.Status == types.Running ||
-			inst.Guest.Status == types.ReloadingClean {
+	if inst.Runtime != nil {
+		if inst.Runtime.Status == types.Running ||
+			inst.Runtime.Status == types.ReloadingClean {
 
 			now := time.Now()
 			heartbeatTtl := time.Duration(
 				settings.System.InstanceTimestampTtl) * time.Second
 
-			if now.Sub(inst.Guest.Heartbeat) <= heartbeatTtl {
+			if now.Sub(inst.Runtime.Heartbeat) <= heartbeatTtl {
 				status = deployment.Healthy
-			} else if now.Sub(inst.Guest.Timestamp) > heartbeatTtl {
+			} else if now.Sub(inst.Runtime.Timestamp) > heartbeatTtl {
 				status = deployment.Unknown
 			}
 		}
