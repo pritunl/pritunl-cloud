@@ -199,98 +199,32 @@ func GetAllPool(db *database.Database, poolId bson.ObjectID) (
 	return
 }
 
-func GetAllPaged(db *database.Database, query *bson.M,
-	page, pageCount int64) (nodes []*Node, count int64, err error) {
-
-	coll := db.Nodes()
-	nodes = []*Node{}
-
-	if len(*query) == 0 {
-		count, err = coll.EstimatedDocumentCount(db)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	} else {
-		count, err = coll.CountDocuments(db, query)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	}
-
-	if pageCount == 0 {
-		pageCount = 20
-	}
-	maxPage := count / pageCount
-	if count == pageCount {
-		maxPage = 0
-	}
-	page = utils.Min64(page, maxPage)
-	skip := utils.Min64(page*pageCount, count)
-
-	cursor, err := coll.Find(
-		db,
-		query,
-		options.Find().
-			SetSort(&bson.D{
-				{"name", 1},
-			}).
-			SetProjection(&bson.D{
-				{"metric.processes", 0},
-				{"metric.modules", 0},
-				{"metric.ports", 0},
-			}).
-			SetSkip(skip).
-			SetLimit(pageCount),
-	)
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-	defer cursor.Close(db)
-
-	for cursor.Next(db) {
-		nde := &Node{}
-		err = cursor.Decode(nde)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		nde.SetActive()
-		nodes = append(nodes, nde)
-	}
-
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
-
 func GetAllShape(db *database.Database, zones []bson.ObjectID,
 	roles []string) (nodes []*Node, err error) {
 
 	coll := db.Nodes()
 	nodes = []*Node{}
 
-	query := &bson.M{
-		"zone": &bson.M{
-			"$in": zones,
+	cursor, err := coll.Aggregate(db, []*bson.M{
+		&bson.M{
+			"$match": &bson.M{
+				"zone": &bson.M{
+					"$in": zones,
+				},
+				"roles": &bson.M{
+					"$in": roles,
+				},
+			},
 		},
-		"roles": &bson.M{
-			"$in": roles,
+		RuntimeLookup(),
+		&bson.M{
+			"$project": &bson.D{
+				{"runtime_docs.processes", 0},
+				{"runtime_docs.modules", 0},
+				{"runtime_docs.ports", 0},
+			},
 		},
-	}
-
-	cursor, err := coll.Find(
-		db,
-		query,
-		options.Find(),
-	)
+	})
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -298,13 +232,14 @@ func GetAllShape(db *database.Database, zones []bson.ObjectID,
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		nde := &Node{}
-		err = cursor.Decode(nde)
+		doc := &RuntimePipe{}
+		err = cursor.Decode(doc)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
+		nde := doc.Merge()
 		if !nde.IsHypervisor() || !nde.IsOnline() {
 			continue
 		}
