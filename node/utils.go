@@ -299,6 +299,11 @@ func Remove(db *database.Database, nodeId bson.ObjectID) (err error) {
 		return
 	}
 
+	err = RemoveRuntime(db, nodeId)
+	if err != nil {
+		return
+	}
+
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": nodeId,
 	})
