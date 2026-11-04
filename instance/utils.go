@@ -416,6 +416,16 @@ func Remove(db *database.Database, instId bson.ObjectID) (err error) {
 		return
 	}
 
+	err = RemoveRuntime(db, instId)
+	if err != nil {
+		return
+	}
+
+	err = RemoveInfo(db, instId)
+	if err != nil {
+		return
+	}
+
 	coll := db.Instances()
 
 	_, err = coll.DeleteOne(db, &bson.M{
