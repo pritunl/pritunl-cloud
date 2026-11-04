@@ -37,7 +37,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/render"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -56,7 +55,6 @@ type Node struct {
 	Name                    string             `bson:"name" json:"name"`
 	Comment                 string             `bson:"comment" json:"comment"`
 	Types                   []string           `bson:"types" json:"types"`
-	Timestamp               time.Time          `bson:"timestamp" json:"timestamp"`
 	Port                    int                `bson:"port" json:"port"`
 	Http2                   bool               `bson:"http2" json:"http2"`
 	NoRedirectServer        bool               `bson:"no_redirect_server" json:"no_redirect_server"`
@@ -133,27 +131,12 @@ type Node struct {
 	OraclePrivateKey        string             `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey         string             `bson:"oracle_public_key" json:"oracle_public_key"`
 	Operation               string             `bson:"operation" json:"operation"`
-	Metric                  *MetricData        `bson:"metric,omitempty" json:"metric"`
+	Runtime                 *Runtime           `bson:"-" json:"runtime"`
 	cloudSubnetsNamed       []*CloudSubnet     `bson:"-" json:"-"`
 	reqCount                *list.List         `bson:"-" json:"-"`
 	dcId                    bson.ObjectID      `bson:"-" json:"-"`
 	dcZoneId                bson.ObjectID      `bson:"-" json:"-"`
 	lock                    sync.Mutex         `bson:"-" json:"-"`
-}
-
-type MetricData struct {
-	Memory     float64                   `bson:"memory" json:"memory"`
-	Swap       float64                   `bson:"swap" json:"swap"`
-	HugePages  float64                   `bson:"hugepages" json:"hugepages"`
-	Load1      float64                   `bson:"load1" json:"load1"`
-	Load5      float64                   `bson:"load5" json:"load5"`
-	Load15     float64                   `bson:"load15" json:"load15"`
-	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
-	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
-	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
-	Processes  []string                  `bson:"processes" json:"processes"`
-	Modules    []string                  `bson:"modules" json:"modules"`
-	Ports      []string                  `bson:"ports" json:"ports"`
 }
 
 type Completion struct {
@@ -218,7 +201,6 @@ func (n *Node) Copy() *Node {
 		Name:                    n.Name,
 		Comment:                 n.Comment,
 		Types:                   n.Types,
-		Timestamp:               n.Timestamp,
 		Port:                    n.Port,
 		Http2:                   n.Http2,
 		NoRedirectServer:        n.NoRedirectServer,
@@ -295,7 +277,7 @@ func (n *Node) Copy() *Node {
 		OraclePrivateKey:        n.OraclePrivateKey,
 		OraclePublicKey:         n.OraclePublicKey,
 		Operation:               n.Operation,
-		Metric:                  n.Metric,
+		Runtime:                 n.Runtime,
 		cloudSubnetsNamed:       n.cloudSubnetsNamed,
 		dcId:                    n.dcId,
 		dcZoneId:                n.dcZoneId,
@@ -435,13 +417,19 @@ func (n *Node) IsHypervisor() bool {
 	return false
 }
 
-func (n *Node) IsOnline() bool {
-	if time.Since(n.Timestamp) > time.Duration(
-		settings.System.NodeTimestampTtl)*time.Second {
-
-		return false
-	}
+func (n *Node) IsRunner() bool {
 	return true
+}
+
+func (n *Node) IsOnline() bool {
+	return n.Runtime.Online()
+}
+
+func (n *Node) GetTimestamp() time.Time {
+	if n.Runtime == nil {
+		return time.Time{}
+	}
+	return n.Runtime.Timestamp
 }
 
 func (n *Node) IsDhcp() bool {
@@ -915,7 +903,7 @@ func (n *Node) JsonHypervisor() {
 }
 
 func (n *Node) SetActive() {
-	if time.Since(n.Timestamp) > 30*time.Second {
+	if time.Since(n.GetTimestamp()) > 30*time.Second {
 		n.RequestsMin = 0
 		n.Memory = 0
 		n.CpuUnits = 0
@@ -1328,7 +1316,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	coll := db.Nodes()
 
 	fields := bson.M{
-		"timestamp":            n.Timestamp,
 		"requests_min":         n.RequestsMin,
 		"memory":               n.Memory,
 		"cpu_units":            n.CpuUnits,
@@ -1351,12 +1338,21 @@ func (n *Node) update(db *database.Database) (err error) {
 		"available_drives":     n.AvailableDrives,
 	}
 
+	timestamp := n.GetTimestamp()
+	if timestamp.IsZero() {
+		timestamp = time.Now()
+	}
+
+	runtimeFields := bson.M{
+		"timestamp": timestamp,
+	}
+
 	metrics := telemetry.Metrics.GetAll()
 	if len(metrics) > 0 {
 		latest := metrics[len(metrics)-1]
 		staticData := latest.StaticData()
 		for key, val := range staticData {
-			fields["metric."+key] = val
+			runtimeFields[key] = val
 		}
 
 		n.insertMetrics(metrics)
@@ -1367,9 +1363,9 @@ func (n *Node) update(db *database.Database) (err error) {
 	components, componentsOk := telemetry.Components.Get()
 	if componentsOk {
 		components.Normalize()
-		fields["metric.processes"] = components.Processes
-		fields["metric.modules"] = components.Modules
-		fields["metric.ports"] = components.Ports
+		runtimeFields["processes"] = components.Processes
+		runtimeFields["modules"] = components.Modules
+		runtimeFields["ports"] = components.Ports
 	} else if ok {
 		components = telemetry.Components.Current()
 		if components == nil {
@@ -1390,6 +1386,11 @@ func (n *Node) update(db *database.Database) (err error) {
 	).Decode(nde)
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	err = UpdateRuntime(db, n.Id, runtimeFields)
+	if err != nil {
 		return
 	}
 
@@ -1487,7 +1488,10 @@ func (n *Node) sync() (nde *Node) {
 	nde = n.Copy()
 	n = nde
 
-	n.Timestamp = time.Now()
+	n.Runtime = &Runtime{
+		Id:        n.Id,
+		Timestamp: time.Now(),
+	}
 
 	mem, err := utils.GetMemInfo()
 	if err != nil {
@@ -1693,7 +1697,6 @@ func (n *Node) Init() (err error) {
 		"_id":              n.Id,
 		"name":             n.Name,
 		"types":            n.Types,
-		"timestamp":        time.Now(),
 		"protocol":         n.Protocol,
 		"port":             n.Port,
 		"hypervisor":       n.Hypervisor,
