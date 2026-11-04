@@ -703,7 +703,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 
 		if kind == finder.BuildKind && resources.Deployment != nil &&
-			resources.Deployment.ImageReady() {
+			resources.Deployment.ImageComplete() {
 
 			data.Image = resources.Deployment.Image
 		}
