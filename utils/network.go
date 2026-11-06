@@ -468,6 +468,25 @@ func IsInterfaceBridgePort(iface string) (port bool, err error) {
 	return
 }
 
+func GetBridgedInterfacesSet(ifaces []string) (ifacesSet set.Set,
+	err error) {
+
+	ifacesSet = set.NewSet()
+	for _, iface := range ifaces {
+		port, e := IsInterfaceBridgePort(iface)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if port {
+			ifacesSet.Add(iface)
+		}
+	}
+
+	return
+}
+
 func FilterIp(input string) string {
 	input = strings.TrimSpace(input)
 	if input == "" {
