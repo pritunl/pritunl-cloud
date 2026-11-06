@@ -77,7 +77,7 @@ func ApplyState(stat *state.State) (err error) {
 		}
 
 		iface := vm.GetIfaceNodeInternal(inst.Id, 0)
-		if !stat.HasInterfaces(iface) {
+		if !stat.HasBridgedInterfaces(iface) {
 			continue
 		}
 
