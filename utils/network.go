@@ -458,6 +458,16 @@ func IsInterfaceBridge(iface string) (bridge bool, err error) {
 	return
 }
 
+func IsInterfaceBridgePort(iface string) (port bool, err error) {
+	port, err = ExistsDir(
+		path.Join("/", "sys", "class", "net", iface, "brport"))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func FilterIp(input string) string {
 	input = strings.TrimSpace(input)
 	if input == "" {
