@@ -47,7 +47,9 @@ sudo cp -f ~/go/bin/redirect /usr/bin/pritunl-cloud-redirect
 cd ..
 
 go install -v
-sudo cp -f ~/go/bin/pritunl-cloud /usr/bin/pritunl-cloud
+deploy_tmp=$(sudo mktemp /usr/bin/.pritunl-cloud.XXXXXX)
+sudo install -o root -g root -m 0755 "$HOME/go/bin/pritunl-cloud" "$deploy_tmp"
+sudo mv -fT -- "$deploy_tmp" /usr/bin/pritunl-cloud
 
 if [ "$STABLE" = true ]; then
     sudo /usr/bin/pritunl-cloud start --fast-exit
