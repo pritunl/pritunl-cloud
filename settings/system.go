@@ -22,6 +22,10 @@ type system struct {
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
 	PlannerBatchSize     int    `bson:"planner_batch_size" default:"10"`
 	NoMigrateRefresh     bool   `bson:"no_migrate_refresh"`
+	StateCompare         bool   `bson:"state_compare"`
+	StateCompareTtl      int    `bson:"state_compare_ttl" default:"600"`
+	StateDebug           bool   `bson:"state_debug"`
+	StateStream          bool   `bson:"state_stream"`
 	TaskRunnerCheck      int    `bson:"task_runner_check" default:"60"`
 	TaskRunnerHeartbeat  int    `bson:"task_runner_heartbeat" default:"20"`
 	TaskRunnerTtl        int    `bson:"task_runner_ttl" default:"60"`
