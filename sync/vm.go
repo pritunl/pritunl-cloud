@@ -11,7 +11,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/statec"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
@@ -29,9 +31,19 @@ func deployState(runtimes *state.Runtimes) (err error) {
 
 	start := time.Now()
 
-	stat, err := state.GetState(runtimes)
+	var stat *state.State
+	stream := settings.System.StateStream
+	if stream {
+		stat, err = statec.GetState(runtimes)
+	} else {
+		stat, err = state.GetState(runtimes)
+	}
 	if err != nil {
 		return
+	}
+
+	if settings.System.StateCompare {
+		stateCompare.run(stat, stream)
 	}
 
 	err = deploy.Deploy(stat, runtimes)
