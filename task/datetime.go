@@ -37,7 +37,7 @@ func ntpTimestamp(sec, frac uint32) time.Time {
 }
 
 func ntpOffset(server string) (offset time.Duration, err error) {
-	conn, err := net.DialTimeout("udp", server, ntpTimeout)
+	conn, err := net.DialTimeout("udp4", server, ntpTimeout)
 	if err != nil {
 		err = &errortypes.RequestError{
 			errors.Wrap(err, "task: Failed to connect to ntp server"),
