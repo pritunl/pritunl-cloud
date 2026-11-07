@@ -229,7 +229,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if !gpuPassthrough && (q.Vnc || q.Spice || q.Gui) {
 		if q.Gui {
 			cmd = append(cmd, "-display")
-			if q.GuiMode == node.Gtk && !settings.Hypervisor.NoGuiFullscreen {
+			if !settings.Hypervisor.NoGuiFullscreen {
 				cmd = append(cmd, fmt.Sprintf(
 					"%s,gl=on,window-close=off,full-screen=on", q.GuiMode))
 			} else {
