@@ -66,6 +66,7 @@ type hypervisor struct {
 	ImdsSyncRestartTimeout int    `bson:"imds_sync_restart_timeout" default:"30"`
 	InfoTtl                int    `bson:"info_ttl" default:"10"`
 	NoGuiFullscreen        bool   `bson:"no_gui_fullscreen"`
+	NoGuiCursor            bool   `bson:"no_gui_cursor"`
 	UsbHsPorts             int    `bson:"usb_hs_ports" default:"4"`
 	UsbSsPorts             int    `bson:"usb_ss_ports" default:"4"`
 	NoVirtioHid            bool   `bson:"no_virtio_hid"`
