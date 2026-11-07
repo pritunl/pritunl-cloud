@@ -19,7 +19,10 @@ depends:yum=(
     "net-tools"
     "ipset"
     "ipvsadm"
+    "iproute-tc"
     "xorriso"
+    "libguestfs"
+    "libguestfs-xfs"
     "kernel-modules-extra"
 )
 depends:apt=(
