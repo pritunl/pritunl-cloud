@@ -12,9 +12,10 @@ var (
 )
 
 type NetworkState struct {
-	namespaces    []string
-	interfaces    []string
-	interfacesSet set.Set
+	namespaces           []string
+	interfaces           []string
+	interfacesSet        set.Set
+	bridgedInterfacesSet set.Set
 }
 
 func (p *NetworkState) Namespaces() []string {
@@ -27,6 +28,10 @@ func (p *NetworkState) Interfaces() []string {
 
 func (p *NetworkState) HasInterfaces(iface string) bool {
 	return p.interfacesSet.Contains(iface)
+}
+
+func (p *NetworkState) HasBridgedInterfaces(iface string) bool {
+	return p.bridgedInterfacesSet.Contains(iface)
 }
 
 func (p *NetworkState) Refresh(pkg *Package,
@@ -45,6 +50,12 @@ func (p *NetworkState) Refresh(pkg *Package,
 	p.interfaces = interfaces
 	p.interfacesSet = interfacesSet
 
+	bridgedInterfacesSet, err := utils.GetBridgedInterfacesSet(interfaces)
+	if err != nil {
+		return
+	}
+	p.bridgedInterfacesSet = bridgedInterfacesSet
+
 	return
 }
 
@@ -52,4 +63,5 @@ func (p *NetworkState) Apply(st *State) {
 	st.Namespaces = p.Namespaces
 	st.Interfaces = p.Interfaces
 	st.HasInterfaces = p.HasInterfaces
+	st.HasBridgedInterfaces = p.HasBridgedInterfaces
 }
