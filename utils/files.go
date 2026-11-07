@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -145,6 +146,19 @@ func Chmod(pth string, mode os.FileMode) (err error) {
 	return
 }
 
+func isNotExist(err error) bool {
+	if os.IsNotExist(err) {
+		return true
+	}
+
+	pathErr, ok := err.(*os.PathError)
+	if ok && pathErr.Err == syscall.ENOTDIR {
+		return true
+	}
+
+	return false
+}
+
 func Exists(pth string) (exists bool, err error) {
 	_, err = os.Stat(pth)
 	if err == nil {
@@ -152,7 +166,7 @@ func Exists(pth string) (exists bool, err error) {
 		return
 	}
 
-	if os.IsNotExist(err) {
+	if isNotExist(err) {
 		err = nil
 		return
 	}
@@ -170,7 +184,7 @@ func ExistsDir(pth string) (exists bool, err error) {
 		return
 	}
 
-	if os.IsNotExist(err) {
+	if isNotExist(err) {
 		err = nil
 		return
 	}
@@ -188,7 +202,7 @@ func ExistsFile(pth string) (exists bool, err error) {
 		return
 	}
 
-	if os.IsNotExist(err) {
+	if isNotExist(err) {
 		err = nil
 		return
 	}
