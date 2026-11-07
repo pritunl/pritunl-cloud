@@ -44,9 +44,10 @@ type State struct {
 	Nodes   func() []*node.Node
 
 	// Network
-	Namespaces    func() []string
-	Interfaces    func() []string
-	HasInterfaces func(iface string) bool
+	Namespaces           func() []string
+	Interfaces           func() []string
+	HasInterfaces        func(iface string) bool
+	HasBridgedInterfaces func(iface string) bool
 
 	// Domains
 	GetDomains func(orgId bson.ObjectID) []*types.Domain
