@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"net"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/dropbox/godropbox/container/set"
 )
@@ -296,4 +298,58 @@ func FilterPem(s string) string {
 	}
 
 	return ns.String()
+}
+
+func FilterSystemdEnv(key, value string) string {
+	if key == "" || value == "" || !utf8.ValidString(value) {
+		return ""
+	}
+
+	for i := 0; i < len(key); i++ {
+		c := key[i]
+		if c == '_' ||
+			(c >= 'a' && c <= 'z') ||
+			(c >= 'A' && c <= 'Z') ||
+			(i > 0 && c >= '0' && c <= '9') {
+			continue
+		}
+		return ""
+	}
+
+	var quoted strings.Builder
+	quoted.WriteString(`Environment="`)
+	quoted.WriteString(key)
+	quoted.WriteByte('=')
+
+	for _, c := range value {
+		if c == 0 ||
+			(c >= 0xfdd0 && c <= 0xfdef) ||
+			(c&0xffff) >= 0xfffe {
+			return ""
+		}
+
+		switch c {
+		case '\\':
+			quoted.WriteString(`\\`)
+		case '"':
+			quoted.WriteString(`\"`)
+		case '%':
+			quoted.WriteString("%%")
+		case '\n':
+			quoted.WriteString(`\n`)
+		case '\r':
+			quoted.WriteString(`\r`)
+		case '\t':
+			quoted.WriteString(`\t`)
+		default:
+			if c < 0x20 || c == 0x7f {
+				fmt.Fprintf(&quoted, `\x%02x`, c)
+			} else {
+				quoted.WriteRune(c)
+			}
+		}
+	}
+
+	quoted.WriteByte('"')
+	return quoted.String()
 }
