@@ -285,6 +285,10 @@ type imdsConfig struct {
 	State   string `json:"state"`
 }
 
+func getHostname(inst *instance.Instance) string {
+	return utils.FilterName(strings.ReplaceAll(inst.Name, " ", "-"))
+}
+
 func getUserData(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine, dc *datacenter.Datacenter, zne *zone.Zone,
 	vc *vpc.Vpc, deply *deployment.Deployment, deployUnit *unit.Unit,
@@ -303,11 +307,12 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	writeFiles := []*fileData{}
 	initGuestPath := utils.FilterPath(settings.Hypervisor.InitGuestPath)
 	agentGuestPath := utils.FilterPath(settings.Hypervisor.AgentGuestPath)
-	dnsCloud := strings.Split(settings.Hypervisor.ImdsAddress, "/")[0]
+	dnsCloud := utils.FilterIp(
+		strings.Split(settings.Hypervisor.ImdsAddress, "/")[0])
 
 	data := cloudConfigData{
 		Keys:      []string{},
-		Hostname:  strings.Replace(inst.Name, " ", "_", -1),
+		Hostname:  getHostname(inst),
 		Address6:  addr6.String(),
 		Gateway6:  gateway6.String(),
 		DeployRun: initGuestPath,
@@ -337,19 +342,26 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	if virt.CloudType == instance.BSD ||
 		virt.SystemKind == instance.AlpineLinux {
 
-		resolvConf := fmt.Sprintf("nameserver %s\n", dnsCloud)
+		resolvConf := ""
+		if dnsCloud != "" {
+			resolvConf += fmt.Sprintf("nameserver %s\n", dnsCloud)
+		}
 
 		if inst.IsIpv6Only() {
-			dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
-			dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
+			dnsPrimary6 := utils.FilterIp(
+				settings.Hypervisor.DnsServerPrimary6)
+			dnsSecondary6 := utils.FilterIp(
+				settings.Hypervisor.DnsServerSecondary6)
 			if dnsPrimary6 != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsPrimary6)
 			} else if dnsSecondary6 != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsSecondary6)
 			}
 		} else {
-			dnsPrimary := settings.Hypervisor.DnsServerPrimary
-			dnsSecondary := settings.Hypervisor.DnsServerSecondary
+			dnsPrimary := utils.FilterIp(
+				settings.Hypervisor.DnsServerPrimary)
+			dnsSecondary := utils.FilterIp(
+				settings.Hypervisor.DnsServerSecondary)
 			if dnsPrimary != "" {
 				resolvConf += fmt.Sprintf("nameserver %s\n", dnsPrimary)
 			} else if dnsSecondary != "" {
@@ -382,7 +394,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	stateId := stateObjId.Hex()
 
 	imdsConf := &imdsConfig{
-		Address: strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
+		Address: dnsCloud,
 		Port:    settings.Hypervisor.ImdsPort,
 		Secret:  virt.ImdsClientSecret,
 	}
@@ -422,7 +434,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 			for _, mnt := range deply.Mounts {
 				data.Mounts = append(data.Mounts, cloudMount{
-					Tag:  fmt.Sprintf("UUID=%s", mnt.Uuid),
+					Tag:  fmt.Sprintf("UUID=%s", utils.FilterId(mnt.Uuid)),
 					Path: utils.FilterPath(mnt.Path),
 					Type: "auto",
 					Opts: mountOpts,
@@ -530,8 +542,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		}
 
 		data.Mounts = append(data.Mounts, cloudMount{
-			Tag:  mnt.Name,
-			Path: utils.FilterPath(mnt.Path),
+			Tag:  utils.FilterNameCmd(mnt.Name),
+			Path: pth,
 			Type: "virtiofs",
 			Opts: "defaults,_netdev",
 			Fsck: "0",
@@ -549,6 +561,10 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		switch authr.Type {
 		case authority.SshKey:
 			for _, key := range strings.Split(authr.Key, "\n") {
+				key = utils.FilterSshKey(key)
+				if key == "" {
+					continue
+				}
 				data.Keys = append(data.Keys, key)
 				authorizedKeys += key + "\n"
 			}
@@ -705,18 +721,21 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	gateway6 = vc.GetGatewayIp6(inst.Id)
 
 	dns2 := ""
-	dnsCloud := strings.Split(settings.Hypervisor.ImdsAddress, "/")[0]
+	dnsCloud := utils.FilterIp(
+		strings.Split(settings.Hypervisor.ImdsAddress, "/")[0])
 	if inst.IsIpv6Only() {
-		dnsPrimary6 := settings.Hypervisor.DnsServerPrimary6
-		dnsSecondary6 := settings.Hypervisor.DnsServerSecondary6
+		dnsPrimary6 := utils.FilterIp(settings.Hypervisor.DnsServerPrimary6)
+		dnsSecondary6 := utils.FilterIp(
+			settings.Hypervisor.DnsServerSecondary6)
 		if dnsPrimary6 != "" {
 			dns2 = dnsPrimary6
 		} else if dnsSecondary6 != "" {
 			dns2 = dnsSecondary6
 		}
 	} else {
-		dnsPrimary := settings.Hypervisor.DnsServerPrimary
-		dnsSecondary := settings.Hypervisor.DnsServerSecondary
+		dnsPrimary := utils.FilterIp(settings.Hypervisor.DnsServerPrimary)
+		dnsSecondary := utils.FilterIp(
+			settings.Hypervisor.DnsServerSecondary)
 		if dnsPrimary != "" {
 			dns2 = dnsPrimary
 		} else if dnsSecondary != "" {
@@ -725,7 +744,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	}
 
 	data := netConfigData{
-		Mac:          adapter.MacAddress,
+		Mac:          utils.FilterMac(adapter.MacAddress),
 		Address:      addr.String(),
 		AddressCidr:  fmt.Sprintf("%s/%d", addr.String(), cidr),
 		Netmask:      net.IP(vcNet.Mask).String(),
@@ -827,7 +846,7 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	metaData := fmt.Sprintf(metaDataTmpl,
 		bson.NewObjectID().Hex(),
-		strings.Replace(inst.Name, " ", "_", -1),
+		getHostname(inst),
 	)
 
 	err = utils.CreateWrite(metaPath, metaData, 0644)
