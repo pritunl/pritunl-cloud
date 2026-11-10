@@ -1413,6 +1413,14 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			},
 		];
 
+		if (this.props.disk.shape) {
+			let shape = CompletionStore.shape(this.props.disk.shape);
+			fields.splice(3, 0, {
+				label: 'Shape',
+				value: shape ? shape.name : this.props.disk.shape,
+			});
+		}
+
 		if (this.props.disk.uuid) {
 			fields.splice(2, 0, {
 				label: 'UUID',
