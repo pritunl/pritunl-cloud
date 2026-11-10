@@ -332,12 +332,12 @@ export function loadAdvisories(
 	});
 }
 
-export function loadMetric(nodeId: string): Promise<NodeTypes.Metric> {
+export function loadRuntime(nodeId: string): Promise<NodeTypes.Runtime> {
 	let loader = new Loader().loading();
 
-	return new Promise<NodeTypes.Metric>((resolve, reject): void => {
+	return new Promise<NodeTypes.Runtime>((resolve, reject): void => {
 		SuperAgent
-			.get('/node/' + nodeId + '/metric')
+			.get('/node/' + nodeId + '/runtime')
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
@@ -351,7 +351,7 @@ export function loadMetric(nodeId: string): Promise<NodeTypes.Metric> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to load node metric data');
+					Alert.errorRes(res, 'Failed to load node runtime data');
 					reject(err);
 					return;
 				}
