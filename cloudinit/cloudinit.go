@@ -148,7 +148,7 @@ users:
     lock-passwd: {{.LockPasswd}}
     ssh-authorized-keys:
 {{- range .Keys}}
-      - {{.}}
+      - "{{.}}"
 {{- end}}
 bootcmd:
 {{- range .Mounts}}
@@ -184,7 +184,7 @@ users:
     lock-passwd: {{.LockPasswd}}
     ssh-authorized-keys:
 {{- range .Keys}}
-      - {{.}}
+      - "{{.}}"
 {{- end}}
 bootcmd:
 {{- range .Mounts}}
