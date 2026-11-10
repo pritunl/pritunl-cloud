@@ -2,6 +2,7 @@ package dhcpc
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
@@ -22,17 +23,9 @@ const systemdNamespaceTemplate = `[Unit]
 Description=Pritunl Cloud DHCP Client
 After=network.target
 
-[Service]
+[Service]%s
 Type=simple
 User=%s
-Environment="IMDS_ADDRESS=%s"
-Environment="IMDS_PORT=%d"
-Environment="IMDS_SECRET=%s"
-Environment="DHCP_IFACE=%s"
-Environment="DHCP_IFACE6=%s"
-Environment="DHCP_IP=%s"
-Environment="DHCP_IP6=%s"
-Environment="DHCP_INTERVAL=%d"
 ExecStart=/usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
 Restart=always
@@ -50,17 +43,9 @@ const systemdTemplate = `[Unit]
 Description=Pritunl Cloud DHCP Client
 After=network.target
 
-[Service]
+[Service]%s
 Type=simple
 User=root
-Environment="IMDS_ADDRESS=%s"
-Environment="IMDS_PORT=%d"
-Environment="IMDS_SECRET=%s"
-Environment="DHCP_IFACE=%s"
-Environment="DHCP_IFACE6=%s"
-Environment="DHCP_IP=%s"
-Environment="DHCP_IP6=%s"
-Environment="DHCP_INTERVAL=%d"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
 Restart=always
@@ -78,6 +63,18 @@ func WriteService(vmId bson.ObjectID,
 	ip4, ip6, systemdNamespace bool) (err error) {
 
 	unitPath := paths.GetUnitPathDhcpc(vmId)
+	imdsAddress := utils.FilterIp(
+		strings.Split(settings.Hypervisor.ImdsAddress, "/")[0])
+	namespace = utils.FilterName(namespace)
+	dhcpIface = utils.FilterIface(dhcpIface)
+	dhcpIface6 = utils.FilterIface(dhcpIface6)
+
+	if imdsAddress == "" {
+		err = &errortypes.ParseError{
+			errors.New("dhcpc: Cannot start dhcp client with invalid address"),
+		}
+		return
+	}
 
 	if imdsSecret == "" {
 		err = &errortypes.ParseError{
@@ -93,6 +90,13 @@ func WriteService(vmId bson.ObjectID,
 		return
 	}
 
+	if namespace == "" {
+		err = &errortypes.ParseError{
+			errors.New("dhcpc: Cannot start dhcp client with empty namespace"),
+		}
+		return
+	}
+
 	args := []string{}
 	if ip4 {
 		args = append(args, "-ip4")
@@ -101,35 +105,35 @@ func WriteService(vmId bson.ObjectID,
 		args = append(args, "-ip6")
 	}
 
+	env := ""
+	env += "\n" + utils.FilterSystemdEnv("IMDS_ADDRESS", imdsAddress)
+	env += "\n" + utils.FilterSystemdEnv("IMDS_PORT",
+		strconv.Itoa(settings.Hypervisor.ImdsPort))
+	env += "\n" + utils.FilterSystemdEnv("IMDS_SECRET", imdsSecret)
+	env += "\n" + utils.FilterSystemdEnv("DHCP_IFACE", dhcpIface)
+	env += "\n" + utils.FilterSystemdEnv("DHCP_IFACE6", dhcpIface6)
+	env += "\n" + utils.FilterSystemdEnv("DHCP_IP",
+		utils.FilterCidr(dhcpIp))
+	env += "\n" + utils.FilterSystemdEnv("DHCP_IP6",
+		utils.FilterCidr(dhcpIp6))
+	env += "\n" + utils.FilterSystemdEnv("DHCP_INTERVAL",
+		strconv.Itoa(settings.Hypervisor.DhcpRenewTtl))
+
 	output := ""
 	if systemdNamespace {
 		output = fmt.Sprintf(
 			systemdNamespaceTemplate,
+			env,
 			permission.GetUserName(vmId),
-			settings.Hypervisor.ImdsAddress,
-			settings.Hypervisor.ImdsPort,
-			imdsSecret,
-			dhcpIface,
-			dhcpIface6,
-			dhcpIp,
-			dhcpIp6,
-			settings.Hypervisor.DhcpRenewTtl,
 			strings.Join(args, " "),
 			namespace,
 		)
 	} else {
 		output = fmt.Sprintf(
 			systemdTemplate,
-			settings.Hypervisor.ImdsAddress,
-			settings.Hypervisor.ImdsPort,
-			imdsSecret,
-			dhcpIface,
-			dhcpIface6,
-			dhcpIp,
-			dhcpIp6,
-			settings.Hypervisor.DhcpRenewTtl,
-			strings.Join(args, " "),
+			env,
 			namespace,
+			strings.Join(args, " "),
 		)
 	}
 
