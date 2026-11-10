@@ -570,7 +570,10 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			}
 			break
 		case authority.SshCertificate:
-			trusted += authr.Certificate + "\n"
+			cert := utils.FilterSshKey(authr.Certificate)
+			if cert != "" {
+				trusted += cert + "\n"
+			}
 			principals += strings.Join(authr.Principals, "\n") + "\n"
 			break
 		}
