@@ -2,6 +2,7 @@ package imds
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -21,13 +22,9 @@ const systemdNamespaceTemplate = `[Unit]
 Description=Pritunl Cloud IMDS Server
 After=network.target
 
-[Service]
+[Service]%s
 Type=simple
 User=%s
-Environment="INSTANCE_ID=%s"
-Environment="CLIENT_SECRET=%s"
-Environment="DHCP_SECRET=%s"
-Environment="HOST_SECRET=%s"
 ExecStart=/usr/bin/pritunl-cloud -sock=%s -host=%s -port=%d imds-server
 TimeoutStopSec=5
 Restart=always
@@ -45,13 +42,9 @@ const systemdTemplate = `[Unit]
 Description=Pritunl Cloud IMDS Server
 After=network.target
 
-[Service]
+[Service]%s
 Type=simple
 User=root
-Environment="INSTANCE_ID=%s"
-Environment="CLIENT_SECRET=%s"
-Environment="DHCP_SECRET=%s"
-Environment="HOST_SECRET=%s"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud -sock=%s -host=%s -port=%d imds-server
 TimeoutStopSec=5
 Restart=always
@@ -69,7 +62,10 @@ func WriteService(vmId bson.ObjectID,
 	systemdNamespace bool) (err error) {
 
 	unitPath := paths.GetUnitPathImds(vmId)
-	sockPath := paths.GetImdsSockPath(vmId)
+	sockPath := utils.FilterPath(paths.GetImdsSockPath(vmId))
+	imdsAddress := utils.FilterIp(
+		strings.Split(settings.Hypervisor.ImdsAddress, "/")[0])
+	namespace = utils.FilterName(namespace)
 
 	if clientSecret == "" || dhcpSecret == "" || hostSecret == "" {
 		err = &errortypes.ParseError{
@@ -78,30 +74,44 @@ func WriteService(vmId bson.ObjectID,
 		return
 	}
 
+	if imdsAddress == "" {
+		err = &errortypes.ParseError{
+			errors.New("imds: Cannot start imds with invalid address"),
+		}
+		return
+	}
+
+	if namespace == "" {
+		err = &errortypes.ParseError{
+			errors.New("imds: Cannot start imds with empty namespace"),
+		}
+		return
+	}
+
+	env := ""
+	env += "\n" + utils.FilterSystemdEnv("INSTANCE_ID", vmId.Hex())
+	env += "\n" + utils.FilterSystemdEnv("CLIENT_SECRET", clientSecret)
+	env += "\n" + utils.FilterSystemdEnv("DHCP_SECRET", dhcpSecret)
+	env += "\n" + utils.FilterSystemdEnv("HOST_SECRET", hostSecret)
+
 	output := ""
 	if systemdNamespace {
 		output = fmt.Sprintf(
 			systemdNamespaceTemplate,
+			env,
 			permission.GetUserName(vmId),
-			vmId.Hex(),
-			clientSecret,
-			dhcpSecret,
-			hostSecret,
 			sockPath,
-			settings.Hypervisor.ImdsAddress,
+			imdsAddress,
 			settings.Hypervisor.ImdsPort,
 			namespace,
 		)
 	} else {
 		output = fmt.Sprintf(
 			systemdTemplate,
-			vmId.Hex(),
-			clientSecret,
-			dhcpSecret,
-			hostSecret,
+			env,
 			namespace,
 			sockPath,
-			settings.Hypervisor.ImdsAddress,
+			imdsAddress,
 			settings.Hypervisor.ImdsPort,
 		)
 	}
