@@ -310,12 +310,13 @@ export function loadAdvisories(
 	});
 }
 
-export function loadGuest(instanceId: string): Promise<InstanceTypes.Guest> {
+export function loadRuntime(
+		instanceId: string): Promise<InstanceTypes.Runtime> {
 	let loader = new Loader().loading();
 
-	return new Promise<InstanceTypes.Guest>((resolve, reject): void => {
+	return new Promise<InstanceTypes.Runtime>((resolve, reject): void => {
 		SuperAgent
-			.get('/instance/' + instanceId + '/guest')
+			.get('/instance/' + instanceId + '/runtime')
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
@@ -329,7 +330,7 @@ export function loadGuest(instanceId: string): Promise<InstanceTypes.Guest> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to load instance guest data');
+					Alert.errorRes(res, 'Failed to load instance runtime data');
 					reject(err);
 					return;
 				}
