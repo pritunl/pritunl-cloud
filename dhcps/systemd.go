@@ -33,7 +33,7 @@ Description=Pritunl Cloud %s
 After=network.target
 
 [Service]
-Environment=CONFIG='%s'
+%s
 Type=simple
 User=root
 ExecStart=/usr/sbin/ip netns exec %s %s %s
@@ -51,7 +51,7 @@ Description=Pritunl Cloud %s
 After=network.target
 
 [Service]
-Environment=CONFIG='%s'
+%s
 Type=simple
 User=%s
 ExecStart=%s %s
@@ -294,6 +294,14 @@ func WriteService(vmId bson.ObjectID, namespace string,
 	unitPath := ""
 	caps := ""
 
+	namespace = utils.FilterName(namespace)
+	if namespace == "" {
+		err = &errortypes.ParseError{
+			errors.New("dhcps: Cannot start dhcp server with empty namespace"),
+		}
+		return
+	}
+
 	curPath, err := os.Executable()
 	if err != nil {
 		err = &errortypes.ParseError{
@@ -301,11 +309,20 @@ func WriteService(vmId bson.ObjectID, namespace string,
 		}
 		return
 	}
+	curPath = utils.FilterPath(curPath)
 
 	confData, err := json.Marshal(config)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "dhcps: Failed to marshal config"),
+		}
+		return
+	}
+
+	confEnv := utils.FilterSystemdEnv("CONFIG", string(confData))
+	if confEnv == "" {
+		err = &errortypes.ParseError{
+			errors.New("dhcps: Failed to encode config environment"),
 		}
 		return
 	}
@@ -338,7 +355,7 @@ func WriteService(vmId bson.ObjectID, namespace string,
 		output = fmt.Sprintf(
 			systemdNamespaceTemplate,
 			param,
-			string(confData),
+			confEnv,
 			permission.GetUserName(vmId),
 			curPath,
 			param,
@@ -349,7 +366,7 @@ func WriteService(vmId bson.ObjectID, namespace string,
 		output = fmt.Sprintf(
 			systemdTemplate,
 			param,
-			string(confData),
+			confEnv,
 			namespace,
 			curPath,
 			param,
