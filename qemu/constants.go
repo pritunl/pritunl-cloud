@@ -7,7 +7,6 @@ Description=Pritunl Cloud Virtual Machine
 After=network.target
 
 [Service]%s
-Environment=XDG_CACHE_HOME=%s
 Type=simple
 User=root
 ExecStart=%s
@@ -28,7 +27,6 @@ Description=Pritunl Cloud Virtual Machine
 After=network.target
 
 [Service]%s
-Environment=XDG_CACHE_HOME=%s
 Type=simple
 User=root
 ExecStart=%s
