@@ -12,6 +12,7 @@ import (
 const (
 	idSafeLimit     = 256
 	nameSafeLimit   = 128
+	ifaceSafeLimit  = 15
 	domainSafeLimit = 1024
 	base64SafeLimit = 32768
 	pemSafeLimit    = 32768
@@ -77,6 +78,15 @@ var pemSafeChar = set.NewSet(
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'+', '/', '=', '-', ' ', '\n',
+)
+
+var ifaceSafeChar = set.NewSet(
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'-', '_', '.',
 )
 
 func normalizeNewlines(s string) string {
@@ -176,6 +186,25 @@ func FilterId(s string) string {
 	var ns strings.Builder
 	for _, c := range s {
 		if idSafeChar.Contains(c) {
+			ns.WriteString(string(c))
+		}
+	}
+
+	return ns.String()
+}
+
+func FilterIface(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
+	if len(s) > ifaceSafeLimit {
+		s = s[:ifaceSafeLimit]
+	}
+
+	var ns strings.Builder
+	for _, c := range s {
+		if ifaceSafeChar.Contains(c) {
 			ns.WriteString(string(c))
 		}
 	}
