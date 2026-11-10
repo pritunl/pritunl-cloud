@@ -43,11 +43,13 @@ func (f *Authority) Validate(db *database.Database) (
 
 	switch f.Type {
 	case SshKey:
+		f.Key = utils.FilterSshKey(f.Key)
 		f.Principals = []string{}
 		f.Certificate = ""
 		break
 	case SshCertificate:
 		f.Key = ""
+		f.Certificate = utils.FilterSshKey(f.Certificate)
 		break
 	}
 
