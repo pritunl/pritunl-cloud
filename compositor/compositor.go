@@ -12,9 +12,13 @@ func GetEnv(username, driPath string, driPrime bool) (
 		return
 	}
 
-	env := []string{
-		utils.FilterSystemdEnv("DISPLAY", dsp.Display),
-		utils.FilterSystemdEnv("XAUTHORITY", dsp.Xauthority),
+	env := []string{}
+	if dsp.Display != "" {
+		env = append(env, utils.FilterSystemdEnv("DISPLAY", dsp.Display))
+	}
+	if dsp.Xauthority != "" {
+		env = append(env,
+			utils.FilterSystemdEnv("XAUTHORITY", dsp.Xauthority))
 	}
 	if dsp.WaylandDisplay != "" {
 		env = append(env,
@@ -22,14 +26,18 @@ func GetEnv(username, driPath string, driPrime bool) (
 			utils.FilterSystemdEnv("SDL_VIDEODRIVER", "wayland"),
 			utils.FilterSystemdEnv("GDK_BACKEND", "wayland"),
 			utils.FilterSystemdEnv("XDG_SESSION_TYPE", "wayland"),
-			utils.FilterSystemdEnv("XDG_RUNTIME_DIR", dsp.XdgRuntime),
 			utils.FilterSystemdEnv("XDG_SESSION_CLASS", "user"),
 		)
+		if dsp.XdgRuntime != "" {
+			env = append(env,
+				utils.FilterSystemdEnv("XDG_RUNTIME_DIR", dsp.XdgRuntime))
+		}
 	}
-	env = append(env,
-		utils.FilterSystemdEnv("SDL_GRAB_KEYBOARD", "0"),
-		utils.FilterSystemdEnv("DRI_RENDER_DEVICE", driPath),
-	)
+	env = append(env, utils.FilterSystemdEnv("SDL_GRAB_KEYBOARD", "0"))
+	if driPath != "" {
+		env = append(env,
+			utils.FilterSystemdEnv("DRI_RENDER_DEVICE", driPath))
+	}
 	if driPrime {
 		env = append(env,
 			utils.FilterSystemdEnv("DRI_PRIME", "1"),
