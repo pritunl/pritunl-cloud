@@ -822,6 +822,12 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
+	env := utils.FilterSystemdEnv("XDG_CACHE_HOME", paths.GetCacheDir(q.Id))
+	if env != "" {
+		env = "\n" + env
+	}
+	env += compositorEnv
+
 	protectTmp := ""
 	if q.ProtectTmp {
 		protectTmp = "true"
@@ -840,8 +846,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		output = fmt.Sprintf(
 			systemdTemplateExternalNet,
 			q.Data,
-			compositorEnv,
-			paths.GetCacheDir(q.Id),
+			env,
 			strings.Join(cmd, " "),
 			protectTmp,
 			protectHome,
@@ -850,12 +855,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 		output = fmt.Sprintf(
 			systemdTemplate,
 			q.Data,
-			compositorEnv,
-			paths.GetCacheDir(q.Id),
+			env,
 			strings.Join(cmd, " "),
 			protectTmp,
 			protectHome,
-			q.Namespace,
+			utils.FilterName(q.Namespace),
 		)
 	}
 
