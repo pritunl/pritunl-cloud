@@ -36,9 +36,17 @@ NetworkNamespacePath=/var/run/netns/%s
 
 func WriteService(vmId bson.ObjectID, namespace string) (err error) {
 	unitPath := paths.GetUnitPathTpm(vmId)
-	tpmPath := paths.GetTpmPath(vmId)
-	pwdPath := paths.GetTpmPwdPath(vmId)
-	sockPath := paths.GetTpmSockPath(vmId)
+	tpmPath := utils.FilterPath(paths.GetTpmPath(vmId))
+	pwdPath := utils.FilterPath(paths.GetTpmPwdPath(vmId))
+	sockPath := utils.FilterPath(paths.GetTpmSockPath(vmId))
+
+	namespace = utils.FilterName(namespace)
+	if namespace == "" {
+		err = &errortypes.ParseError{
+			errors.New("tpm: Cannot start tpm with empty namespace"),
+		}
+		return
+	}
 
 	output := fmt.Sprintf(
 		systemdTemplate,
