@@ -31,13 +31,13 @@ func WriteService(vmId bson.ObjectID,
 	shareId, sharePath string) (err error) {
 
 	unitPath := paths.GetUnitPathShare(vmId, shareId)
-	sockPath := paths.GetShareSockPath(vmId, shareId)
+	sockPath := utils.FilterPath(paths.GetShareSockPath(vmId, shareId))
 
 	output := fmt.Sprintf(
 		systemdTemplate,
 		GetVirtioFsdPath(),
 		sockPath,
-		sharePath,
+		utils.FilterPath(sharePath),
 	)
 
 	err = utils.CreateWrite(unitPath, output, 0600)
