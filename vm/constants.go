@@ -12,4 +12,6 @@ const (
 
 	Physical = "physical"
 	Lvm      = "lvm"
+
+	DiskIndexNone = -1
 )
