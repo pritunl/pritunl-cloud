@@ -31,6 +31,30 @@ type Disks struct {
 	stat *state.State
 }
 
+func (d *Disks) release(db *database.Database, clm *disk.Claim,
+	dsk *disk.Disk, fields set.Set) (ok bool) {
+
+	err := clm.Release(db, dsk, fields)
+	if err != nil {
+		if _, lost := err.(*disk.ClaimLostError); lost {
+			logrus.WithFields(logrus.Fields{
+				"disk_id": dsk.Id.Hex(),
+			}).Warn("deploy: Disk action claim lost, changes not committed")
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+			"error":   err,
+		}).Error("deploy: Failed update disk state")
+		time.Sleep(5 * time.Second)
+		return
+	}
+
+	ok = true
+	return
+}
+
 func (d *Disks) provision(dsk *disk.Disk) {
 	acquired, lockId := disk.ActionLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
@@ -48,12 +72,13 @@ func (d *Disks) provision(dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.State != disk.Provision {
+		dsk, err := clm.Acquire(db, bson.M{
+			"state": disk.Provision,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -86,8 +111,7 @@ func (d *Disks) provision(dsk *disk.Disk) {
 			dsk.Size = newSize
 		}
 
-		err = dsk.CommitFields(db, fields)
-		if err != nil {
+		if !d.release(db, clm, dsk, fields) {
 			return
 		}
 
@@ -113,12 +137,13 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.Action != disk.Snapshot {
+		dsk, err := clm.Acquire(db, bson.M{
+			"action": disk.Snapshot,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -141,14 +166,7 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err = dsk.CommitFields(db, set.NewSet("action"))
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"disk_id":   dsk.Id.Hex(),
-				"disk_type": dsk.Type,
-				"error":     err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
+		if !d.release(db, clm, dsk, set.NewSet("action")) {
 			return
 		}
 
@@ -185,12 +203,13 @@ func (d *Disks) expand(dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.Action != disk.Expand {
+		dsk, err := clm.Acquire(db, bson.M{
+			"action": disk.Expand,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -251,12 +270,7 @@ func (d *Disks) expand(dsk *disk.Disk) {
 
 		dsk.Action = ""
 		dsk.NewSize = 0
-		err = dsk.CommitFields(db, fields)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
+		if !d.release(db, clm, dsk, fields) {
 			return
 		}
 
@@ -281,12 +295,13 @@ func (d *Disks) resize(dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.Action != disk.Resize {
+		dsk, err := clm.Acquire(db, bson.M{
+			"action": disk.Resize,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -340,13 +355,9 @@ func (d *Disks) resize(dsk *disk.Disk) {
 
 		dsk.Action = ""
 		dsk.ActionData = nil
-		err = dsk.CommitFields(db, set.NewSet(
-			"action", "action_data", "metadata"))
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
+		if !d.release(db, clm, dsk, set.NewSet(
+			"action", "action_data", "metadata")) {
+
 			return
 		}
 
@@ -381,12 +392,13 @@ func (d *Disks) backup(dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.Action != disk.Backup {
+		dsk, err := clm.Acquire(db, bson.M{
+			"action": disk.Backup,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -409,12 +421,7 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err = dsk.CommitFields(db, set.NewSet("action"))
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
+		if !d.release(db, clm, dsk, set.NewSet("action")) {
 			return
 		}
 
@@ -450,12 +457,13 @@ func (d *Disks) restore(dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.Action != disk.Restore {
+		dsk, err := clm.Acquire(db, bson.M{
+			"action": disk.Restore,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -511,13 +519,7 @@ func (d *Disks) restore(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err = dsk.CommitFields(db, fields)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id.Hex(),
-				"error":   err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
+		if !d.release(db, clm, dsk, fields) {
 			return
 		}
 
@@ -551,12 +553,13 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 			return
 		}
 
-		dsk, err := disk.Get(db, dsk.Id)
-		if err != nil {
-			return
-		}
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
 
-		if dsk.Action != disk.Destroy {
+		dsk, err := clm.Acquire(db, bson.M{
+			"action": disk.Destroy,
+		}, nil)
+		if err != nil || dsk == nil {
 			return
 		}
 
@@ -566,7 +569,7 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 			}).Info("deploy: Delete protection ignore disk destroy")
 
 			dsk.Action = ""
-			_ = dsk.CommitFields(db, set.NewSet("action"))
+			_ = clm.Release(db, dsk, set.NewSet("action"))
 
 			event.PublishDispatch(db, "disk.change")
 
@@ -579,7 +582,7 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 			}).Info("deploy: Instance delete protection ignore disk destroy")
 
 			dsk.Action = ""
-			_ = dsk.CommitFields(db, set.NewSet("action"))
+			_ = clm.Release(db, dsk, set.NewSet("action"))
 
 			event.PublishDispatch(db, "disk.change")
 
@@ -652,23 +655,26 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 			return
 		}
 
-		if !dsk.IsActive() || dsk.Action != "" {
+		clm := disk.NewClaim(dsk)
+		defer clm.Stop()
+
+		dsk, err := clm.Acquire(db, bson.M{
+			"state": bson.M{
+				"$in": []string{disk.Available, disk.Attached},
+			},
+			"action": bson.M{
+				"$in": []interface{}{"", nil},
+			},
+		}, bson.M{
+			"action": disk.Backup,
+		})
+		if err != nil || dsk == nil {
 			return
 		}
 
 		logrus.WithFields(logrus.Fields{
 			"disk_id": dsk.Id.Hex(),
 		}).Info("deploy: Scheduling automatic disk backup")
-
-		dsk.Action = disk.Backup
-		err := dsk.CommitFields(db, set.NewSet("action"))
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
-			return
-		}
 
 		event.PublishDispatch(db, "disk.change")
 
@@ -698,12 +704,7 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err = dsk.CommitFields(db, fields)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed update disk state")
-			time.Sleep(5 * time.Second)
+		if !d.release(db, clm, dsk, fields) {
 			return
 		}
 
@@ -742,7 +743,7 @@ func (d *Disks) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, dsk := range disks {
-		if !d.owned(dsk) {
+		if !d.owned(dsk) || dsk.Check(node.Self.Id) {
 			continue
 		}
 
