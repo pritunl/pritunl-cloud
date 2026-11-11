@@ -7,15 +7,20 @@ import (
 	"unicode/utf8"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
-	idSafeLimit     = 256
-	nameSafeLimit   = 128
-	ifaceSafeLimit  = 15
-	domainSafeLimit = 1024
-	base64SafeLimit = 32768
-	pemSafeLimit    = 32768
+	idSafeLimit         = 256
+	nameSafeLimit       = 128
+	ifaceSafeLimit      = 15
+	domainSafeLimit     = 1024
+	base64SafeLimit     = 32768
+	pemSafeLimit        = 32768
+	sshKeySafeLimit     = 32768
+	sshCommentSafeLimit = 256
 )
 
 var nameSafeChar = set.NewSet(
@@ -87,6 +92,15 @@ var ifaceSafeChar = set.NewSet(
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'-', '_', '.',
+)
+
+var sshCommentSafeChar = set.NewSet(
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'+', '/', '=', '-', '_', '.', '@', ' ',
 )
 
 func normalizeNewlines(s string) string {
@@ -329,8 +343,67 @@ func FilterPem(s string) string {
 	return ns.String()
 }
 
+func filterSshPublicKey(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) == 0 {
+		return ""
+	}
+
+	key, comment, options, _, err := ssh.ParseAuthorizedKey([]byte(s))
+	if err != nil || len(options) > 0 {
+		return ""
+	}
+
+	if _, ok := key.(*ssh.Certificate); ok {
+		return ""
+	}
+
+	line := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(key)))
+
+	if len(comment) > sshCommentSafeLimit {
+		comment = comment[:sshCommentSafeLimit]
+	}
+
+	var ns strings.Builder
+	for _, c := range comment {
+		if sshCommentSafeChar.Contains(c) {
+			ns.WriteString(string(c))
+		}
+	}
+
+	comment = strings.TrimSpace(ns.String())
+	if comment != "" {
+		line += " " + comment
+	}
+
+	return line
+}
+
+func FilterSshKey(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
+	if len(s) > sshKeySafeLimit {
+		s = s[:sshKeySafeLimit]
+	}
+
+	s = normalizeNewlines(s)
+
+	lines := []string{}
+	for _, line := range strings.Split(s, "\n") {
+		line = filterSshPublicKey(line)
+		if line == "" {
+			continue
+		}
+		lines = append(lines, line)
+	}
+
+	return strings.Join(lines, "\n")
+}
+
 func FilterSystemdEnv(key, value string) string {
-	if key == "" || value == "" || !utf8.ValidString(value) {
+	if key == "" || !utf8.ValidString(value) {
 		return ""
 	}
 
