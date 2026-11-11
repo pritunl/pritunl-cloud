@@ -1,8 +1,6 @@
 package qemu
 
 import (
-	"crypto/md5"
-	"encoding/base32"
 	"fmt"
 	"math"
 	"path"
@@ -598,63 +596,6 @@ func (q *Qemu) Marshal() (output string, err error) {
 			dskDevId,
 			dskBusId,
 		))
-	}
-
-	hasIscsi := false
-	if node.Self.Iscsi {
-		for _, device := range q.IscsiDevices {
-			if !hasIscsi {
-				cmd = append(cmd, "-iscsi")
-				cmd = append(cmd, fmt.Sprintf(
-					"initiator-name=iqn.2008-11.org.linux-kvm:%s",
-					q.Id.Hex(),
-				))
-				hasIscsi = true
-			}
-
-			iscsiHash := md5.New()
-			iscsiHash.Write([]byte(device.Uri))
-			iscsiId := base32.StdEncoding.WithPadding(base32.NoPadding).
-				EncodeToString(iscsiHash.Sum(nil))
-
-			dskId := fmt.Sprintf("id_%s", iscsiId)
-			dskFileId := fmt.Sprintf("idf_%s", iscsiId)
-			dskDevId := fmt.Sprintf("idd_%s", iscsiId)
-			dskBusId := fmt.Sprintf("idb_%s", iscsiId)
-			slot += 1
-
-			cmd = append(cmd, "-device")
-			cmd = append(cmd, fmt.Sprintf(
-				"pcie-root-port,id=%s,slot=%d",
-				dskBusId, slot,
-			))
-
-			cmd = append(cmd, "-blockdev")
-			cmd = append(cmd, fmt.Sprintf(
-				"driver=iscsi,node-name=%s,transport=tcp,"+
-					"url=%s,cache.direct=on",
-				dskFileId,
-				device.Uri,
-			))
-
-			cmd = append(cmd, "-blockdev")
-			cmd = append(cmd, fmt.Sprintf(
-				"driver=raw,node-name=%s,file=%s,"+
-					"cache.direct=on,cache.no-flush=off",
-				dskId,
-				dskFileId,
-			))
-
-			cmd = append(cmd, "-device")
-			cmd = append(cmd, fmt.Sprintf(
-				"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,"+
-					"bus=%s,write-cache=on,packed=on",
-				dskId,
-				q.GetDiskQueues(),
-				dskDevId,
-				dskBusId,
-			))
-		}
 	}
 
 	for _, mount := range q.Mounts {
