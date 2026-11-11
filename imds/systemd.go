@@ -88,11 +88,15 @@ func WriteService(vmId bson.ObjectID,
 		return
 	}
 
-	env := ""
-	env += "\n" + utils.FilterSystemdEnv("INSTANCE_ID", vmId.Hex())
-	env += "\n" + utils.FilterSystemdEnv("CLIENT_SECRET", clientSecret)
-	env += "\n" + utils.FilterSystemdEnv("DHCP_SECRET", dhcpSecret)
-	env += "\n" + utils.FilterSystemdEnv("HOST_SECRET", hostSecret)
+	env, err := utils.JoinSystemdEnv(
+		utils.FilterSystemdEnv("INSTANCE_ID", vmId.Hex()),
+		utils.FilterSystemdEnv("CLIENT_SECRET", clientSecret),
+		utils.FilterSystemdEnv("DHCP_SECRET", dhcpSecret),
+		utils.FilterSystemdEnv("HOST_SECRET", hostSecret),
+	)
+	if err != nil {
+		return
+	}
 
 	output := ""
 	if systemdNamespace {
