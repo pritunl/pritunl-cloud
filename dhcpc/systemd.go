@@ -105,19 +105,21 @@ func WriteService(vmId bson.ObjectID,
 		args = append(args, "-ip6")
 	}
 
-	env := ""
-	env += "\n" + utils.FilterSystemdEnv("IMDS_ADDRESS", imdsAddress)
-	env += "\n" + utils.FilterSystemdEnv("IMDS_PORT",
-		strconv.Itoa(settings.Hypervisor.ImdsPort))
-	env += "\n" + utils.FilterSystemdEnv("IMDS_SECRET", imdsSecret)
-	env += "\n" + utils.FilterSystemdEnv("DHCP_IFACE", dhcpIface)
-	env += "\n" + utils.FilterSystemdEnv("DHCP_IFACE6", dhcpIface6)
-	env += "\n" + utils.FilterSystemdEnv("DHCP_IP",
-		utils.FilterCidr(dhcpIp))
-	env += "\n" + utils.FilterSystemdEnv("DHCP_IP6",
-		utils.FilterCidr(dhcpIp6))
-	env += "\n" + utils.FilterSystemdEnv("DHCP_INTERVAL",
-		strconv.Itoa(settings.Hypervisor.DhcpRenewTtl))
+	env, err := utils.JoinSystemdEnv(
+		utils.FilterSystemdEnv("IMDS_ADDRESS", imdsAddress),
+		utils.FilterSystemdEnv("IMDS_PORT",
+			strconv.Itoa(settings.Hypervisor.ImdsPort)),
+		utils.FilterSystemdEnv("IMDS_SECRET", imdsSecret),
+		utils.FilterSystemdEnv("DHCP_IFACE", dhcpIface),
+		utils.FilterSystemdEnv("DHCP_IFACE6", dhcpIface6),
+		utils.FilterSystemdEnv("DHCP_IP", utils.FilterCidr(dhcpIp)),
+		utils.FilterSystemdEnv("DHCP_IP6", utils.FilterCidr(dhcpIp6)),
+		utils.FilterSystemdEnv("DHCP_INTERVAL",
+			strconv.Itoa(settings.Hypervisor.DhcpRenewTtl)),
+	)
+	if err != nil {
+		return
+	}
 
 	output := ""
 	if systemdNamespace {
