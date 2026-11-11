@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/info"
@@ -496,6 +497,19 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 
 func (s *Instances) diskRemove(inst *instance.Instance,
 	virt *vm.VirtualMachine, remDisks vm.SortDisks) {
+
+	disks := vm.SortDisks{}
+	for _, dsk := range remDisks {
+		if disk.ActionLock.Locked(dsk.Id.Hex()) {
+			continue
+		}
+		disks = append(disks, dsk)
+	}
+	remDisks = disks
+
+	if len(remDisks) == 0 {
+		return
+	}
 
 	if !diskLimiter.Acquire() {
 		return
