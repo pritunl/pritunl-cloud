@@ -455,3 +455,17 @@ func FilterSystemdEnv(key, value string) string {
 	quoted.WriteByte('"')
 	return quoted.String()
 }
+
+func JoinSystemdEnv(lines ...string) (env string, err error) {
+	for _, line := range lines {
+		if line == "" {
+			err = &errortypes.ParseError{
+				errors.New("utils: Failed to encode systemd environment"),
+			}
+			return
+		}
+		env += "\n" + line
+	}
+
+	return
+}
