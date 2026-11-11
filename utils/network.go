@@ -498,3 +498,28 @@ func FilterIp(input string) string {
 	}
 	return ip.String()
 }
+
+func FilterCidr(input string) string {
+	input = strings.TrimSpace(input)
+	if input == "" {
+		return ""
+	}
+	ip, ipnet, err := net.ParseCIDR(input)
+	if err != nil {
+		return ""
+	}
+	ipnet.IP = ip
+	return ipnet.String()
+}
+
+func FilterMac(input string) string {
+	input = strings.TrimSpace(input)
+	if input == "" {
+		return ""
+	}
+	mac, err := net.ParseMAC(input)
+	if err != nil {
+		return ""
+	}
+	return mac.String()
+}
