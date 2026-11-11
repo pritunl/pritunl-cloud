@@ -467,6 +467,63 @@ func GetDisks(vmId bson.ObjectID) (info *QemuInfo, disks []*vm.Disk,
 	}
 
 	cmd = &Command{
+		Execute: "query-named-block-nodes",
+	}
+
+	nodesReturnData := &namedNodesReturn{}
+	err = conn.Send(cmd, nodesReturnData)
+	if err != nil {
+		return
+	}
+
+	if nodesReturnData.Error != nil {
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Return error %s", nodesReturnData.Error.Desc),
+		}
+		return
+	}
+
+	for _, nde := range nodesReturnData.Return {
+		var dskIdStr string
+		if strings.HasPrefix(nde.NodeName, "fd_") {
+			dskIdStr = nde.NodeName[3:]
+		} else if strings.HasPrefix(nde.NodeName, "fdf_") {
+			dskIdStr = nde.NodeName[4:]
+		} else {
+			continue
+		}
+
+		dskId, ok := utils.ParseObjectId(dskIdStr)
+		if !ok {
+			logrus.WithFields(logrus.Fields{
+				"instance_id":   vmId.Hex(),
+				"qmp_node_name": nde.NodeName,
+				"qmp_file":      nde.File,
+			}).Error("qmp: Disk node id parse failed")
+			continue
+		}
+
+		if disksMap[dskId] != nil {
+			continue
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"instance_id":   vmId.Hex(),
+			"disk_id":       dskId.Hex(),
+			"qmp_node_name": nde.NodeName,
+			"qmp_file":      nde.File,
+		}).Warn("qmp: Disk node without device")
+
+		dsk := &vm.Disk{
+			Id:    dskId,
+			Index: vm.DiskIndexNone,
+			Path:  nde.File,
+		}
+		disks = append(disks, dsk)
+		disksMap[dsk.Id] = dsk
+	}
+
+	cmd = &Command{
 		Execute: "query-pci",
 	}
 
