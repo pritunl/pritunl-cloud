@@ -51,6 +51,8 @@ type Disk struct {
 	LastBackup       time.Time     `bson:"last_backup" json:"last_backup"`
 	Metadata         *Metadata     `bson:"metadata,omitempty" json:"metadata"`
 	ActionData       *ActionData   `bson:"action_data,omitempty" json:"action_data"`
+	ActionNode       bson.ObjectID `bson:"action_node" json:"action_node"`
+	ActionTimestamp  time.Time     `bson:"action_timestamp" json:"action_timestamp"`
 	curIndex         string        `bson:"-" json:"-"`
 	curInstance      bson.ObjectID `bson:"-" json:"-"`
 }
