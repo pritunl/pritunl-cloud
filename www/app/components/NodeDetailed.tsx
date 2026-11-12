@@ -1222,8 +1222,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let node: NodeTypes.Node = this.state.node || this.props.node;
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
-				node.metric?.load1 !== 0 || node.metric?.load5 !== 0 ||
-				node.metric?.load15 !== 0;
+				node.runtime?.load1 !== 0 || node.runtime?.load5 !== 0 ||
+				node.runtime?.load15 !== 0;
 		let types = node.types || [];
 
 		let publicIps: any = this.props.node.public_ips;
@@ -1249,29 +1249,29 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			{
 				progressClass: 'bp5-no-stripes bp5-intent-success',
 				label: 'Load1',
-				value: this.props.node.metric?.load1 || 0,
+				value: this.props.node.runtime?.load1 || 0,
 			},
 			{
 				progressClass: 'bp5-no-stripes bp5-intent-warning',
 				label: 'Load5',
-				value: this.props.node.metric?.load5 || 0,
+				value: this.props.node.runtime?.load5 || 0,
 			},
 			{
 				progressClass: 'bp5-no-stripes bp5-intent-danger',
 				label: 'Load15',
-				value: this.props.node.metric?.load15 || 0,
+				value: this.props.node.runtime?.load15 || 0,
 			},
 			{
 				progressClass: 'bp5-no-stripes bp5-intent-primary',
 				label: 'Memory',
-				value: this.props.node.metric?.memory || 0,
+				value: this.props.node.runtime?.memory || 0,
 			},
 		];
 		if (this.props.node.hugepages) {
 			resourceBars.push({
 				progressClass: 'bp5-no-stripes bp5-intent-primary',
 				label: 'HugePages',
-				value: this.props.node.metric?.hugepages || 0,
+				value: this.props.node.runtime?.hugepages || 0,
 				color: '#7207d4',
 			});
 		}
@@ -1626,7 +1626,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				valueClass: active ? '' : 'bp5-text-intent-danger',
 				label: 'Timestamp',
 				value: MiscUtils.formatDate(
-					this.props.node.timestamp) || 'Inactive',
+					this.props.node.runtime?.timestamp) || 'Inactive',
 			},
 			{
 				label: 'CPU Units Reserved',
