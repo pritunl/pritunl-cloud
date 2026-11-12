@@ -13,6 +13,7 @@ interface Props {
 	light?: boolean;
 	cancelConfirm?: boolean;
 	cancelConfirmMsg?: string;
+	buttons?: React.ReactNode;
 	onCancel: () => void;
 	onSave: () => void;
 }
@@ -107,6 +108,7 @@ export default class PageSave extends React.Component<Props, {}> {
 					{this.props.message}
 				</span>
 				<div style={css.buttons}>
+					{this.props.hidden ? null : this.props.buttons}
 					{cancelElem}
 					<button
 						className="bp5-button bp5-intent-success bp5-icon-tick"
