@@ -101,8 +101,8 @@ export default class Node extends React.Component<Props, {}> {
 		}
 
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
-			node.metric?.load1 !== 0 || node.metric?.load5 !== 0 ||
-			node.metric?.load15 !== 0;
+			node.runtime?.load1 !== 0 || node.runtime?.load5 !== 0 ||
+			node.runtime?.load15 !== 0;
 
 		let cardStyle = {
 			...css.card,
@@ -142,17 +142,17 @@ export default class Node extends React.Component<Props, {}> {
 		}
 
 		let memoryStyle: React.CSSProperties = {
-			width: (node.metric?.memory || 0) + '%',
+			width: (node.runtime?.memory || 0) + '%',
 		};
 		let hugepagesStyle: React.CSSProperties = {
-			width: (node.metric?.hugepages || 0) + '%',
+			width: (node.runtime?.hugepages || 0) + '%',
 			backgroundColor: '#7207d4',
 		};
 		let load1Style: React.CSSProperties = {
-			width: (node.metric?.load1 || 0) + '%',
+			width: (node.runtime?.load1 || 0) + '%',
 		};
 		let load5Style: React.CSSProperties = {
-			width: (node.metric?.load5 || 0) + '%',
+			width: (node.runtime?.load5 || 0) + '%',
 		};
 
 		return <div
@@ -196,7 +196,8 @@ export default class Node extends React.Component<Props, {}> {
 				{node.requests_min + '/min'}
 			</div>
 			<div className="bp5-cell" style={css.item}>
-				{MiscUtils.formatDateShortTime(node.timestamp) || 'Inactive'}
+				{MiscUtils.formatDateShortTime(
+					node.runtime?.timestamp) || 'Inactive'}
 			</div>
 			<div className="bp5-cell" style={css.bars}>
 				<div
