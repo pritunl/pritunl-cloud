@@ -19,6 +19,7 @@ import ConfirmButton from './ConfirmButton';
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as PoolTypes from "../types/PoolTypes";
+import * as ShapeTypes from "../types/ShapeTypes";
 
 interface Selected {
 	[key: string]: boolean;
@@ -37,6 +38,7 @@ interface State {
 	zones: ZoneTypes.ZonesRo;
 	nodes: NodeTypes.NodesRo;
 	pools: PoolTypes.PoolsRo;
+	shapes: ShapeTypes.ShapesRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -97,6 +99,7 @@ export default class Disks extends React.Component<{}, State> {
 			zones: CompletionStore.zones,
 			nodes: CompletionStore.nodes,
 			pools: CompletionStore.pools,
+			shapes: CompletionStore.shapes,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -150,6 +153,7 @@ export default class Disks extends React.Component<{}, State> {
 			zones: CompletionStore.zones,
 			nodes: CompletionStore.nodes,
 			pools: CompletionStore.pools,
+			shapes: CompletionStore.shapes,
 			selected: selected,
 			opened: opened,
 		});
@@ -323,7 +327,7 @@ export default class Disks extends React.Component<{}, State> {
 				organizations={this.state.organizations}
 				datacenters={this.state.datacenters}
 				zones={this.state.zones}
-				pools={this.state.pools}
+				shapes={this.state.shapes}
 				onClose={(): void => {
 					this.setState({
 						...this.state,
