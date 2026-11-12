@@ -143,29 +143,29 @@ export default class MetricCharts extends React.Component<Props, State> {
 		let nodeId = this.props.node;
 
 		if (instanceId) {
-			InstanceActions.loadGuest(instanceId).then(
-				(guest: InstanceTypes.Guest): void => {
+			InstanceActions.loadRuntime(instanceId).then(
+				(runtime: InstanceTypes.Runtime): void => {
 					if (instanceId !== this.props.instance) {
 						return;
 					}
 
 					this.setState({
 						...this.state,
-						components: guest || {},
+						components: runtime || {},
 					});
 				},
 				(): void => {},
 			);
 		} else if (nodeId) {
-			NodeActions.loadMetric(nodeId).then(
-				(metric: NodeTypes.Metric): void => {
+			NodeActions.loadRuntime(nodeId).then(
+				(runtime: NodeTypes.Runtime): void => {
 					if (nodeId !== this.props.node) {
 						return;
 					}
 
 					this.setState({
 						...this.state,
-						components: metric || {},
+						components: runtime || {},
 					});
 				},
 				(): void => {},
