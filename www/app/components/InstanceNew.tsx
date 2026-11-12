@@ -9,7 +9,6 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as ImageTypes from '../types/ImageTypes';
-import * as PoolTypes from '../types/PoolTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as ShapeTypes from '../types/ShapeTypes';
 import * as InstanceActions from '../actions/InstanceActions';
@@ -36,7 +35,6 @@ interface Props {
 	vpcs: VpcTypes.VpcsRo;
 	domains: DomainTypes.DomainsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
 	shapes: ShapeTypes.ShapesRo;
 	onClose: () => void;
@@ -215,6 +213,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 			instance.cloud_script = ""
 		}
 
+		if (!instance.disk_shape) {
+			for (let shape of (this.props.shapes || [])) {
+				if (shape.type === 'disk') {
+					instance.disk_shape = shape.id;
+					break;
+				}
+			}
+		}
+
 		instance.node_ports = InstanceTypes.FilterNodePorts(instance.node_ports)
 
 		InstanceActions.create(instance).then((): void => {
@@ -325,8 +332,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let shape = CompletionStore.shape(shapeId);
 		if (shape) {
-			instance.disk_type = shape.disk_type;
-			instance.disk_pool = shape.disk_pool;
 			instance.processors = shape.processors;
 			instance.memory = shape.memory;
 		}
@@ -658,6 +663,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 			shapesSelect.push(<option key="null" value="">Select Shape</option>);
 
 			for (let shape of this.props.shapes) {
+				if (shape.type === 'disk') {
+					continue;
+				}
 				hasShapes = true;
 
 				shapesSelect.push(
@@ -828,28 +836,31 @@ export default class InstanceNew extends React.Component<Props, State> {
 			}
 		}
 
-		let hasPools = false;
-		let poolsSelect: JSX.Element[] = [];
-		if (this.props.pools.length) {
-			poolsSelect.push(<option key="null" value="">Select Pool</option>);
-
-			hasPools = true;
-			for (let pool of this.props.pools) {
-				if (!node || !node.pools || node.pools.indexOf(pool.id) === -1) {
-					continue
-				}
-
-				poolsSelect.push(
-					<option
-						key={pool.id}
-						value={pool.id}
-					>{pool.name}</option>,
-				);
+		let hasDiskShapes = false;
+		let diskShape = instance.disk_shape;
+		let diskShapesSelect: JSX.Element[] = [];
+		for (let shape of (this.props.shapes || [])) {
+			if (shape.type !== 'disk') {
+				continue;
 			}
+			hasDiskShapes = true;
+
+			if (!diskShape) {
+				diskShape = shape.id;
+			}
+
+			diskShapesSelect.push(
+				<option
+					key={shape.id}
+					value={shape.id}
+				>{shape.name}</option>,
+			);
 		}
 
-		if (!hasPools) {
-			poolsSelect = [<option key="null" value="">No Pools</option>];
+		if (!hasDiskShapes) {
+			diskShapesSelect = [
+				<option key="null" value="">No Disk Shapes</option>,
+			];
 		}
 
 		let networkRoles: JSX.Element[] = [];
@@ -1199,28 +1210,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 					</div>
 					<div style={css.group}>
 						<PageSelect
-							disabled={this.state.disabled || !!instance.shape}
-							label="Disk Type"
-							help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
-							value={instance.disk_type}
+							disabled={this.state.disabled || !hasDiskShapes}
+							label="Disk Shape"
+							help="Disk shape for the instance disk. The disk shape selects the storage of the disk, QCOW disk files are stored in the disks path of the shape and LVM disks are created in a disk pool of the shape. The shape must be available on the node of the instance."
+							value={diskShape}
 							onChange={(val): void => {
-								this.set('disk_type', val);
+								this.set('disk_shape', val);
 							}}
 						>
-							<option key="qcow2" value="qcow2">QCOW</option>
-							<option key="lvm" value="lvm">LVM</option>
-						</PageSelect>
-						<PageSelect
-							disabled={this.state.disabled || !hasPools}
-							label="Pool"
-							help="LVM volume group to add disk to."
-							hidden={instance.disk_type !== "lvm"}
-							value={instance.disk_pool}
-							onChange={(val): void => {
-								this.set('disk_pool', val);
-							}}
-						>
-							{poolsSelect}
+							{diskShapesSelect}
 						</PageSelect>
 						<InstanceImages
 							images={this.state.images || []}
