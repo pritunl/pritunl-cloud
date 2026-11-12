@@ -133,13 +133,13 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		let memoryStyle: React.CSSProperties = {
-			width: (instance.guest?.memory || 0) + '%',
+			width: (instance.runtime?.memory || 0) + '%',
 		};
 		let load1Style: React.CSSProperties = {
-			width: (instance.guest?.load1 || 0) + '%',
+			width: (instance.runtime?.load1 || 0) + '%',
 		};
 		let load5Style: React.CSSProperties = {
-			width: (instance.guest?.load5 || 0) + '%',
+			width: (instance.runtime?.load5 || 0) + '%',
 		};
 
 		let statusClass = '';
@@ -191,7 +191,7 @@ export default class Instance extends React.Component<Props, {}> {
 		let diskElm: JSX.Element
 		let diskMount: string
 		let diskMax = 0
-		for (let disk of (instance.guest?.mounts || [])) {
+		for (let disk of (instance.runtime?.mounts || [])) {
 			if ((disk.used || 0) > diskMax) {
 				diskMount = disk.mount
 				diskMax = disk.used
