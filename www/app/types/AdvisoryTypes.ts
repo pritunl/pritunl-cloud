@@ -75,7 +75,6 @@ export interface NodeInfo {
 	name?: string;
 	state?: string;
 	dismissed?: boolean;
-	timestamp?: string;
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: string[];
