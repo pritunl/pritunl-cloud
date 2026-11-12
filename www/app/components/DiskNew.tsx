@@ -7,7 +7,7 @@ import * as NodeTypes from '../types/NodeTypes';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as ImageTypes from '../types/ImageTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
-import * as PoolTypes from '../types/PoolTypes';
+import * as ShapeTypes from '../types/ShapeTypes';
 import * as DiskActions from '../actions/DiskActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as InstanceActions from '../actions/InstanceActions';
@@ -26,9 +26,21 @@ import Help from './Help';
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
+	shapes: ShapeTypes.ShapesRo;
 	onClose: () => void;
+}
+
+function shapeMatchRoles(shape: ShapeTypes.ShapeRo,
+	node: NodeTypes.Node): boolean {
+
+	let roles = node.roles || [];
+	for (let role of (shape.roles || [])) {
+		if (roles.indexOf(role) !== -1) {
+			return true;
+		}
+	}
+	return false;
 }
 
 interface State {
@@ -188,6 +200,18 @@ export default class DiskNew extends React.Component<Props, State> {
 			disk.organization = this.props.organizations[0].id;
 		}
 
+		if (!disk.shape) {
+			for (let shape of (this.props.shapes || [])) {
+				if (shape.type === 'disk') {
+					disk.shape = shape.id;
+					break;
+				}
+			}
+		}
+
+		disk.datacenter = this.state.datacenter;
+		disk.zone = this.state.zone;
+
 		DiskActions.create(disk).then((): void => {
 			this.setState({
 				...this.state,
@@ -211,8 +235,50 @@ export default class DiskNew extends React.Component<Props, State> {
 		});
 	}
 
+	selectedShape(): ShapeTypes.ShapeRo {
+		let shapeId = this.state.disk.shape;
+		let first: ShapeTypes.ShapeRo = null;
+
+		for (let shape of (this.props.shapes || [])) {
+			if (shape.type !== 'disk') {
+				continue;
+			}
+			if (!first) {
+				first = shape;
+			}
+			if (shape.id === shapeId) {
+				return shape;
+			}
+		}
+
+		return first;
+	}
+
 	render(): JSX.Element {
 		let disk = this.state.disk;
+
+		let shape = this.selectedShape();
+		let shapeLvm = !!shape && shape.disk_type === 'lvm';
+
+		let hasShapes = false;
+		let shapesSelect: JSX.Element[] = [];
+		for (let shp of (this.props.shapes || [])) {
+			if (shp.type !== 'disk') {
+				continue;
+			}
+			hasShapes = true;
+
+			shapesSelect.push(
+				<option
+					key={shp.id}
+					value={shp.id}
+				>{shp.name}</option>,
+			);
+		}
+
+		if (!hasShapes) {
+			shapesSelect = [<option key="null" value="">No Disk Shapes</option>];
+		}
 
 		let organizationsSelect: JSX.Element[] = [];
 		if (this.props.organizations.length) {
@@ -278,8 +344,12 @@ export default class DiskNew extends React.Component<Props, State> {
 		if (this.state.nodes.length) {
 			nodesSelect.push(<option key="null" value="">Select Node</option>);
 
-			hasNodes = true;
 			for (let node of this.state.nodes) {
+				if (shape && !shapeMatchRoles(shape, node)) {
+					continue;
+				}
+				hasNodes = true;
+
 				nodesSelect.push(
 					<option
 						key={node.id}
@@ -291,30 +361,6 @@ export default class DiskNew extends React.Component<Props, State> {
 
 		if (!hasNodes) {
 			nodesSelect = [<option key="null" value="">No Nodes</option>];
-		}
-
-		let hasPools = false;
-		let poolsSelect: JSX.Element[] = [];
-		if (this.props.pools.length) {
-			poolsSelect.push(<option key="null" value="">Select Pool</option>);
-
-			for (let pool of this.props.pools) {
-				if (pool.zone !== this.state.zone) {
-					continue
-				}
-
-				hasPools = true;
-				poolsSelect.push(
-					<option
-						key={pool.id}
-						value={pool.id}
-					>{pool.name}</option>,
-				);
-			}
-		}
-
-		if (!hasPools) {
-			poolsSelect = [<option key="null" value="">No Pools</option>];
 		}
 
 		let hasInstances = false;
@@ -410,16 +456,24 @@ export default class DiskNew extends React.Component<Props, State> {
 							}}
 						/>
 						<PageSelect
-							disabled={this.state.disabled}
-							label="Type"
-							help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
-							value={disk.type}
+							disabled={this.state.disabled || !hasShapes}
+							label="Shape"
+							help="Disk shape of the disk. The disk shape selects the storage of the disk, QCOW disk files are stored in the disks path of the shape on the selected node and LVM disks are created in a disk pool of the shape in the selected zone."
+							value={shape ? shape.id : ''}
 							onChange={(val): void => {
-								this.set('type', val);
+								this.setState({
+									...this.state,
+									changed: true,
+									disk: {
+										...this.state.disk,
+										shape: val,
+										node: '',
+										instance: '',
+									},
+								});
 							}}
 						>
-							<option key="qcow2" value="qcow2">QCOW</option>
-							<option key="lvm" value="lvm">LVM</option>
+							{shapesSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
@@ -476,8 +530,8 @@ export default class DiskNew extends React.Component<Props, State> {
 						<PageSelect
 							disabled={this.state.disabled || !hasNodes}
 							label="Node"
-							help="Node to run disk on."
-							hidden={disk.type === "lvm"}
+							help="Node to store disk on, only nodes with a role of the disk shape are listed."
+							hidden={shapeLvm}
 							value={disk.node}
 							onChange={(val): void => {
 								this.setState({
@@ -492,18 +546,6 @@ export default class DiskNew extends React.Component<Props, State> {
 							}}
 						>
 							{nodesSelect}
-						</PageSelect>
-						<PageSelect
-							disabled={this.state.disabled || !hasPools}
-							label="Pool"
-							help="LVM volume group to add disk to."
-							hidden={disk.type !== "lvm"}
-							value={disk.pool}
-							onChange={(val): void => {
-								this.set('pool', val);
-							}}
-						>
-							{poolsSelect}
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
