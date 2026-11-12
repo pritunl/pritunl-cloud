@@ -79,6 +79,9 @@ const css = {
 	save: {
 		marginBottom: '10px',
 	} as React.CSSProperties,
+	restore: {
+		marginLeft: '10px',
+	} as React.CSSProperties,
 	label: {
 		width: '100%',
 		maxWidth: '280px',
@@ -276,6 +279,84 @@ export default class PodDetailed extends React.Component<Props, State> {
 		})
 	}
 
+	onEdit = (units: PodTypes.Unit[]): void => {
+		let pod: any;
+
+		if (this.state.changed) {
+			pod = {
+				...this.state.pod,
+			};
+		} else {
+			pod = {
+				...this.props.pod,
+			};
+		}
+
+		pod.units = units
+
+		let newMode = "view"
+		for (let unit of units) {
+			if (!unit.delete) {
+				newMode = "edit"
+			}
+		}
+
+		this.setState({
+			...this.state,
+			changed: true,
+			unitChanged: true,
+			pod: pod,
+		});
+		this.props.onMode(newMode)
+
+		if (this.draftsSyncTimeout) {
+			clearTimeout(this.draftsSyncTimeout)
+		}
+
+		PodsStore.setDrafts(pod.id, units)
+		this.draftsSyncTimeout = setTimeout(() => {
+			if (pod.id != this.props.pod?.id) {
+				return
+			}
+
+			PodActions.commitDrafts({
+				...this.props.pod,
+				drafts: units,
+			})
+			this.draftsSyncTimeout = null
+		}, 500)
+	}
+
+	onRestoreUnits = (): void => {
+		let units: PodTypes.Unit[]
+		if (this.state.pod) {
+			units = this.state.pod.units
+		} else if (this.props.pod.drafts?.length) {
+			units = this.props.pod.drafts
+		} else {
+			units = this.props.pod.units
+		}
+
+		let origUnits = this.props.pod.units || []
+		let restored: PodTypes.Unit[] = []
+		for (let unit of (units || [])) {
+			if (!unit.delete) {
+				restored.push(unit)
+				continue
+			}
+
+			let origUnit = origUnits.find(
+				origUnit => origUnit.id === unit.id)
+			if (origUnit) {
+				restored.push({
+					...origUnit,
+				})
+			}
+		}
+
+		this.onEdit(restored)
+	}
+
 	onDelete = (): void => {
 		this.setState({
 			...this.state,
@@ -335,6 +416,15 @@ export default class PodDetailed extends React.Component<Props, State> {
 		if (pod.organization) {
 			let org = CompletionStore.organization(pod.organization);
 			orgName = org ? org.name : pod.organization;
+		}
+
+		let hasDeleted = false
+		for (let unit of (pod.units || [])) {
+			if (unit.delete && (podOrig.units || []).find(
+					origUnit => origUnit.id === unit.id)) {
+				hasDeleted = true
+				break
+			}
 		}
 
 		return <div
@@ -450,53 +540,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 					this.props.onMode(mode)
 				}}
 				onChangeCommit={this.onChangeCommit}
-				onEdit={(units: PodTypes.Unit[]): void => {
-					let pod: any;
-
-					if (this.state.changed) {
-						pod = {
-							...this.state.pod,
-						};
-					} else {
-						pod = {
-							...this.props.pod,
-						};
-					}
-
-					pod.units = units
-
-					let newMode = "view"
-					for (let unit of units) {
-						if (!unit.delete) {
-							newMode = "edit"
-						}
-					}
-
-					this.setState({
-						...this.state,
-						changed: true,
-						unitChanged: true,
-						pod: pod,
-					});
-					this.props.onMode(newMode)
-
-					if (this.draftsSyncTimeout) {
-						clearTimeout(this.draftsSyncTimeout)
-					}
-
-					PodsStore.setDrafts(pod.id, units)
-					this.draftsSyncTimeout = setTimeout(() => {
-						if (pod.id != this.props.pod?.id) {
-							return
-						}
-
-						PodActions.commitDrafts({
-							...this.props.pod,
-							drafts: units,
-						})
-						this.draftsSyncTimeout = null
-					}, 500)
-				}}
+				onEdit={this.onEdit}
 			/>
 			<PageSave
 				style={css.save}
@@ -507,6 +551,16 @@ export default class PodDetailed extends React.Component<Props, State> {
 				light={true}
 				cancelConfirm={true}
 				cancelConfirmMsg="Clear unsaved pod changes?"
+				buttons={<button
+					className="bp5-button bp5-icon-undo"
+					style={css.restore}
+					hidden={!hasDeleted}
+					type="button"
+					disabled={this.state.disabled}
+					onClick={this.onRestoreUnits}
+				>
+					Restore Deleted Units
+				</button>}
 				onCancel={(): void => {
 					PodsStore.setDrafts(this.props.pod.id, [])
 					PodActions.commitDrafts({
