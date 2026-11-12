@@ -2326,6 +2326,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								<li>Virtio = --display=virtio-vga</li>
 								<li>Virtio GPU PCI = --display=virtio-gpu-pci</li>
 								<li>Virtio VGA OpenGL = --display=virtio-vga-gl</li>
+								<li>Virtio VGA Vulkan = --display=virtio-vga-gl,venus=true</li>
 								<li>Virtio GPU OpenGL = --display=virtio-gpu-gl</li>
 								<li>Virtio GPU Vulkan = --display=virtio-gpu-gl,venus=true</li>
 								<li>Virtio GPU PCI OpenGL = --display=virtio-gpu-gl-pci</li>
