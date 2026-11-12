@@ -1847,10 +1847,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		]
 
-		if (this.props.instance.guest) {
+		if (this.props.instance.runtime) {
 			instanceFields.push({
 				label: 'Agent Heartbeat',
-				value: MiscUtils.formatDateLocal(this.props.instance.guest.heartbeat),
+				value: MiscUtils.formatDateLocal(this.props.instance.runtime.heartbeat),
 			})
 		}
 
@@ -1993,39 +1993,39 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			})
 		}
 
-		if (this.props.instance.guest) {
+		if (this.props.instance.runtime) {
 			resourceBars.push({
 				progressClass: 'bp5-no-stripes bp5-intent-success',
 				label: 'Load1',
-				value: this.props.instance.guest.load1 || 0,
+				value: this.props.instance.runtime.load1 || 0,
 			})
 			resourceBars.push({
 				progressClass: 'bp5-no-stripes bp5-intent-warning',
 				label: 'Load5',
-				value: this.props.instance.guest.load5 || 0,
+				value: this.props.instance.runtime.load5 || 0,
 			})
 			resourceBars.push({
 				progressClass: 'bp5-no-stripes bp5-intent-danger',
 				label: 'Load15',
-				value: this.props.instance.guest.load15 || 0,
+				value: this.props.instance.runtime.load15 || 0,
 			})
 			resourceBars.push({
 				progressClass: 'bp5-no-stripes bp5-intent-primary',
 				label: 'Memory',
-				value: this.props.instance.guest.memory || 0,
+				value: this.props.instance.runtime.memory || 0,
 			})
 
-			if (this.props.instance.guest.hugepages) {
+			if (this.props.instance.runtime.hugepages) {
 				resourceBars.push({
 					progressClass: 'bp5-no-stripes bp5-intent-primary',
 					label: 'HugePages',
-					value: this.props.instance.guest.hugepages || 0,
+					value: this.props.instance.runtime.hugepages || 0,
 					color: '#7207d4',
 				});
 			}
 
 			if (this.state.showSettings) {
-				for (let disk of (this.props.instance.guest.mounts || [])) {
+				for (let disk of (this.props.instance.runtime.mounts || [])) {
 					let size = disk.size || 0;
 					let used = disk.used || 0;
 					let usedBytes = Math.round(size * used / 100);
