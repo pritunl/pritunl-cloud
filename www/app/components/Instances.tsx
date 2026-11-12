@@ -375,7 +375,6 @@ export default class Instances extends React.Component<Props, State> {
 				vpcs={this.state.vpcs}
 				domains={this.state.domains}
 				datacenters={this.state.datacenters}
-				pools={this.state.pools}
 				zones={this.state.zones}
 				shapes={this.state.shapes}
 				onClose={(): void => {
