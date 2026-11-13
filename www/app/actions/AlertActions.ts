@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from '../Constants';
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
@@ -10,12 +11,13 @@ import * as AlertTypes from '../types/AlertTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import CompletionStore from "../stores/CompletionStore";
 
-let syncId: string;
+let syncQueue = new MiscUtils.SyncQueue(syncRequest);
 
 export function sync(): Promise<void> {
-	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	return syncQueue.sync();
+}
 
+function syncRequest(): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -29,16 +31,12 @@ export function sync(): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
-					resolve();
-					return;
-				}
-
-				if (curSyncId !== syncId) {
 					resolve();
 					return;
 				}
@@ -94,6 +92,7 @@ export function commit(alert: AlertTypes.Alert): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -124,6 +123,7 @@ export function create(alert: AlertTypes.Alert): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -153,6 +153,7 @@ export function remove(alertId: string): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -177,6 +178,7 @@ export function removeMulti(alertIds: string[]): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
