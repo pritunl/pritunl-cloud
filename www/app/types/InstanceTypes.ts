@@ -81,7 +81,7 @@ export interface Instance {
 	subnet?: string;
 	cloud_subnet?: string;
 	count?: number;
-	guest?: Guest;
+	runtime?: Runtime;
 	info?: Info;
 }
 
@@ -158,7 +158,8 @@ export interface NodePort {
 	delete?: boolean;
 }
 
-export interface Guest {
+export interface Runtime {
+	status?: string;
 	timestamp?: string;
 	heartbeat?: string;
 	memory?: number;
