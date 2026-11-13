@@ -10,8 +10,11 @@ export interface Disk {
 	comment?: string;
 	type?: string;
 	uuid?: string;
+	datacenter?: string;
+	zone?: string;
 	node?: string;
 	pool?: string;
+	shape?: string;
 	organization?: string;
 	state?: string;
 	action?: string;
