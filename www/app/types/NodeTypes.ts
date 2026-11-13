@@ -88,10 +88,11 @@ export interface Node {
 	oracle_user?: string;
 	oracle_tenancy?: string;
 	oracle_public_key?: string;
-	metric?: Metric;
+	runtime?: Runtime;
 }
 
-export interface Metric {
+export interface Runtime {
+	timestamp?: string;
 	memory?: number;
 	swap?: number;
 	hugepages?: number;
