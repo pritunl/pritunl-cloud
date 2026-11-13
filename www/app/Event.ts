@@ -1,5 +1,6 @@
 /// <reference path="./References.d.ts"/>
 import EventDispatcher from './dispatcher/EventDispatcher';
+import * as Constants from './Constants';
 import * as Csrf from './Csrf';
 
 let connected = false;
@@ -19,7 +20,16 @@ function connect(): void {
 
 	let socket = new WebSocket(url);
 
+	let connectTimer = window.setTimeout(() => {
+		socket.close();
+	}, Constants.eventConnectTimeout);
+
+	socket.addEventListener('open', () => {
+		clearTimeout(connectTimer);
+	});
+
 	socket.addEventListener('close', () => {
+		clearTimeout(connectTimer);
 		setTimeout(() => {
 			connect();
 		}, 500);
