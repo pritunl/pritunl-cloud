@@ -17,8 +17,7 @@ export interface Instance {
 	node?: string;
 	shape?: string;
 	image?: string;
-	disk_type?: string;
-	disk_pool?: string;
+	disk_shape?: string;
 	status?: string;
 	status_info?: StatusInfo;
 	uptime?: string;
