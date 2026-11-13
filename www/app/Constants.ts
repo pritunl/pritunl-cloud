@@ -10,6 +10,10 @@ export const mobileOs = md.os();
 
 export const loadDelay = 700;
 
+export const requestTimeout = 60000;
+export const requestTimeoutLong = 300000;
+export const eventConnectTimeout = 10000;
+
 export const u2fErrorCodes: {[index: number]: string} = {
 	0: 'ok',
 	1: 'other',
