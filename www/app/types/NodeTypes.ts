@@ -29,7 +29,6 @@ export interface Node {
 	gui?: boolean;
 	gui_user?: string;
 	gui_mode?: string;
-	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
 	webauthn_domain?: string;
