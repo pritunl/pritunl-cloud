@@ -31,6 +31,7 @@ export function load(userId: string): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
