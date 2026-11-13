@@ -13,7 +13,8 @@ export interface Shape {
 	roles?: string[];
 	flexible?: boolean;
 	disk_type?: string;
-	disk_pool?: string;
+	disks_path?: string;
+	disk_pools?: string[];
 	memory?: number;
 	processors?: number;
 	node_count?: number;
