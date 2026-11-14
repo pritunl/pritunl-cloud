@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="fedora45"
-ISO_URL="https://download.fedoraproject.org/pub/fedora/linux/releases/test/45_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-45_Beta-1.3.iso"
-ISO_HASH="ca6f37258d3ccc35845cdd4eaa25f36b3f22e460fa06b4b66336fd8ed7c39cca"
+ISO_URL="https://cofractal-sea.mm.fcix.net/fedora/linux/releases/45/Server/x86_64/iso/Fedora-Server-dvd-x86_64-45-1.4.iso"
+ISO_HASH="fcc0f623708ddbd7656df152510ba018bad618bfc99879e73809255fb11a48ff"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
