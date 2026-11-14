@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add disk shapes
+
 Version 2.2.3968.76 2026-10-05
 ------------------------------
 
