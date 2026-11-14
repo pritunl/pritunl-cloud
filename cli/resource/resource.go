@@ -109,6 +109,10 @@ type Action struct {
 	// Key is the single key that triggers the action.
 	Key string
 
+	// Hotkey is an optional key such as ctrl+s that also triggers the
+	// action for the selected card of the list without expanding it.
+	Hotkey string
+
 	// Label is the button and confirm dialog label.
 	Label string
 

@@ -567,6 +567,34 @@ func actionByKey(item Item, keyMsg tea.KeyPressMsg) (Action, bool) {
 	return Action{}, false
 }
 
+// actionByHotkey returns the action of the item bound to the hotkey.
+func actionByHotkey(item Item, keyMsg tea.KeyPressMsg) (Action, bool) {
+	if item == nil {
+		return Action{}, false
+	}
+	hotkey := keyMsg.String()
+	for _, action := range item.Actions() {
+		if action.Hotkey != "" && action.Hotkey == hotkey {
+			return action, true
+		}
+	}
+	return Action{}, false
+}
+
+// hotkeyLabel is the menu bar form of a hotkey, ^s for ctrl+s.
+func hotkeyLabel(hotkey string) string {
+	return strings.Replace(hotkey, "ctrl+", "^", 1)
+}
+
+// unsaved returns true while the settings form has changes to save, the
+// save key then belongs to the form.
+func (l *List) unsaved() bool {
+	if l.creating || l.saving {
+		return true
+	}
+	return l.editor != nil && l.editor.Form().Changed()
+}
+
 func (l *List) updateActionDone(msg actionDoneMsg) tea.Cmd {
 	if msg.provider != l.provider {
 		return nil

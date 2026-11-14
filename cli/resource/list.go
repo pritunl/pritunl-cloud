@@ -375,6 +375,17 @@ func (l *List) Menu() []widget.MenuItem {
 	menu := []widget.MenuItem{
 		{Title: "Expand", Key: "enter"},
 	}
+	if item := l.selected(); item != nil {
+		for _, action := range item.Actions() {
+			if action.Hotkey == "" {
+				continue
+			}
+			menu = append(menu, widget.MenuItem{
+				Title: action.Label,
+				Key:   hotkeyLabel(action.Hotkey),
+			})
+		}
+	}
 	if _, ok := l.creator(); ok {
 		menu = append(menu, widget.MenuItem{Title: "New", Key: "n"})
 	}
@@ -476,6 +487,12 @@ func (l *List) Update(msg tea.Msg) (view.View, tea.Cmd) {
 			return l, l.updateDetailKey(msg)
 		}
 
+		item := l.selected()
+		action, ok := actionByHotkey(item, msg)
+		if ok {
+			return l, l.confirmAction(item, action)
+		}
+
 		switch {
 		case key.Matches(msg, keys.Up):
 			return l, l.moveCursor(-1)
@@ -563,6 +580,16 @@ func (l *List) updateDetailKey(msg tea.KeyPressMsg) tea.Cmd {
 		return nil
 	}
 
+	item := l.selected()
+
+	// The save key runs the hotkey action when there is nothing to save
+	if !l.unsaved() {
+		action, ok := actionByHotkey(item, msg)
+		if ok {
+			return l.confirmAction(item, action)
+		}
+	}
+
 	switch {
 	case key.Matches(msg, keys.Collapse), key.Matches(msg, keys.Expand):
 		l.collapse()
@@ -599,7 +626,6 @@ func (l *List) updateDetailKey(msg tea.KeyPressMsg) tea.Cmd {
 		return l.load()
 	}
 
-	item := l.selected()
 	action, ok := actionByKey(item, msg)
 	if ok {
 		return l.confirmAction(item, action)
