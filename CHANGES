@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add disk shapes
+Add change streams support
 
 Version 2.2.3968.76 2026-10-05
 ------------------------------
