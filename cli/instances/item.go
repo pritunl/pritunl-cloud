@@ -18,6 +18,10 @@ import (
 
 const (
 	timeFormat = "2006-01-02 15:04:05"
+
+	// powerHotkey starts a stopped instance and stops a running instance
+	// from the list.
+	powerHotkey = "ctrl+s"
 )
 
 // Item is an instance card with the referenced names resolved.
@@ -317,7 +321,7 @@ func deleteInstance(instId bson.ObjectID) func(db *database.Database) error {
 
 // Actions mirrors the power and delete buttons of the detailed instance
 // view, start is shown for stopped instances, stop and restart for
-// running.
+// running. Start and stop share the power hotkey as only one is valid.
 func (i *Item) Actions() []resource.Action {
 	inst := i.inst
 	actions := []resource.Action{}
@@ -325,6 +329,7 @@ func (i *Item) Actions() []resource.Action {
 	if inst.Action == instance.Stop {
 		actions = append(actions, resource.Action{
 			Key:     "s",
+			Hotkey:  powerHotkey,
 			Label:   "Start",
 			Status:  "Starting",
 			Confirm: fmt.Sprintf("Start the instance %s?", inst.Name),
@@ -335,6 +340,7 @@ func (i *Item) Actions() []resource.Action {
 	if inst.Action == instance.Start || inst.Action == instance.Restart {
 		actions = append(actions, resource.Action{
 			Key:     "x",
+			Hotkey:  powerHotkey,
 			Label:   "Stop",
 			Status:  "Stopping",
 			Danger:  true,
