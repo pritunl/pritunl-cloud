@@ -58,7 +58,6 @@ var commitFields = []string{
 	"advertise_address",
 	"jumbo_frames",
 	"jumbo_frames_internal",
-	"iscsi",
 	"usb_passthrough",
 	"pci_passthrough",
 	"hugepages",
@@ -152,7 +151,6 @@ type editor struct {
 	publicIp6    *form.Toggle
 	jumboExt     *form.Toggle
 	jumboInt     *form.Toggle
-	iscsi        *form.Toggle
 	pci          *form.Toggle
 	advertise    *form.Text
 	usb          *form.Toggle
@@ -419,7 +417,6 @@ func newEditor(nde *node.Node, nms *names) *editor {
 	e.jumboExt = form.NewToggle("Jumbo frames external", nde.JumboFrames)
 	e.jumboInt = form.NewToggle("Jumbo frames internal",
 		nde.JumboFramesInternal)
-	e.iscsi = form.NewToggle("Instance iSCSI support", nde.Iscsi)
 	e.pci = form.NewToggle("PCI Passthrough", nde.PciPassthrough)
 	e.advertise = form.NewText("Advertise Address",
 		"Enter advertise address", nde.AdvertiseAddress)
@@ -510,7 +507,6 @@ func newEditor(nde *node.Node, nms *names) *editor {
 		e.publicIp6,
 		e.jumboExt,
 		e.jumboInt,
-		e.iscsi,
 		e.pci,
 		e.advertise,
 		e.usb,
@@ -653,7 +649,6 @@ func (e *editor) Save(db *database.Database) (err error) {
 	nde.AdvertiseAddress = e.advertise.Value()
 	nde.JumboFrames = e.jumboExt.Value()
 	nde.JumboFramesInternal = e.jumboInt.Value()
-	nde.Iscsi = e.iscsi.Value()
 	nde.UsbPassthrough = e.usb.Value()
 	nde.PciPassthrough = e.pci.Value()
 	nde.Hugepages = e.hugepages.Value()

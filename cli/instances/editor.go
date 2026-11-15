@@ -47,7 +47,6 @@ var commitFields = set.NewSet(
 	"usb_devices",
 	"pci_devices",
 	"drive_devices",
-	"iscsi_devices",
 	"mounts",
 	"root_enabled",
 	"root_passwd",
