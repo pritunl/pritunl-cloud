@@ -21,7 +21,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
-	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/nodeport"
@@ -65,7 +64,6 @@ type instanceData struct {
 	UsbDevices          []*usb.Device       `json:"usb_devices"`
 	PciDevices          []*pci.Device       `json:"pci_devices"`
 	DriveDevices        []*drive.Device     `json:"drive_devices"`
-	IscsiDevices        []*iscsi.Device     `json:"iscsi_devices"`
 	Mounts              []*instance.Mount   `json:"mounts"`
 	Vnc                 bool                `json:"vnc"`
 	Spice               bool                `json:"spice"`
@@ -158,7 +156,6 @@ func instancePut(c *gin.Context) {
 	inst.UsbDevices = dta.UsbDevices
 	inst.PciDevices = dta.PciDevices
 	inst.DriveDevices = dta.DriveDevices
-	inst.IscsiDevices = dta.IscsiDevices
 	inst.Mounts = dta.Mounts
 	inst.RootEnabled = dta.RootEnabled
 	inst.Vnc = dta.Vnc
@@ -199,7 +196,6 @@ func instancePut(c *gin.Context) {
 		"usb_devices",
 		"pci_devices",
 		"drive_devices",
-		"iscsi_devices",
 		"mounts",
 		"root_enabled",
 		"root_passwd",
@@ -421,7 +417,6 @@ func instancePost(c *gin.Context) {
 			UsbDevices:          dta.UsbDevices,
 			PciDevices:          dta.PciDevices,
 			DriveDevices:        dta.DriveDevices,
-			IscsiDevices:        dta.IscsiDevices,
 			Mounts:              dta.Mounts,
 			RootEnabled:         dta.RootEnabled,
 			Vnc:                 dta.Vnc,
