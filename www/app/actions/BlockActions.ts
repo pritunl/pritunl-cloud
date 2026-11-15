@@ -10,12 +10,13 @@ import BlocksStore from '../stores/BlocksStore';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Constants from "../Constants";
 
-let syncId: string;
+let syncQueue = new MiscUtils.SyncQueue(syncRequest);
 
 export function sync(): Promise<void> {
-	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	return syncQueue.sync();
+}
 
+function syncRequest(): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -28,16 +29,12 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
-					resolve();
-					return;
-				}
-
-				if (curSyncId !== syncId) {
 					resolve();
 					return;
 				}
@@ -92,6 +89,7 @@ export function commit(block: BlockTypes.Block): Promise<void> {
 			.send(block)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -121,6 +119,7 @@ export function create(block: BlockTypes.Block): Promise<void> {
 			.send(block)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -149,6 +148,7 @@ export function remove(blockId: string): Promise<void> {
 			.delete('/block/' + blockId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -178,6 +178,7 @@ export function removeMulti(blockIds: string[]): Promise<void> {
 			.send(blockIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
