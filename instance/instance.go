@@ -21,7 +21,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/metric"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -114,7 +113,6 @@ type Instance struct {
 	UsbDevices          []*usb.Device       `bson:"usb_devices,omitempty" json:"usb_devices"`
 	PciDevices          []*pci.Device       `bson:"pci_devices,omitempty" json:"pci_devices"`
 	DriveDevices        []*drive.Device     `bson:"drive_devices,omitempty" json:"drive_devices"`
-	IscsiDevices        []*iscsi.Device     `bson:"iscsi_devices,omitempty" json:"iscsi_devices"`
 	Mounts              []*Mount            `bson:"mounts,omitempty" json:"mounts"`
 	Vnc                 bool                `bson:"vnc" json:"vnc"`
 	VncPassword         string              `bson:"vnc_password" json:"vnc_password"`
@@ -568,23 +566,6 @@ func (i *Instance) Validate(db *database.Database) (
 		i.DriveDevices = devices
 	}
 
-	iscsiDevices := []*iscsi.Device{}
-	if i.IscsiDevices != nil {
-		for _, device := range i.IscsiDevices {
-			if device.Uri == "" {
-				continue
-			}
-
-			errData, err = device.Parse()
-			if err != nil || errData != nil {
-				return
-			}
-
-			iscsiDevices = append(iscsiDevices, device)
-		}
-	}
-	i.IscsiDevices = iscsiDevices
-
 	newMounts := []*Mount{}
 	for _, mount := range i.Mounts {
 		if mount.Name == "" && mount.HostPath == "" {
@@ -859,12 +840,6 @@ func (i *Instance) Json(short bool) {
 			i.Uptime = systemd.FormatUptimeShort(i.Timestamp)
 		} else {
 			i.Uptime = systemd.FormatUptime(i.Timestamp)
-		}
-	}
-
-	if i.IscsiDevices != nil {
-		for _, device := range i.IscsiDevices {
-			device.Json()
 		}
 	}
 }
@@ -1263,7 +1238,6 @@ func (i *Instance) LoadVirt(poolsMap map[bson.ObjectID]*pool.Pool,
 		UsbDevices:       []*vm.UsbDevice{},
 		PciDevices:       []*vm.PciDevice{},
 		DriveDevices:     []*vm.DriveDevice{},
-		IscsiDevices:     []*vm.IscsiDevice{},
 		Mounts:           []*vm.Mount{},
 	}
 
@@ -1357,17 +1331,6 @@ func (i *Instance) LoadVirt(poolsMap map[bson.ObjectID]*pool.Pool,
 					},
 				)
 			}
-		}
-	}
-
-	if node.Self.Iscsi && i.IscsiDevices != nil {
-		for _, device := range i.IscsiDevices {
-			i.Virt.IscsiDevices = append(
-				i.Virt.IscsiDevices,
-				&vm.IscsiDevice{
-					Uri: device.QemuUri(),
-				},
-			)
 		}
 	}
 
@@ -1517,22 +1480,6 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) (bool, string) {
 
 			if device.Id != curVirt.DriveDevices[i].Id {
 				return true, "Drive device changed"
-			}
-		}
-	}
-
-	if i.Virt.IscsiDevices != nil {
-		if len(i.Virt.IscsiDevices) > 0 && curVirt.IscsiDevices == nil {
-			return true, "iSCSI devices changed"
-		}
-
-		for i, device := range i.Virt.IscsiDevices {
-			if len(curVirt.IscsiDevices) <= i {
-				return true, "iSCSI devices changed"
-			}
-
-			if device.Uri != curVirt.IscsiDevices[i].Uri {
-				return true, "iSCSI URI changed"
 			}
 		}
 	}
