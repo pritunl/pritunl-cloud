@@ -32,7 +32,6 @@ type Info struct {
 	Node          string              `bson:"node" json:"node"`
 	NodePublicIp  string              `bson:"node_public_ip" json:"node_public_ip"`
 	Mtu           int                 `bson:"mtu" json:"mtu"`
-	Iscsi         bool                `bson:"iscsi" json:"iscsi"`
 	Disks         []string            `bson:"disks" json:"disks"`
 	FirewallRules map[string]string   `bson:"firewall_rules" json:"firewall_rules"`
 	Authorities   []string            `bson:"authorities" json:"authorities"`
