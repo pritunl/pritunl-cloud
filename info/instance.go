@@ -30,7 +30,6 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 	if len(nde.PublicIps) > 0 {
 		inf.NodePublicIp = nde.PublicIps[0]
 	}
-	inf.Iscsi = nde.Iscsi
 	inf.Isos = nde.LocalIsos
 	inf.CloudSubnets = nde.GetCloudSubnetsName()
 	if nde.UsbPassthrough {
