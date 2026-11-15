@@ -68,10 +68,6 @@ type Mount struct {
 	Sock string
 }
 
-type IscsiDevice struct {
-	Uri string
-}
-
 type Qemu struct {
 	Id           bson.ObjectID
 	Data         string
@@ -107,7 +103,6 @@ type Qemu struct {
 	UsbDevices   []*UsbDevice
 	PciDevices   []*PciDevice
 	DriveDevices []*DriveDevice
-	IscsiDevices []*IscsiDevice
 	Mounts       []*Mount
 }
 
