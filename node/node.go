@@ -98,7 +98,6 @@ type Node struct {
 	DefaultNoPublicAddress6 bool               `bson:"default_no_public_address6" json:"default_no_public_address6"`
 	JumboFrames             bool               `bson:"jumbo_frames" json:"jumbo_frames"`
 	JumboFramesInternal     bool               `bson:"jumbo_frames_internal" json:"jumbo_frames_internal"`
-	Iscsi                   bool               `bson:"iscsi" json:"iscsi"`
 	LocalIsos               []*iso.Iso         `bson:"local_isos" json:"local_isos"`
 	UsbPassthrough          bool               `bson:"usb_passthrough" json:"usb_passthrough"`
 	UsbDevices              []*usb.Device      `bson:"usb_devices" json:"usb_devices"`
@@ -244,7 +243,6 @@ func (n *Node) Copy() *Node {
 		DefaultNoPublicAddress6: n.DefaultNoPublicAddress6,
 		JumboFrames:             n.JumboFrames,
 		JumboFramesInternal:     n.JumboFramesInternal,
-		Iscsi:                   n.Iscsi,
 		LocalIsos:               n.LocalIsos,
 		UsbPassthrough:          n.UsbPassthrough,
 		UsbDevices:              n.UsbDevices,
@@ -1447,7 +1445,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.DefaultNoPublicAddress6 = nde.DefaultNoPublicAddress6
 	n.JumboFrames = nde.JumboFrames
 	n.JumboFramesInternal = nde.JumboFramesInternal
-	n.Iscsi = nde.Iscsi
 	n.UsbPassthrough = nde.UsbPassthrough
 	n.PciPassthrough = nde.PciPassthrough
 	n.Hugepages = nde.Hugepages
