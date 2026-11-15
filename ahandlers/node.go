@@ -66,7 +66,6 @@ type nodeData struct {
 	AdvertiseAddress        string                  `json:"advertise_address"`
 	JumboFrames             bool                    `json:"jumbo_frames"`
 	JumboFramesInternal     bool                    `json:"jumbo_frames_internal"`
-	Iscsi                   bool                    `json:"iscsi"`
 	UsbPassthrough          bool                    `json:"usb_passthrough"`
 	PciPassthrough          bool                    `json:"pci_passthrough"`
 	Hugepages               bool                    `json:"hugepages"`
@@ -179,7 +178,6 @@ func nodePut(c *gin.Context) {
 	nde.AdvertiseAddress = data.AdvertiseAddress
 	nde.JumboFrames = data.JumboFrames
 	nde.JumboFramesInternal = data.JumboFramesInternal
-	nde.Iscsi = data.Iscsi
 	nde.UsbPassthrough = data.UsbPassthrough
 	nde.PciPassthrough = data.PciPassthrough
 	nde.Hugepages = data.Hugepages
@@ -228,7 +226,6 @@ func nodePut(c *gin.Context) {
 		"advertise_address",
 		"jumbo_frames",
 		"jumbo_frames_internal",
-		"iscsi",
 		"usb_passthrough",
 		"pci_passthrough",
 		"hugepages",
