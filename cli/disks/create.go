@@ -101,7 +101,7 @@ func loadCreateData(db *database.Database) (dta *createData, err error) {
 		return
 	}
 
-	dta.nodes, err = node.GetAllHypervisors(db, &bson.M{})
+	dta.nodes, err = resource.Hypervisors(db)
 	if err != nil {
 		return
 	}

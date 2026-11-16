@@ -104,16 +104,18 @@ func loadCreateData(db *database.Database) (dta *createData, err error) {
 	// first disk like the shape and disk shape selects of the web
 	// interface
 	dta.shapes = []*shape.Shape{}
-	dta.diskShapes = []*shape.Shape{}
 	for _, shpe := range shapes {
-		if shpe.GetType() == shape.Disk {
-			dta.diskShapes = append(dta.diskShapes, shpe)
-		} else {
+		if shpe.GetType() != shape.Disk {
 			dta.shapes = append(dta.shapes, shpe)
 		}
 	}
 
-	dta.nodes, err = node.GetAllHypervisors(db, &bson.M{})
+	dta.diskShapes, err = shape.GetAllDisks(db)
+	if err != nil {
+		return
+	}
+
+	dta.nodes, err = resource.Hypervisors(db)
 	if err != nil {
 		return
 	}
