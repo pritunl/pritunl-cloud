@@ -34,6 +34,7 @@ export function sync(): Promise<void> {
 				.set('Accept', 'application/json')
 				.set('Csrf-Token', Csrf.token)
 				.set('Organization', CompletionStore.userOrganization || "")
+				.timeout(Constants.requestTimeout)
 				.end((err: any, res: SuperAgent.Response): void => {
 					syncInProgress = false;
 
