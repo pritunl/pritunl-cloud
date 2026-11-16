@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from '../Constants';
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
@@ -11,14 +12,16 @@ import InstancesStore from '../stores/InstancesStore';
 import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
 
-let syncId: string;
+let syncQueue = new MiscUtils.SyncQueue(syncRequest);
+let syncNodeId: string;
 let dataSyncReqs: {[key: string]: SuperAgent.Request} = {};
 let chartReqs: {[key: string]: Promise<any>} = {};
 
 export function sync(noLoading?: boolean): Promise<void> {
-	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	return syncQueue.sync(noLoading);
+}
 
+function syncRequest(noLoading?: boolean): Promise<void> {
 	let loader: Loader;
 	if (!noLoading) {
 		loader = new Loader().loading();
@@ -35,6 +38,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -42,11 +46,6 @@ export function sync(noLoading?: boolean): Promise<void> {
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
-					resolve();
-					return;
-				}
-
-				if (curSyncId !== syncId) {
 					resolve();
 					return;
 				}
@@ -102,6 +101,7 @@ export function commit(instance: InstanceTypes.Instance): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -132,6 +132,7 @@ export function create(instance: InstanceTypes.Instance): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -161,6 +162,7 @@ export function remove(instanceId: string): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -191,6 +193,7 @@ export function removeMulti(instanceIds: string[]): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -224,6 +227,7 @@ export function forceRemoveMulti(instanceIds: string[]): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -258,6 +262,7 @@ export function updateMulti(instanceIds: string[],
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -290,6 +295,7 @@ export function loadAdvisories(
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -320,6 +326,7 @@ export function loadRuntime(
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -365,6 +372,7 @@ export function chart(instanceId: string, resource: string,
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.on('abort', () => {
 				loader.done();
 				resolve(null);
@@ -408,7 +416,7 @@ export function dataCancel(): void {
 
 export function syncNode(node: string, pool: string): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	syncNodeId = curSyncId;
 
 	let scope: string;
 	let query: {[key: string]: string};
@@ -437,6 +445,7 @@ export function syncNode(node: string, pool: string): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -446,7 +455,7 @@ export function syncNode(node: string, pool: string): Promise<void> {
 					return;
 				}
 
-				if (curSyncId !== syncId) {
+				if (curSyncId !== syncNodeId) {
 					resolve();
 					return;
 				}
