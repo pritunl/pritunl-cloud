@@ -63,7 +63,7 @@ function syncRequest(): Promise<void> {
 
 export function syncDatacenter(datacenter: string): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	syncDatacenterId = curSyncId;
 
 	if (!datacenter) {
 		Dispatcher.dispatch({
@@ -86,6 +86,7 @@ export function syncDatacenter(datacenter: string): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -95,7 +96,7 @@ export function syncDatacenter(datacenter: string): Promise<void> {
 					return;
 				}
 
-				if (curSyncId !== syncId) {
+				if (curSyncId !== syncDatacenterId) {
 					resolve();
 					return;
 				}
@@ -150,6 +151,7 @@ export function commit(image: ImageTypes.Image): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -180,6 +182,7 @@ export function create(image: ImageTypes.Image): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -209,6 +212,7 @@ export function remove(imageId: string): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -239,6 +243,7 @@ export function removeMulti(imageIds: string[]): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
