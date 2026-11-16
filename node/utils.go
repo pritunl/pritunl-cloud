@@ -120,6 +120,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 			SetProjection(&bson.D{
 				{"name", 1},
 				{"types", 1},
+				{"roles", 1},
 				{"gui", 1},
 				{"available_vpcs", 1},
 				{"cloud_subnets", 1},
