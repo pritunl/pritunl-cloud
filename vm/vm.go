@@ -57,7 +57,6 @@ type VirtualMachine struct {
 	UsbDevicesAvailable bool              `json:"-"`
 	PciDevices          []*PciDevice      `json:"pci_devices"`
 	DriveDevices        []*DriveDevice    `json:"drive_devices"`
-	IscsiDevices        []*IscsiDevice    `json:"iscsi_devices"`
 	Mounts              []*Mount          `json:"mounts"`
 	ImdsVersion         int               `json:"imds_version"`
 	ImdsClientSecret    string            `json:"-"`
@@ -66,8 +65,7 @@ type VirtualMachine struct {
 }
 
 func (v *VirtualMachine) HasExternalNetwork() bool {
-	return v.Vnc || v.Spice || (v.IscsiDevices != nil &&
-		len(v.IscsiDevices) > 0)
+	return v.Vnc || v.Spice
 }
 
 func (v *VirtualMachine) ProtectHome() bool {
@@ -170,10 +168,6 @@ type DriveDevice struct {
 	Type   string `json:"type"`
 	VgName string `json:"vg_name"`
 	LvName string `json:"lv_name"`
-}
-
-type IscsiDevice struct {
-	Uri string `json:"iscsi"`
 }
 
 type Mount struct {
