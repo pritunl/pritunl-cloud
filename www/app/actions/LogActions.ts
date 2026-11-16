@@ -10,12 +10,13 @@ import * as LogTypes from '../types/LogTypes';
 import LogsStore from '../stores/LogsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
-let syncId: string;
+let syncQueue = new MiscUtils.SyncQueue(syncRequest);
 
 export function sync(): Promise<void> {
-	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	return syncQueue.sync();
+}
 
+function syncRequest(): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -28,16 +29,12 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
-					resolve();
-					return;
-				}
-
-				if (curSyncId !== syncId) {
 					resolve();
 					return;
 				}
