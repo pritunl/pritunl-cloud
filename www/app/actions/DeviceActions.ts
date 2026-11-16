@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from '../Constants';
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
@@ -27,6 +28,7 @@ export function load(userId: string): Promise<void> {
 			.get('/device/' + userId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -73,6 +75,7 @@ export function create(device: DeviceTypes.Device): Promise<void> {
 			.send(device)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -101,6 +104,7 @@ export function testAlert(deviceId: string): Promise<void> {
 			.post('/device/' + deviceId + '/alert')
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -130,6 +134,7 @@ export function commit(device: DeviceTypes.Device): Promise<void> {
 			.send(device)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -158,6 +163,7 @@ export function remove(deviceId: string): Promise<void> {
 			.delete('/device/' + deviceId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
