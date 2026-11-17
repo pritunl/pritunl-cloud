@@ -22,6 +22,7 @@ export function sync(update: boolean): Promise<void> {
 			.get('/subscription' + (update ? '/update' : ''))
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -69,6 +70,7 @@ export function activate(license: string): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -104,6 +106,7 @@ export function cancel(key: string): Promise<void> {
 				key: key,
 			})
 			.set('Accept', 'application/json')
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
