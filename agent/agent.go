@@ -45,7 +45,7 @@ func main() {
 				"panic": panc,
 			}).Error("agent: Panic in main")
 			time.Sleep(3 * time.Second)
-			os.Exit(1)
+			os.Exit(255)
 		}
 	}()
 	flag.Usage = func() {
