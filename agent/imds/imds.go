@@ -90,6 +90,9 @@ func (m *Imds) Get(query string) (val string, err error) {
 	query = strings.TrimPrefix(query, "+")
 
 	req, err := m.NewRequest("GET", "/query"+query, nil)
+	if err != nil {
+		return
+	}
 
 	resp, e := client.Do(req)
 	if e != nil {
