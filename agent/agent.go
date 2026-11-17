@@ -27,6 +27,7 @@ Usage: pci COMMAND
 Commands:
   get          Get value from IMDS
   image        Sanitize host files and initiate shutdown for imaging
+  is-primary   Exit 0 if this deployment is primary, 1 if not, 255 if unknown
   set-primary  Notify host to set this deployment as primary
   version      Show version
 `
@@ -385,6 +386,38 @@ func main() {
 		logger.Info("agent: Initiated deployment primary election")
 
 		time.Sleep(200 * time.Millisecond)
+
+		break
+	case "is-primary":
+		ids := &imds.Imds{}
+
+		err := ids.Init(nil)
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Initialize failed")
+			utils.DelayExit(255, 1*time.Second)
+			return
+		}
+		defer ids.Close()
+
+		val, err := ids.Get("+/deployment/self/primary")
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Get imds failed")
+			utils.DelayExit(255, 1*time.Second)
+			return
+		}
+
+		switch val {
+		case "true":
+			os.Exit(0)
+		case "false":
+			os.Exit(1)
+		default:
+			os.Exit(255)
+		}
 
 		break
 	case "status":
