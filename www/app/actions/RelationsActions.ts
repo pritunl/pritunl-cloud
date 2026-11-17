@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from '../Constants';
 import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import * as RelationTypes from '../types/RelationTypes';
@@ -14,6 +15,7 @@ export function load(kind: string,
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', CompletionStore.userOrganization)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (res && res.status === 401) {
 					window.location.href = '/login';
