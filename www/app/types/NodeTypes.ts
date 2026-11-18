@@ -58,7 +58,6 @@ export interface Node {
 	default_no_public_address6?: boolean;
 	jumbo_frames?: boolean;
 	jumbo_frames_internal?: boolean;
-	iscsi?: boolean;
 	usb_passthrough?: boolean;
 	pci_passthrough?: boolean;
 	hugepages?: boolean;
