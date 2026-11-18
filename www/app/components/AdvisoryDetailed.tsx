@@ -118,8 +118,6 @@ const css = {
 	itemCard: {
 		padding: '12px',
 		marginBottom: '12px',
-		borderLeftWidth: '4px',
-		borderLeftStyle: 'solid',
 	} as React.CSSProperties,
 	itemHeader: {
 		alignItems: 'center',
@@ -128,6 +126,7 @@ const css = {
 		padding: '10px 12px',
 		background: 'rgba(138, 155, 168, 0.12)',
 		borderBottom: '1px solid rgba(138, 155, 168, 0.25)',
+		borderTopLeftRadius: '3px',
 		borderTopRightRadius: '3px',
 	} as React.CSSProperties,
 	headerTag: {
@@ -571,23 +570,6 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 		}
 	}
 
-	severityBarColor(severity: string): string {
-		switch ((severity || '').toLowerCase()) {
-			case 'critical':
-				return 'var(--bp5-intent-danger, #cd4246)';
-			case 'important':
-			case 'high':
-				return 'var(--bp5-intent-warning, #c87619)';
-			case 'moderate':
-			case 'medium':
-				return 'var(--bp5-intent-primary, #215db0)';
-			case 'low':
-				return 'var(--bp5-intent-success, #1c6e42)';
-			default:
-				return 'rgba(138, 155, 168, 0.4)';
-		}
-	}
-
 	stateIntent(state: string): Blueprint.Intent {
 		switch ((state || '').toLowerCase()) {
 			case 'running':
@@ -946,12 +928,12 @@ export default class AdvisoryDetailed extends React.Component<Props, State> {
 
 		let published = MiscUtils.formatDateNoTime(vuln.published);
 
-		let cardStyle: React.CSSProperties = {
-			...css.itemCard,
-			borderLeftColor: Analysis.severityColor(effSeverity),
-		};
+		let cardStyle: React.CSSProperties = css.itemCard;
 		if (unreachableCount > 0 && unreachableCount >= resourceCount) {
-			cardStyle.opacity = 0.7;
+			cardStyle = {
+				...css.itemCard,
+				opacity: 0.7,
+			};
 		}
 
 		return <div key={vuln.id}
