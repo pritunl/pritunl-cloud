@@ -2174,16 +2174,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="Instance iSCSI support"
-						help="Enable iSCSI disk support for instances."
-						checked={node.iscsi}
-						hidden={!node.iscsi}
-						onToggle={(): void => {
-							this.set('iscsi', !node.iscsi);
-						}}
-					/>
-					<PageSwitch
-						disabled={this.state.disabled}
 						hidden={!node.pci_passthrough}
 						label="PCI Passthrough"
 						help="Enable PCI passthrough support for instances."
