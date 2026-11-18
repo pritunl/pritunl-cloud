@@ -11,7 +11,7 @@ import UsersStore from '../stores/UsersStore';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Constants from "../Constants";
 
-let syncId: string;
+let syncQueue = new MiscUtils.SyncQueue(syncRequest);
 
 export function load(userId: string): Promise<void> {
 	if (!userId) {
@@ -39,6 +39,7 @@ export function load(userId: string): Promise<void> {
 			.get('/user/' + userId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -77,9 +78,10 @@ export function unload(): void {
 }
 
 export function sync(): Promise<void> {
-	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	return syncQueue.sync();
+}
 
+function syncRequest(): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -92,16 +94,12 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
-					resolve();
-					return;
-				}
-
-				if (curSyncId !== syncId) {
 					resolve();
 					return;
 				}
@@ -156,6 +154,7 @@ export function commit(user: UserTypes.User): Promise<void> {
 			.send(user)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -192,6 +191,7 @@ export function create(user: UserTypes.User): Promise<void> {
 			.send(user)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -221,6 +221,7 @@ export function remove(userIds: string[]): Promise<void> {
 			.send(userIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.timeout(Constants.requestTimeout)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
