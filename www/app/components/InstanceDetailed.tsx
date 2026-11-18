@@ -11,7 +11,6 @@ import * as Csrf from '../Csrf';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Constants from "../Constants";
 import CompletionStore from '../stores/CompletionStore';
-import InstanceIscsiDevice from './InstanceIscsiDevice';
 import InstanceNodePort from './InstanceNodePort';
 import InstanceMount from './InstanceMount';
 import PageInput from './PageInput';
@@ -98,9 +97,6 @@ const css = {
 	} as React.CSSProperties,
 	itemsAdd: {
 		margin: '8px 0 15px 0',
-	} as React.CSSProperties,
-	list: {
-		marginBottom: '15px',
 	} as React.CSSProperties,
 	group: {
 		flex: 1,
@@ -866,106 +862,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddIscsiDevice = (i: number): void => {
-		let instance: InstanceTypes.Instance;
-
-		if (this.state.changed) {
-			instance = {
-				...this.state.instance,
-			};
-		} else {
-			instance = {
-				...this.props.instance,
-			};
-		}
-
-		let iscsiDevices = [
-			...(instance.iscsi_devices || []),
-		];
-
-		if (iscsiDevices.length === 0) {
-			iscsiDevices = [{}];
-		}
-
-		iscsiDevices.splice(i + 1, 0, {} as InstanceTypes.IscsiDevice);
-		instance.iscsi_devices = iscsiDevices;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			instance: instance,
-		});
-	}
-
-	onChangeIscsiDevice(i: number, subnet: InstanceTypes.IscsiDevice): void {
-		let instance: InstanceTypes.Instance;
-
-		if (this.state.changed) {
-			instance = {
-				...this.state.instance,
-			};
-		} else {
-			instance = {
-				...this.props.instance,
-			};
-		}
-
-		let iscsiDevices = [
-			...(instance.iscsi_devices || []),
-		];
-
-		if (iscsiDevices.length === 0) {
-			iscsiDevices = [{}];
-		}
-
-		iscsiDevices[i] = subnet;
-
-		instance.iscsi_devices = iscsiDevices;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			instance: instance,
-		});
-	}
-
-	onRemoveIscsiDevice(i: number): void {
-		let instance: InstanceTypes.Instance;
-
-		if (this.state.changed) {
-			instance = {
-				...this.state.instance,
-			};
-		} else {
-			instance = {
-				...this.props.instance,
-			};
-		}
-
-		let iscsiDevices = [
-			...(instance.iscsi_devices || []),
-		];
-
-		if (iscsiDevices.length !== 0) {
-			iscsiDevices.splice(i, 1);
-		}
-
-		if (iscsiDevices.length === 0) {
-			iscsiDevices = [{}];
-		}
-
-		instance.iscsi_devices = iscsiDevices;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			instance: instance,
-		});
-	}
-
 	onAddNodePort = (i: number, prepend?: boolean): void => {
 		let instance: InstanceTypes.Instance;
 
@@ -1592,33 +1488,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				>
 					{device.slot + ' ' + device.class + ':' + device.name}
 				</option>,
-			);
-		}
-
-		let iscsiDevices = [...(instance.iscsi_devices || [])];
-		if (iscsiDevices.length === 0) {
-			iscsiDevices.push({});
-		}
-
-		let iscsiDevicesElem: JSX.Element[] = [];
-		for (let i = 0; i < iscsiDevices.length; i++) {
-			let index = i;
-			let device = iscsiDevices[i];
-
-			iscsiDevicesElem.push(
-				<InstanceIscsiDevice
-					key={'iscsi-' + index}
-					iscsi={device}
-					onChange={(state: InstanceTypes.IscsiDevice): void => {
-						this.onChangeIscsiDevice(index, state);
-					}}
-					onAdd={(): void => {
-						this.onAddIscsiDevice(index);
-					}}
-					onRemove={(): void => {
-						this.onRemoveIscsiDevice(index);
-					}}
-				/>,
 			);
 		}
 
@@ -2291,30 +2160,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						{driveDevicesSelect}
 					</PageSelectButton>
-					<label
-						hidden={!this.state.showSettings || (!info.iscsi &&
-							(!this.props.instance.iscsi_devices ||
-							this.props.instance.iscsi_devices.length === 0))}
-						style={css.itemsLabel}
-					>
-						iSCSI Devices
-						<Help
-							title="iSCSI Devices"
-							content="Mount iSCSI disks with URI, below are examples without and with authentication."
-							examples={[
-								'iscsi://10.0.0.1/iqn.2001-04.com.example/lun',
-								'iscsi://username:password@10.0.0.1/iqn.2001-04.com.example/lun',
-							]}
-						/>
-					</label>
-					<div
-						hidden={!this.state.showSettings || (!info.iscsi &&
-							(!this.props.instance.iscsi_devices ||
-							this.props.instance.iscsi_devices.length === 0))}
-						style={css.list}
-					>
-						{iscsiDevicesElem}
-					</div>
 					<label
 						className="bp5-label"
 						style={css.label}
