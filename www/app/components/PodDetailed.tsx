@@ -13,6 +13,7 @@ import PageSwitch from './PageSwitch';
 import PageInfo from './PageInfo';
 import Relations from './Relations';
 import PodWorkspace from './PodWorkspace';
+import PodSave from './PodSave';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -35,6 +36,7 @@ interface State {
 	disabled: boolean;
 	changed: boolean;
 	unitChanged: boolean;
+	saveDialog: boolean;
 	message: string;
 	pod: PodTypes.Pod;
 }
@@ -123,6 +125,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 			disabled: false,
 			changed: false,
 			unitChanged: false,
+			saveDialog: false,
 			message: '',
 			pod: null,
 		};
@@ -150,10 +153,81 @@ export default class PodDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	getUnitChanges(): PodTypes.UnitChange[] {
+		let units: PodTypes.Unit[]
+		if (this.state.pod) {
+			units = this.state.pod.units
+		} else if (this.props.pod.drafts?.length) {
+			units = this.props.pod.drafts
+		} else {
+			units = this.props.pod.units
+		}
+
+		let origUnits = this.props.pod.units || []
+		let changes: PodTypes.UnitChange[] = []
+		for (let unit of (units || [])) {
+			let origUnit = origUnits.find(
+				origUnit => origUnit.id === unit.id)
+
+			if (unit.delete) {
+				if (origUnit) {
+					changes.push({
+						id: unit.id,
+						name: origUnit.name,
+						kind: origUnit.kind,
+						delete: true,
+						original: origUnit.spec || "",
+						modified: "",
+					})
+				}
+			} else if (!origUnit) {
+				changes.push({
+					id: unit.id,
+					name: unit.name,
+					kind: unit.kind,
+					new: true,
+					original: "",
+					modified: unit.spec || "",
+				})
+			} else if ((unit.spec || "") !== (origUnit.spec || "")) {
+				changes.push({
+					id: unit.id,
+					name: unit.name,
+					kind: origUnit.kind,
+					original: origUnit.spec || "",
+					modified: unit.spec || "",
+				})
+			}
+		}
+
+		return changes
+	}
+
+	onSaveDialog = (): void => {
+		if (!this.getUnitChanges().length) {
+			this.onSave()
+			return
+		}
+
+		this.setState({
+			...this.state,
+			saveDialog: true,
+		});
+	}
+
+	onSaveConfirm = (): void => {
+		if (!this.state.saveDialog) {
+			return
+		}
+
+		this.onSave()
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
 			disabled: true,
+			saveDialog: false,
 		});
 
 		let changed = false
@@ -576,7 +650,19 @@ export default class PodDetailed extends React.Component<Props, State> {
 					});
 					this.props.onMode("view")
 				}}
-				onSave={this.onSave}
+				onSave={this.onSaveDialog}
+			/>
+			<PodSave
+				open={this.state.saveDialog}
+				disabled={this.state.disabled}
+				changes={this.state.saveDialog ? this.getUnitChanges() : null}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						saveDialog: false,
+					});
+				}}
+				onSave={this.onSaveConfirm}
 			/>
 		</div>;
 	}
