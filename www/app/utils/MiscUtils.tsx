@@ -59,6 +59,50 @@ export class SyncInterval {
 	};
 }
 
+export class SyncQueue {
+	private current: Promise<void> | null = null;
+	private next: Promise<void> | null = null;
+	private nextLoading: boolean = false;
+	private readonly request: (noLoading?: boolean) => Promise<void>;
+
+	constructor(request: (noLoading?: boolean) => Promise<void>) {
+		this.request = request;
+	}
+
+	public sync = (noLoading?: boolean): Promise<void> => {
+		if (this.current) {
+			if (!noLoading) {
+				this.nextLoading = true;
+			}
+
+			if (!this.next) {
+				this.next = this.current.catch((): void => {}).then(
+					(): Promise<void> => {
+						this.next = null;
+						let loading = this.nextLoading;
+						this.nextLoading = false;
+						return this.sync(!loading);
+					},
+				);
+			}
+
+			return this.next;
+		}
+
+		let promise = this.request(noLoading);
+		this.current = promise;
+
+		let clear = (): void => {
+			if (this.current === promise) {
+				this.current = null;
+			}
+		};
+		promise.then(clear, clear);
+
+		return promise;
+	};
+}
+
 export function uuid(): string {
 	return (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
 }
