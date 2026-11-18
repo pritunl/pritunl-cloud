@@ -83,8 +83,6 @@ const css = {
 	updateCard: {
 		padding: "12px",
 		marginBottom: "12px",
-		borderLeftWidth: "4px",
-		borderLeftStyle: "solid",
 	} as React.CSSProperties,
 	updateHeader: {
 		alignItems: "center",
@@ -93,6 +91,7 @@ const css = {
 		padding: "10px 12px",
 		background: "rgba(138, 155, 168, 0.12)",
 		borderBottom: "1px solid rgba(138, 155, 168, 0.25)",
+		borderTopLeftRadius: "3px",
 		borderTopRightRadius: "3px",
 	} as React.CSSProperties,
 	cveCard: {
@@ -351,19 +350,6 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 				return Blueprint.Intent.PRIMARY;
 			default:
 				return Blueprint.Intent.NONE;
-		}
-	}
-
-	severityBarColor(severity: string): string {
-		switch ((severity || "").toLowerCase()) {
-			case "critical":
-				return "var(--bp5-intent-danger, #cd4246)";
-			case "high":
-				return "var(--bp5-intent-warning, #c87619)";
-			case "medium":
-				return "var(--bp5-intent-primary, #215db0)";
-			default:
-				return "rgba(138, 155, 168, 0.4)";
 		}
 	}
 
@@ -717,10 +703,7 @@ export default class AdvisoryDialog extends React.Component<Props, State> {
 			...css.descriptionLimited,
 		};
 
-		let cardStyle: React.CSSProperties = {
-			...css.updateCard,
-			borderLeftColor: this.severityBarColor(severity),
-		};
+		let cardStyle: React.CSSProperties = css.updateCard;
 		if (dismissed) {
 			cardStyle = {
 				...cardStyle,
