@@ -62,7 +62,6 @@ export interface Instance {
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
-	iscsi_devices?: IscsiDevice[];
 	mounts?: Mount[];
 	root_enabled?: boolean;
 	root_passwd?: string;
@@ -122,16 +121,6 @@ export interface PciDevice {
 	class?: string;
 	name?: string;
 	driver?: string;
-}
-
-export interface IscsiDevice {
-	host?: string;
-	port?: number;
-	iqn?: string;
-	lun?: string;
-	username?: string;
-	password?: string;
-	uri?: string;
 }
 
 export interface Mount {
@@ -228,7 +217,6 @@ export interface Info {
 	node?: string;
 	node_public_ip?: string;
 	mtu?: number;
-	iscsi?: boolean;
 	firewall_rules?: Record<string, string>;
 	authorities?: string[];
 	disks?: string[];
