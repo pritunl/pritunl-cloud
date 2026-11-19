@@ -1,6 +1,8 @@
 package netconf
 
 import (
+	"path"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -10,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/commander"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -68,8 +71,46 @@ func (n *NetConf) ClearAll(db *database.Database) (err error) {
 	return
 }
 
+func ifaceExists(namespace, iface string) (exists bool) {
+	if namespace == "" {
+		found, e := utils.Exists(
+			path.Join("/", "sys", "class", "net", iface))
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"iface": iface,
+				"error": e,
+			}).Error("netconf: Failed to check interface")
+			return
+		}
+
+		exists = found
+		return
+	}
+
+	_, err := commander.Exec(&commander.Opt{
+		Name: "ip",
+		Args: []string{
+			"netns", "exec", namespace,
+			"test", "-e", path.Join("/", "sys", "class", "net", iface),
+		},
+		PipeOut: true,
+		PipeErr: true,
+	})
+	if err != nil {
+		return
+	}
+
+	exists = true
+	return
+}
+
 func clearIface(namespace, iface string) {
 	if iface == "" {
+		return
+	}
+
+	// iproute if<n> prefix fix
+	if strings.HasPrefix(iface, "if") && !ifaceExists(namespace, iface) {
 		return
 	}
 
