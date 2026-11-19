@@ -29,6 +29,16 @@ export interface Unit {
 	new?: boolean;
 }
 
+export interface UnitChange {
+	id?: string;
+	name?: string;
+	kind?: string;
+	delete?: boolean;
+	new?: boolean;
+	original?: string;
+	modified?: string;
+}
+
 export interface PodUnit {
 	id?: string;
 	kind?: string;
