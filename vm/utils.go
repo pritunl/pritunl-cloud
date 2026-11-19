@@ -160,6 +160,13 @@ func GetIfaceInternal(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("l%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetIfaceInternalOld(id bson.ObjectID, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("i%s%d", strings.ToLower(hashSum), n)
 }
 
