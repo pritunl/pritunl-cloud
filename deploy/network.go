@@ -5,10 +5,12 @@ import (
 
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/bridges"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/fdb"
 	"github.com/pritunl/pritunl-cloud/hnetwork"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/iproute"
+	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -26,7 +28,12 @@ type Network struct {
 	stat *state.State
 }
 
-func (d *Network) Deploy() (err error) {
+func (d *Network) Deploy(db *database.Database) (err error) {
+	err = netconf.ApplyState(db, d.stat.Instances(), d.stat.VirtsMap())
+	if err != nil {
+		return
+	}
+
 	err = hnetwork.ApplyState(d.stat)
 	if err != nil {
 		return
