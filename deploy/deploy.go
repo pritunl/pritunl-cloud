@@ -13,7 +13,7 @@ func Deploy(stat *state.State, runtimes *state.Runtimes) (err error) {
 
 	start := time.Now()
 	network := NewNetwork(stat)
-	err = network.Deploy()
+	err = network.Deploy(db)
 	if err != nil {
 		return
 	}
