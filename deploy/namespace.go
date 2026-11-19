@@ -52,7 +52,7 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, inst := range instances {
-		if !inst.IsActive() {
+		if !inst.IsActive() && !instancesLock.Locked(inst.Id.Hex()) {
 			continue
 		}
 
