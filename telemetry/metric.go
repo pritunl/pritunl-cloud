@@ -94,7 +94,11 @@ func MetricsRefresh() (sample *metric.Sample, err error) {
 	if Mode != Instance {
 		var filter set.Set
 		if Mode == Namespace {
-			filter = set.NewSet(NetworkInternalIface, NetworkExternalIface)
+			filter = set.NewSet(
+				NetworkInternalIface,
+				NetworkInternalIfaceOld,
+				NetworkExternalIface,
+			)
 		}
 
 		ifaces, e := psutil.GetNetwork(filter, Mode == Host)
@@ -103,7 +107,7 @@ func MetricsRefresh() (sample *metric.Sample, err error) {
 				if Mode == Namespace {
 					for _, iface := range ifaces {
 						switch iface.Name {
-						case NetworkInternalIface:
+						case NetworkInternalIface, NetworkInternalIfaceOld:
 							iface.Name = "int0"
 						case NetworkExternalIface:
 							iface.Name = "ext0"
