@@ -65,6 +65,8 @@ func Main() (err error) {
 	telemetry.Mode = telemetry.Namespace
 	telemetry.NetworkInternalIface = vm.GetIfaceInternal(
 		constants.InstanceId, 0)
+	telemetry.NetworkInternalIfaceOld = vm.GetIfaceInternalOld(
+		constants.InstanceId, 0)
 	telemetry.NetworkExternalIface = vm.GetIfaceExternal(
 		constants.InstanceId, 0)
 
