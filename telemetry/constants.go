@@ -19,7 +19,8 @@ const (
 )
 
 var (
-	Mode                 = Host
-	NetworkInternalIface = ""
-	NetworkExternalIface = ""
+	Mode                    = Host
+	NetworkInternalIface    = ""
+	NetworkInternalIfaceOld = ""
+	NetworkExternalIface    = ""
 )
