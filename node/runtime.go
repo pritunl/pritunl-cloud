@@ -19,6 +19,7 @@ type Runtime struct {
 	Load1      float64                   `bson:"load1" json:"load1"`
 	Load5      float64                   `bson:"load5" json:"load5"`
 	Load15     float64                   `bson:"load15" json:"load15"`
+	Kernel     string                    `bson:"kernel" json:"kernel"`
 	Disks      []*metric.DiskStatic      `bson:"disks" json:"disks"`
 	Mounts     []*metric.MountStatic     `bson:"mounts" json:"mounts"`
 	Interfaces []*metric.InterfaceStatic `bson:"interfaces" json:"interfaces"`
