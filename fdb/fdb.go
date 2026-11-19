@@ -136,6 +136,7 @@ func ApplyState(stat *state.State) (err error) {
 			[]string{
 				"Cannot find device",
 				"No such file",
+				"Operation not supported",
 			},
 			"bridge", "fdb",
 			"del", recrd.Mac,
