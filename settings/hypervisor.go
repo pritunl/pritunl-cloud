@@ -58,6 +58,7 @@ type hypervisor struct {
 	StopTimeout            int    `bson:"stop_timeout" default:"180"`
 	RefreshRate            int    `bson:"refresh_rate" default:"90"`
 	SplashTime             int    `bson:"splash_time" default:"60"`
+	IfaceCacheTtl          int    `bson:"iface_cache_ttl" default:"120"`
 	DhcpRenewTtl           int    `bson:"dhcp_renew_ttl" default:"60"`
 	DhcpSyncTimeout        int    `bson:"dhcp_sync_timeout" default:"120"`
 	NoIpv6PingInit         bool   `bson:"no_ipv6_ping_init"`
