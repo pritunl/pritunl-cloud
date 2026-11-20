@@ -42,6 +42,7 @@ type NetConf struct {
 	SpaceExternalIfaceMod  string
 	SpaceExternalIfaceMod6 string
 	SpaceInternalIface     string
+	SpaceInternalIfaceOld  string
 	SpaceHostIface         string
 	SpaceNodePortIface     string
 	SpaceCloudIface        string
@@ -203,6 +204,40 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 	time.Sleep(300 * time.Millisecond)
 
 	err = n.Ip(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) Repair(db *database.Database) (err error) {
+	err = n.Validate()
+	if err != nil {
+		return
+	}
+
+	err = n.Iface1()
+	if err != nil {
+		return
+	}
+
+	err = n.Address(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Iface2(db, false)
+	if err != nil {
+		return
+	}
+
+	err = n.Base(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Master(db)
 	if err != nil {
 		return
 	}
