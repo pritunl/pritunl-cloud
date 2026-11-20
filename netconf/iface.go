@@ -92,6 +92,7 @@ func (n *NetConf) Iface1() (err error) {
 	n.SystemNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 0)
 	n.SpaceExternalIface = vm.GetIfaceExternal(n.Virt.Id, 0)
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
+	n.SpaceInternalIfaceOld = vm.GetIfaceInternalOld(n.Virt.Id, 0)
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 1)
 	n.SpaceNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 1)
 	n.SpaceCloudIface = vm.GetIfaceCloud(n.Virt.Id, 0)
