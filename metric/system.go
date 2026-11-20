@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type System struct {
@@ -14,6 +15,7 @@ type System struct {
 	Resource  bson.ObjectID `bson:"r" json:"r"`
 	Timestamp time.Time     `bson:"t" json:"t"`
 
+	Kernel    string  `bson:"-" json:"kr"`
 	Processes uint64  `bson:"pc" json:"pc"`
 	CpuCores  int     `bson:"-" json:"cc"`
 	CpuUsage  float64 `bson:"cu" json:"cu"`
@@ -46,6 +48,7 @@ func (d *System) Format(id bson.ObjectID) time.Time {
 
 func (d *System) StaticData() bson.M {
 	return bson.M{
+		"kernel":    utils.FilterStr(d.Kernel, 64),
 		"memory":    d.MemUsage,
 		"swap":      d.SwapUsage,
 		"hugepages": d.HugeUsage,
