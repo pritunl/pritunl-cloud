@@ -8,6 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -135,7 +136,9 @@ func GetIfaces(namespace string) (ifaces []*Iface, err error) {
 
 func GetIfacesCached(namespace string) (ifacesMap map[string]*Iface, err error) {
 	cacheLock.Lock()
-	if time.Since(cacheTime[namespace]) < 5*time.Minute {
+	if time.Since(cacheTime[namespace]) < time.Duration(
+		settings.Hypervisor.IfaceCacheTtl)*time.Second {
+
 		ifacesMap = cache[namespace]
 		cacheLock.Unlock()
 		return
