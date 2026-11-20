@@ -131,6 +131,8 @@ func (c *Check) instances(db *database.Database) (err error) {
 				mtu = c.mtuInstance
 			} else if strings.HasPrefix(iface.Ifname, "e") {
 				mtu = c.mtuExternal
+			} else if strings.HasPrefix(iface.Ifname, "l") {
+				mtu = c.mtuInternal
 			} else if strings.HasPrefix(iface.Ifname, "i") {
 				mtu = c.mtuInternal
 			} else if strings.HasPrefix(iface.Ifname, "x") {
