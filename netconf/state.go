@@ -114,7 +114,7 @@ func ApplyState(db *database.Database, instances []*instance.Instance,
 
 	missing := getMissingMasters(instances, virtsMap, ifacesData)
 	if len(missing) == 0 || time.Since(lastCorrect) < time.Duration(
-		settings.Hypervisor.NetCorrectTtl)*time.Second {
+		settings.Hypervisor.NetRepairTtl)*time.Second {
 
 		return
 	}
