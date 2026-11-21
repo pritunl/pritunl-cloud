@@ -52,6 +52,9 @@ func MetricsRefresh() (sample *metric.Sample, err error) {
 		if procs, e := psutil.GetProcesses(); e == nil {
 			sys.Processes = procs
 		}
+		if kernel, e := psutil.GetKernel(); e == nil {
+			sys.Kernel = kernel
+		}
 
 		mem, e := utils.GetMemInfo()
 		if e == nil {
