@@ -84,6 +84,15 @@ func (r *Rules) commentCommand(inCmd []string, hold bool) (cmd []string) {
 	return
 }
 
+func (r *Rules) commentCommandBase(inCmd []string) (cmd []string) {
+	cmd = append(inCmd,
+		"-m", "comment",
+		"--comment", "pritunl_cloud_base",
+	)
+
+	return
+}
+
 func (r *Rules) commentCommandHeader(inCmd []string) (cmd []string) {
 	cmd = append(inCmd,
 		"-m", "comment",
@@ -187,6 +196,20 @@ func (r *Rules) run(table string, cmds [][]string,
 }
 
 func (r *Rules) Apply(diff *RulesDiff) (err error) {
+	if diff == nil || diff.BaseDiff {
+		err = r.run("", r.Base, "-A", false)
+		if err != nil {
+			return
+		}
+	}
+
+	if diff == nil || diff.Base6Diff {
+		err = r.run("", r.Base6, "-A", true)
+		if err != nil {
+			return
+		}
+	}
+
 	if diff == nil || diff.HeaderDiff {
 		err = r.run("", r.Header, "-A", false)
 		if err != nil {
@@ -455,6 +478,22 @@ func (r *Rules) Remove(diff *RulesDiff) (err error) {
 		r.Maps6 = [][]string{}
 	}
 
+	if diff == nil || diff.BaseDiff {
+		err = r.run("", r.Base, "-D", false)
+		if err != nil {
+			return
+		}
+		r.Base = [][]string{}
+	}
+
+	if diff == nil || diff.Base6Diff {
+		err = r.run("", r.Base6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.Base6 = [][]string{}
+	}
+
 	err = r.run("", r.Holds, "-D", false)
 	if err != nil {
 		return
@@ -470,12 +509,59 @@ func (r *Rules) Remove(diff *RulesDiff) (err error) {
 	return
 }
 
+func generateBase(namespace, iface, addr string) (rules *Rules) {
+	rules = &Rules{
+		Namespace:        namespace,
+		Interface:        iface,
+		Base:             [][]string{},
+		Base6:            [][]string{},
+		Header:           [][]string{},
+		Header6:          [][]string{},
+		SourceDestCheck:  [][]string{},
+		SourceDestCheck6: [][]string{},
+		Ingress:          [][]string{},
+		Ingress6:         [][]string{},
+		Maps:             [][]string{},
+		Maps6:            [][]string{},
+		Holds:            [][]string{},
+		Holds6:           [][]string{},
+	}
+
+	if strings.HasPrefix(iface, "e") {
+		iface += "+"
+		cmd := rules.newCommand()
+		cmd = append(cmd,
+			"-i", iface,
+			"-m", "set",
+			"!", "--match-set", "pr6_inst", "dst",
+		)
+		cmd = rules.commentCommandBase(cmd)
+		cmd = append(cmd, "-j", "DROP")
+		rules.Base6 = append(rules.Base6, cmd)
+	} else if !strings.HasPrefix(iface, "h") && !strings.HasPrefix(iface, "m") {
+		return
+	}
+
+	cmd := rules.newCommand()
+	if addr != "" {
+		cmd = append(cmd, "!", "-d", addr+"/32")
+	}
+	cmd = append(cmd, "-i", iface)
+	cmd = rules.commentCommandBase(cmd)
+	cmd = append(cmd, "-j", "DROP")
+	rules.Base = append(rules.Base, cmd)
+
+	return
+}
+
 func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 	sourceDestCheck bool, ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
 		Namespace:        namespace,
 		Interface:        iface,
+		Base:             [][]string{},
+		Base6:            [][]string{},
 		Header:           [][]string{},
 		Header6:          [][]string{},
 		SourceDestCheck:  [][]string{},
@@ -1000,55 +1086,42 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 }
 
 func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
-	natAddr, natPubAddr, natAddr6, natPubAddr6 string,
+	addr, pubAddr, addr6, pubAddr6 string,
 	ingress []*firewall.Rule) (rules *Rules) {
 
-	rules = &Rules{
-		Namespace:        namespace,
-		Interface:        iface,
-		Header:           [][]string{},
-		Header6:          [][]string{},
-		SourceDestCheck:  [][]string{},
-		SourceDestCheck6: [][]string{},
-		Ingress:          [][]string{},
-		Ingress6:         [][]string{},
-		Maps:             [][]string{},
-		Maps6:            [][]string{},
-		Holds:            [][]string{},
-		Holds6:           [][]string{},
-	}
+	rules = generateBase(namespace, iface, addr)
 
 	if strings.HasPrefix(iface, "e") {
 		iface = iface + "+"
 	}
 
-	if nat && natAddr != "" && natPubAddr != "" {
+	if nat && addr != "" && pubAddr != "" {
 		cmd := rules.newCommandNatPre()
 		cmd = append(cmd,
-			"-d", natPubAddr+"/32",
+			"-d", pubAddr+"/32",
 		)
 		cmd = rules.commentCommandNat(cmd)
 		cmd = append(cmd,
 			"-j", "DNAT",
-			"--to-destination", natAddr,
+			"--to-destination", addr,
 		)
 		rules.Nats = append(rules.Nats, cmd)
 
 		cmd = rules.newCommandNatPost()
 		cmd = append(cmd,
-			"-s", natAddr+"/32",
-			"-d", natAddr+"/32",
+			"-s", addr+"/32",
+			"-d", addr+"/32",
 		)
 		cmd = rules.commentCommandNat(cmd)
 		cmd = append(cmd,
 			"-j", "SNAT",
-			"--to-source", natPubAddr,
+			"--to-source", pubAddr,
 		)
 		rules.Nats = append(rules.Nats, cmd)
 
 		cmd = rules.newCommandNatPost()
 		cmd = append(cmd,
-			"-s", natAddr+"/32",
+			"-s", addr+"/32",
 			"-o", iface,
 		)
 		cmd = rules.commentCommandNat(cmd)
@@ -1058,39 +1131,39 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		rules.Nats = append(rules.Nats, cmd)
 	}
 
-	if nat6 && natAddr6 != "" && natPubAddr6 != "" {
+	if nat6 && addr6 != "" && pubAddr6 != "" {
 		cmd := rules.newCommandNatPre()
 		cmd = append(cmd,
-			"-d", natPubAddr6+"/128",
+			"-d", pubAddr6+"/128",
 		)
 		cmd = rules.commentCommandNat(cmd)
 		cmd = append(cmd,
 			"-j", "DNAT",
-			"--to-destination", natAddr6,
+			"--to-destination", addr6,
 		)
 		rules.Nats6 = append(rules.Nats6, cmd)
 
 		cmd = rules.newCommandNatPost()
 		cmd = append(cmd,
-			"-s", natAddr6+"/128",
-			"-d", natAddr6+"/128",
+			"-s", addr6+"/128",
+			"-d", addr6+"/128",
 		)
 		cmd = rules.commentCommandNat(cmd)
 		cmd = append(cmd,
 			"-j", "SNAT",
-			"--to-source", natPubAddr6,
+			"--to-source", pubAddr6,
 		)
 		rules.Nats6 = append(rules.Nats6, cmd)
 
 		cmd = rules.newCommandNatPost()
 		cmd = append(cmd,
-			"-s", natAddr6+"/128",
+			"-s", addr6+"/128",
 			"-o", iface,
 		)
 		cmd = rules.commentCommandNat(cmd)
 		cmd = append(cmd,
 			"-j", "SNAT",
-			"--to-source", natPubAddr6,
+			"--to-source", pubAddr6,
 		)
 		rules.Nats6 = append(rules.Nats6, cmd)
 	}
@@ -1463,20 +1536,7 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 func generateNodePort(namespace, iface string, addr, nodePortGateway string,
 	firewallMaps []*firewall.Mapping) (rules *Rules) {
 
-	rules = &Rules{
-		Namespace:        namespace,
-		Interface:        iface,
-		Header:           [][]string{},
-		Header6:          [][]string{},
-		SourceDestCheck:  [][]string{},
-		SourceDestCheck6: [][]string{},
-		Ingress:          [][]string{},
-		Ingress6:         [][]string{},
-		Maps:             [][]string{},
-		Maps6:            [][]string{},
-		Holds:            [][]string{},
-		Holds6:           [][]string{},
-	}
+	rules = generateBase(namespace, iface, addr)
 
 	cmd := rules.newCommand()
 	if rules.Interface != "host" {
@@ -1585,6 +1645,8 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 	rules = &Rules{
 		Namespace:        namespace,
 		Interface:        iface,
+		Base:             [][]string{},
+		Base6:            [][]string{},
 		Header:           [][]string{},
 		Header6:          [][]string{},
 		SourceDestCheck:  [][]string{},
@@ -2080,6 +2142,8 @@ func generateHostNodePort(namespace, iface string,
 	rules = &Rules{
 		Namespace:        namespace,
 		Interface:        iface,
+		Base:             [][]string{},
+		Base6:            [][]string{},
 		Header:           [][]string{},
 		Header6:          [][]string{},
 		SourceDestCheck:  [][]string{},
