@@ -18,6 +18,18 @@ var (
 	stateLock     = utils.NewTimeoutLock(3 * time.Minute)
 )
 
+func RemoveNamespace(namespace string) {
+	lockId := stateLock.Lock()
+	defer stateLock.Unlock(lockId)
+
+	if curState != nil {
+		delete(curState.Namespaces, namespace)
+	}
+	if curNamesState != nil {
+		delete(curNamesState.Namespaces, namespace)
+	}
+}
+
 func UpdateState(instances []*instance.Instance, namespaces []string,
 	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
 	err error) {
