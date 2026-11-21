@@ -7,6 +7,8 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/interfaces"
+	"github.com/pritunl/pritunl-cloud/ipset"
+	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -105,6 +107,9 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 			if err != nil {
 				return
 			}
+
+			iptables.RemoveNamespace(namespace)
+			ipset.RemoveNamespace(namespace)
 		}
 	}
 
