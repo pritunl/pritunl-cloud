@@ -73,6 +73,24 @@ func (s *State) AddSourceDestCheck(namespace, addr6 string) {
 	sets.Sets["pr6_sdc"] = sdcSet
 }
 
+func (s *State) AddBase(namespace, addr6 string) {
+	sets := s.Namespaces[namespace]
+	if sets == nil {
+		sets = &Sets{
+			Namespace: namespace,
+			Sets:      map[string]set.Set{},
+		}
+		s.Namespaces[namespace] = sets
+	}
+
+	baseSet := set.NewSet()
+	if addr6 != "" {
+		baseSet.Add(addr6)
+	}
+	baseSet.Add("fe80::/64")
+	sets.Sets["pr6_inst"] = baseSet
+}
+
 func (s *State) AddMember(namespace string, ruleName, member string) {
 	if strings.HasPrefix(ruleName, "prx") {
 		return
@@ -145,6 +163,19 @@ func (n *NamesState) AddSourceDestCheck(namespace string) {
 	}
 
 	sets.Sets.Add("pr6_sdc")
+}
+
+func (n *NamesState) AddBase(namespace string) {
+	sets := n.Namespaces[namespace]
+	if sets == nil {
+		sets = &Names{
+			Namespace: namespace,
+			Sets:      set.NewSet(),
+		}
+		n.Namespaces[namespace] = sets
+	}
+
+	sets.Sets.Add("pr6_inst")
 }
 
 func (n *NamesState) AddName(namespace string, ruleName string) {
