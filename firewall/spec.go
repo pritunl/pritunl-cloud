@@ -24,7 +24,7 @@ func GetSpecRules(instances []*instance.Instance,
 
 	firewalls = map[string][]*Rule{}
 	for _, inst := range instances {
-		if inst.Deployment.IsZero() {
+		if !inst.IsActive() || inst.Deployment.IsZero() {
 			continue
 		}
 
@@ -39,10 +39,6 @@ func GetSpecRules(instances []*instance.Instance,
 		}
 
 		if spc.Firewall == nil || spc.Firewall.Ingress == nil {
-			continue
-		}
-
-		if !inst.IsActive() {
 			continue
 		}
 
@@ -335,6 +331,10 @@ func GetSpecRulesSlow(db *database.Database,
 	nodePortsMap = map[string][]*nodeport.Mapping{}
 	firewalls = map[string][]*Rule{}
 	for _, inst := range instances {
+		if !inst.IsActive() {
+			continue
+		}
+
 		nodePortsMap[inst.NetworkNamespace] = append(
 			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
 
@@ -353,10 +353,6 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 
 		if spc.Firewall == nil || spc.Firewall.Ingress == nil {
-			continue
-		}
-
-		if !inst.IsActive() {
 			continue
 		}
 
