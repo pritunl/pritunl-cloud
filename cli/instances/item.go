@@ -183,8 +183,10 @@ func (i *Item) Info() []widget.InfoField {
 	}
 
 	heartbeat := ""
+	kernel := ""
 	if inst.Runtime != nil {
 		heartbeat = formatTime(inst.Runtime.Heartbeat)
+		kernel = inst.Runtime.Kernel
 	}
 
 	fields := []widget.InfoField{
@@ -228,6 +230,7 @@ func (i *Item) Info() []widget.InfoField {
 		widget.InfoField{"Network MTU", mtu},
 		widget.InfoField{"Network Namespace", inst.NetworkNamespace},
 		widget.InfoField{"Node Ports", i.nodePorts()},
+		widget.InfoField{"Kernel Version", widget.Default(kernel, "Unknown")},
 		widget.InfoField{"QEMU Version",
 			widget.Default(inst.QemuVersion, "Unknown")},
 		widget.InfoField{"Platform", widget.Bool(inst.Uefi, "UEFI", "BIOS")},
