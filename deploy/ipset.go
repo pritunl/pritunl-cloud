@@ -25,10 +25,11 @@ func (t *Ipset) Deploy() (err error) {
 
 func (t *Ipset) Clean() (err error) {
 	instaces := t.stat.Instances()
+	namespaces := t.stat.Namespaces()
 	nodeFirewall := t.stat.NodeFirewall()
 	firewalls := t.stat.Firewalls()
 
-	err = ipset.UpdateNamesState(instaces, nodeFirewall, firewalls)
+	err = ipset.UpdateNamesState(instaces, namespaces, nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
