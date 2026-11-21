@@ -849,6 +849,10 @@ func (i *Instance) IsActive() bool {
 		i.State == vm.Starting || i.State == vm.Provisioning
 }
 
+func (i *Instance) IsAvailable(namespacesSet set.Set, n int) bool {
+	return i.IsActive() || namespacesSet.Contains(vm.GetNamespace(i.Id, n))
+}
+
 func (i *Instance) IsIpv6Only() bool {
 	return (node.Self.NetworkMode == node.Disabled || i.NoPublicAddress) &&
 		(node.Self.NetworkMode6 != node.Disabled && !i.NoPublicAddress6) &&
