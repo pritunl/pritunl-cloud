@@ -7,6 +7,8 @@ import (
 type Rules struct {
 	Namespace        string
 	Interface        string
+	Base             [][]string
+	Base6            [][]string
 	Header           [][]string
 	Header6          [][]string
 	SourceDestCheck  [][]string
@@ -23,6 +25,8 @@ type Rules struct {
 }
 
 type RulesDiff struct {
+	BaseDiff             bool
+	Base6Diff            bool
 	HeaderDiff           bool
 	Header6Diff          bool
 	SourceDestCheckDiff  bool
