@@ -45,36 +45,42 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 		newState.AddIngress("0", nodeFirewall)
 	}
 
+	namespacesSet := set.NewSet()
+	for _, namespace := range namespaces {
+		namespacesSet.Add(namespace)
+	}
+
 	for _, inst := range instances {
-		if !inst.IsActive() {
-			continue
-		}
-
 		for i := range inst.Virt.NetworkAdapters {
-			namespace := vm.GetNamespace(inst.Id, i)
-
-			ingress := firewalls[namespace]
-			if ingress == nil {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": inst.Id.Hex(),
-					"namespace":   namespace,
-				}).Warn("ipset: Failed to load instance firewall rules")
+			if !inst.IsAvailable(namespacesSet, i) {
 				continue
 			}
 
+			namespace := vm.GetNamespace(inst.Id, i)
 			addr6 := ""
-			if inst.PrivateIps6 != nil && len(inst.PrivateIps6) != 0 {
+			if len(inst.PrivateIps6) != 0 {
 				addr6 = inst.PrivateIps6[0]
 			}
 
-			newState.AddIngress(namespace, ingress)
+			if inst.IsActive() {
+				ingress := firewalls[namespace]
+				if ingress == nil {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": inst.Id.Hex(),
+						"namespace":   namespace,
+					}).Warn("ipset: Failed to load instance firewall rules")
+				}
+				newState.AddIngress(namespace, ingress)
+			}
+
+			newState.AddBase(namespace, addr6)
 			if !inst.SkipSourceDestCheck {
 				newState.AddSourceDestCheck(namespace, addr6)
 			}
 		}
 	}
 
-	err = applyState(curState, newState, namespaces)
+	err = applyState(curState, newState, namespacesSet)
 	if err != nil {
 		return
 	}
@@ -84,12 +90,7 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 	return
 }
 
-func applyState(oldState, newState *State, namespaces []string) (err error) {
-	namespacesSet := set.NewSet()
-	for _, namespace := range namespaces {
-		namespacesSet.Add(namespace)
-	}
-
+func applyState(oldState, newState *State, namespacesSet set.Set) (err error) {
 	for _, ipSet := range newState.Namespaces {
 		if ipSet.Namespace != "0" && !namespacesSet.Contains(
 			ipSet.Namespace) {
@@ -115,7 +116,7 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 	return
 }
 
-func UpdateNamesState(instances []*instance.Instance,
+func UpdateNamesState(instances []*instance.Instance, namespaces []string,
 	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
 	err error) {
 
@@ -130,24 +131,30 @@ func UpdateNamesState(instances []*instance.Instance,
 		newNamesState.AddIngress("0", nodeFirewall)
 	}
 
+	namespacesSet := set.NewSet()
+	for _, namespace := range namespaces {
+		namespacesSet.Add(namespace)
+	}
+
 	for _, inst := range instances {
-		if !inst.IsActive() {
-			continue
-		}
-
 		for i := range inst.Virt.NetworkAdapters {
-			namespace := vm.GetNamespace(inst.Id, i)
-
-			ingress := firewalls[namespace]
-			if ingress == nil {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": inst.Id.Hex(),
-					"namespace":   namespace,
-				}).Warn("ipset: Failed to load instance firewall rules")
+			if !inst.IsAvailable(namespacesSet, i) {
 				continue
 			}
 
-			newNamesState.AddIngress(namespace, ingress)
+			namespace := vm.GetNamespace(inst.Id, i)
+			if inst.IsActive() {
+				ingress := firewalls[namespace]
+				if ingress == nil {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": inst.Id.Hex(),
+						"namespace":   namespace,
+					}).Warn("ipset: Failed to load instance firewall rules")
+				}
+				newNamesState.AddIngress(namespace, ingress)
+			}
+
+			newNamesState.AddBase(namespace)
 			if !inst.SkipSourceDestCheck {
 				newNamesState.AddSourceDestCheck(namespace)
 			}
@@ -254,7 +261,7 @@ func InitNames(namespaces []string, instances []*instance.Instance,
 	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
 	err error) {
 
-	err = UpdateNamesState(instances, nodeFirewall, firewalls)
+	err = UpdateNamesState(instances, namespaces, nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
