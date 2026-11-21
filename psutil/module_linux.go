@@ -86,16 +86,12 @@ func builtinModinfoNames(modulesDir string) (names []string, err error) {
 func builtinModuleNames() (names []string, err error) {
 	names = []string{}
 
-	release, err := os.ReadFile("/proc/sys/kernel/osrelease")
+	release, err := kernelRelease()
 	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "psutil: Failed to read kernel release"),
-		}
 		return
 	}
 
-	modulesDir := filepath.Join("/lib/modules",
-		strings.TrimSpace(string(release)))
+	modulesDir := filepath.Join("/lib/modules", release)
 
 	names, err = builtinModinfoNames(modulesDir)
 	if err != nil {
