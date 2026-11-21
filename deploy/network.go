@@ -154,7 +154,7 @@ func nodePortClearAddr() (err error) {
 
 func nodePortRemoveNetwork(stat *state.State) (err error) {
 	if nodePortCurGateway != "" || stat.HasInterfaces(
-		settings.Hypervisor.HostNetworkName) {
+		settings.Hypervisor.NodePortNetworkName) {
 
 		err = nodePortClearAddr()
 		if err != nil {
@@ -192,6 +192,9 @@ func NodePortApplyState(stat *state.State) (err error) {
 		if err != nil {
 			return
 		}
+
+		initializeInst = true
+		nodePortCurGateway = ""
 	}
 
 	nodePortBlock, err := block.GetNodePortBlock(stat.Node().Id)
@@ -224,8 +227,8 @@ func NodePortApplyState(stat *state.State) (err error) {
 			return
 		}
 
-		nodePortCurGateway = gatewayCidr
 		initializeInst = true
+		nodePortCurGateway = gatewayCidr
 	}
 
 	if initializeInst {
