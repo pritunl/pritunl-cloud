@@ -13,9 +13,10 @@ import (
 )
 
 var (
-	cache     = map[string]map[string]*Iface{}
-	cacheTime = map[string]time.Time{}
-	cacheLock = sync.Mutex{}
+	cache        = map[string]map[string]*Iface{}
+	cacheTime    = map[string]time.Time{}
+	cacheVersion = map[string]int{}
+	cacheLock    = sync.Mutex{}
 )
 
 type Iface struct {
@@ -143,6 +144,7 @@ func GetIfacesCached(namespace string) (ifacesMap map[string]*Iface, err error) 
 		cacheLock.Unlock()
 		return
 	}
+	ver := cacheVersion[namespace]
 	cacheLock.Unlock()
 
 	ifaces, err := GetIfaces(namespace)
@@ -156,8 +158,10 @@ func GetIfacesCached(namespace string) (ifacesMap map[string]*Iface, err error) 
 	}
 
 	cacheLock.Lock()
-	cache[namespace] = ifacesMap
-	cacheTime[namespace] = time.Now()
+	if cacheVersion[namespace] == ver {
+		cache[namespace] = ifacesMap
+		cacheTime[namespace] = time.Now()
+	}
 	cacheLock.Unlock()
 
 	return
@@ -167,5 +171,6 @@ func ClearIfacesCache(namespace string) {
 	cacheLock.Lock()
 	cache[namespace] = map[string]*Iface{}
 	cacheTime[namespace] = time.Time{}
+	cacheVersion[namespace] += 1
 	cacheLock.Unlock()
 }
