@@ -174,6 +174,11 @@ func (i *Item) Info() []widget.InfoField {
 		memoryUnits = fmt.Sprintf("%d", int(math.Floor(nde.MemoryUnits)))
 	}
 
+	kernel := ""
+	if nde.Runtime != nil {
+		kernel = nde.Runtime.Kernel
+	}
+
 	fields := []widget.InfoField{
 		{"ID", nde.Id.Hex()},
 		{"Version", widget.Default(nde.SoftwareVersion, "Unknown")},
@@ -186,6 +191,7 @@ func (i *Item) Info() []widget.InfoField {
 		{"Memory Units", memoryUnits},
 		{"Default Interface", widget.Default(nde.DefaultInterface, "Unknown")},
 		{"Hostname", widget.Default(nde.Hostname, "Unknown")},
+		{"Kernel Version", widget.Default(kernel, "Unknown")},
 		{"Private IPv4", i.privateIps()},
 		{"Public IPv4", strings.Join(nde.PublicIps, ", ")},
 		{"Public IPv6", strings.Join(nde.PublicIps6, ", ")},
