@@ -29,11 +29,6 @@ type Network struct {
 }
 
 func (d *Network) Deploy(db *database.Database) (err error) {
-	err = netconf.ApplyState(db, d.stat.Instances(), d.stat.VirtsMap())
-	if err != nil {
-		return
-	}
-
 	err = hnetwork.ApplyState(d.stat)
 	if err != nil {
 		return
@@ -55,6 +50,11 @@ func (d *Network) Deploy(db *database.Database) (err error) {
 	}
 
 	interfaces.SyncIfaces(d.stat.VxLan())
+
+	err = netconf.ApplyState(db, d.stat.Instances(), d.stat.VirtsMap())
+	if err != nil {
+		return
+	}
 
 	return
 }
