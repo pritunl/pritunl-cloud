@@ -330,7 +330,7 @@ func ParseIpMask(mask string) net.IPMask {
 func GetNamespaces() (namespaces []string, err error) {
 	items, err := ioutil.ReadDir("/var/run/netns")
 	if err != nil {
-		if os.IsNotExist(os.ErrNotExist) {
+		if os.IsNotExist(err) {
 			namespaces = []string{}
 			err = nil
 		} else {
@@ -428,7 +428,7 @@ func GetInterfaceUpper(iface string) (upper string, err error) {
 
 	items, err := ioutil.ReadDir("/sys/class/net/" + iface)
 	if err != nil {
-		if os.IsNotExist(os.ErrNotExist) {
+		if os.IsNotExist(err) {
 			err = nil
 		} else {
 			err = &errortypes.ReadError{
