@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/iptables"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -75,114 +73,6 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 }
 
 func (n *NetConf) spaceForward(db *database.Database) (err error) {
-	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Cloud) ||
-		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Cloud) {
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already exists"},
-			"ip", "netns", "exec", n.Namespace,
-			"ipset",
-			"create", "prx_inst6", "hash:net",
-			"family", "inet6",
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already added"},
-			"ip", "netns", "exec", n.Namespace,
-			"ipset",
-			"add", "prx_inst6", "fe80::/64",
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already added"},
-			"ip", "netns", "exec", n.Namespace,
-			"ipset",
-			"add", "prx_inst6", n.InternalAddr6.String()+"/128",
-		)
-		if err != nil {
-			return
-		}
-
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"iptables",
-			"-I", "FORWARD", "1",
-			"!", "-d", n.InternalAddr.String()+"/32",
-			"-i", n.SpaceExternalIface+"+",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_base",
-			"-j", "DROP",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
-
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"ip6tables",
-			"-I", "FORWARD", "1",
-			"-m", "set",
-			"!", "--match-set", "prx_inst6", "dst",
-			"-i", n.SpaceExternalIface+"+",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_base",
-			"-j", "DROP",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
-	}
-
-	if n.HostNetwork {
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"iptables",
-			"-I", "FORWARD", "1",
-			"!", "-d", n.InternalAddr.String()+"/32",
-			"-i", n.SpaceHostIface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_base",
-			"-j", "DROP",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
-	}
-
-	if n.NodePortNetwork {
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"iptables",
-			"-I", "FORWARD", "1",
-			"!", "-d", n.InternalAddr.String()+"/32",
-			"-i", n.SpaceNodePortIface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_base",
-			"-j", "DROP",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
-	}
-
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", n.Namespace,
