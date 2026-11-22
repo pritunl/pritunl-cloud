@@ -67,8 +67,6 @@ func getMissingMasters(instances []*instance.Instance,
 func checkState(db *database.Database, instances []*instance.Instance,
 	virtsMap map[bson.ObjectID]*vm.VirtualMachine) (err error) {
 
-	lastCorrect = time.Now()
-
 	ip.ClearIfacesCache("")
 
 	ifacesData, err := ip.GetIfacesCached("")
@@ -100,6 +98,7 @@ func checkState(db *database.Database, instances []*instance.Instance,
 	}
 
 	ip.ClearIfacesCache("")
+	lastCorrect = time.Now()
 
 	return
 }
