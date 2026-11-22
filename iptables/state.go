@@ -1,6 +1,7 @@
 package iptables
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -16,13 +17,18 @@ type State struct {
 }
 
 func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
-	instances []*instance.Instance, nodeFirewall []*firewall.Rule,
-	firewalls map[string][]*firewall.Rule,
+	instances []*instance.Instance, namespaces []string,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule,
 	firewallMaps map[string][]*firewall.Mapping) (state *State) {
 
 	vpcsMap := map[bson.ObjectID]*vpc.Vpc{}
 	for _, vc := range vpcs {
 		vpcsMap[vc.Id] = vc
+	}
+
+	namespacesSet := set.NewSet()
+	for _, namespace := range namespaces {
+		namespacesSet.Add(namespace)
 	}
 
 	nodeNetworkMode := node.Self.NetworkMode
@@ -46,7 +52,7 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	}
 
 	for _, inst := range instances {
-		if !inst.IsActive() {
+		if !inst.IsAvailable(namespacesSet, 0) {
 			continue
 		}
 
@@ -75,11 +81,24 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 			pubAddr6 = inst.CloudPublicIps6[0]
 		}
 
-		nodePortAddr := ""
-		if len(inst.NodePortIps) != 0 {
-			nodePortAddr = inst.NodePortIps[0]
+		var ingress []*firewall.Rule
+		var nodePortMappings []*firewall.Mapping
+		if inst.IsActive() {
+			ingress = firewalls[namespace]
+			if ingress == nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"namespace":   namespace,
+				}).Warn("iptables: Failed to load instance firewall rules")
+			}
+
+			nodePortMappings = firewallMaps[namespace]
+			nodePortAddr := ""
+			if len(inst.NodePortIps) != 0 {
+				nodePortAddr = inst.NodePortIps[0]
+			}
+			hostNodePortMappings[nodePortAddr] = nodePortMappings
 		}
-		hostNodePortMappings[nodePortAddr] = firewallMaps[namespace]
 
 		cloudAddr := ""
 		cloudIface := vm.GetIfaceCloud(inst.Id, 0)
@@ -93,15 +112,6 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 				"namespace": namespace,
 				"interface": iface,
 			}).Error("iptables: Virtual interface conflict")
-			continue
-		}
-
-		ingress := firewalls[namespace]
-		if ingress == nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": inst.Id.Hex(),
-				"namespace":   namespace,
-			}).Warn("iptables: Failed to load instance firewall rules")
 			continue
 		}
 
@@ -151,12 +161,12 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		}
 
 		rules := generateInternal(namespace, ifaceHost,
-			false, false, false, false, "", "", "", "", ingress)
+			false, false, false, false, addr, "", "", "", ingress)
 		state.Interfaces[namespace+"-"+ifaceHost] = rules
 
 		if nodePortNetwork {
 			rules := generateNodePort(namespace, ifaceNodePort,
-				addr, nodePortGateway, firewallMaps[namespace])
+				addr, nodePortGateway, nodePortMappings)
 			state.Interfaces[namespace+"-"+ifaceNodePort] = rules
 		}
 
