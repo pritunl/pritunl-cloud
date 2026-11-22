@@ -194,9 +194,6 @@ func GetInstanceIp(db *database.Database, instId bson.ObjectID,
 
 	blck, err = Get(db, blckIp.Block)
 	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			RemoveIp(db, blckIp.Id)
-		}
 		blckIp = nil
 		return
 	}
