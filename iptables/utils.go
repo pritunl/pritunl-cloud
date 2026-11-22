@@ -33,6 +33,32 @@ func diffRules(a, b *Rules) *RulesDiff {
 	diff := &RulesDiff{}
 	changed := false
 
+	if len(a.Base) != len(b.Base) {
+		diff.BaseDiff = true
+		changed = true
+	} else {
+		for i := range a.Base {
+			if diffCmd(a.Base[i], b.Base[i]) {
+				diff.BaseDiff = true
+				changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Base6) != len(b.Base6) {
+		diff.Base6Diff = true
+		changed = true
+	} else {
+		for i := range a.Base6 {
+			if diffCmd(a.Base6[i], b.Base6[i]) {
+				diff.Base6Diff = true
+				changed = true
+				break
+			}
+		}
+	}
+
 	if len(a.Header) != len(b.Header) {
 		diff.HeaderDiff = true
 		changed = true
@@ -193,11 +219,17 @@ func diffRules(a, b *Rules) *RulesDiff {
 		return nil
 	}
 
+	if diff.BaseDiff {
+		diff.HeaderDiff = true
+	}
 	if diff.HeaderDiff {
 		diff.SourceDestCheckDiff = true
 	}
 	if diff.SourceDestCheckDiff {
 		diff.IngressDiff = true
+	}
+	if diff.Base6Diff {
+		diff.Header6Diff = true
 	}
 	if diff.Header6Diff {
 		diff.SourceDestCheck6Diff = true
@@ -244,8 +276,11 @@ func loadIptables(namespace, instIface string, state *State,
 		holdComment := strings.Contains(line, "pritunl_cloud_hold")
 		headComment := strings.Contains(line, "pritunl_cloud_head")
 		sdcComment := strings.Contains(line, "pritunl_cloud_sdc")
+		baseComment := strings.Contains(line, "pritunl_cloud_base")
 
-		if !ruleComment && !holdComment && !headComment && !sdcComment {
+		if !ruleComment && !holdComment && !headComment && !sdcComment &&
+			!baseComment {
+
 			continue
 		}
 
@@ -352,6 +387,8 @@ func loadIptables(namespace, instIface string, state *State,
 			rules = &Rules{
 				Namespace:        namespace,
 				Interface:        iface,
+				Base:             [][]string{},
+				Base6:            [][]string{},
 				Header:           [][]string{},
 				Header6:          [][]string{},
 				SourceDestCheck:  [][]string{},
@@ -371,6 +408,12 @@ func loadIptables(namespace, instIface string, state *State,
 				rules.Holds6 = append(rules.Holds6, cmd)
 			} else {
 				rules.Holds = append(rules.Holds, cmd)
+			}
+		} else if baseComment {
+			if ipv6 {
+				rules.Base6 = append(rules.Base6, cmd)
+			} else {
+				rules.Base = append(rules.Base, cmd)
 			}
 		} else if sdcComment {
 			if ipv6 {
@@ -449,6 +492,8 @@ func loadIptables(namespace, instIface string, state *State,
 				rules = &Rules{
 					Namespace:        namespace,
 					Interface:        "host",
+					Base:             [][]string{},
+					Base6:            [][]string{},
 					Header:           [][]string{},
 					Header6:          [][]string{},
 					SourceDestCheck:  [][]string{},
@@ -512,6 +557,8 @@ func loadIptables(namespace, instIface string, state *State,
 					rules = &Rules{
 						Namespace:        namespace,
 						Interface:        iface,
+						Base:             [][]string{},
+						Base6:            [][]string{},
 						Header:           [][]string{},
 						Header6:          [][]string{},
 						SourceDestCheck:  [][]string{},
@@ -627,6 +674,8 @@ func loadIptables(namespace, instIface string, state *State,
 			rules = &Rules{
 				Namespace:        namespace,
 				Interface:        postIface,
+				Base:             [][]string{},
+				Base6:            [][]string{},
 				Header:           [][]string{},
 				Header6:          [][]string{},
 				SourceDestCheck:  [][]string{},
@@ -652,6 +701,8 @@ func loadIptables(namespace, instIface string, state *State,
 			rules = &Rules{
 				Namespace:        namespace,
 				Interface:        cloudPostIface,
+				Base:             [][]string{},
+				Base6:            [][]string{},
 				Header:           [][]string{},
 				Header6:          [][]string{},
 				SourceDestCheck:  [][]string{},
