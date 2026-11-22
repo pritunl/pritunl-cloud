@@ -52,8 +52,10 @@ func (p *InstancesState) Refresh(pkg *Package,
 		instId.Add(inst.Id)
 		instancesMap[inst.Id] = inst
 
-		nodePortsMap[inst.NetworkNamespace] = append(
-			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
+		if inst.IsActive() {
+			nodePortsMap[inst.NetworkNamespace] = append(
+				nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
+		}
 	}
 	p.instancesMap = instancesMap
 	p.nodePortsMap = nodePortsMap
