@@ -146,6 +146,31 @@ func GetExternal(virtIface string) (externalIface string) {
 	return
 }
 
+func GetExternalReadOnly(virtIface string) (externalIface string) {
+	ifacesLock.Lock()
+	defer ifacesLock.Unlock()
+
+	curLen := 0
+	for _, iface := range node.Self.ExternalInterfaces {
+		ifacesSet := ifaces[iface]
+		if ifacesSet == nil {
+			continue
+		}
+
+		if ifacesSet.Contains(virtIface) {
+			return iface
+		}
+
+		ifacesSetLen := ifacesSet.Len()
+		if externalIface == "" || ifacesSetLen < curLen {
+			curLen = ifacesSetLen
+			externalIface = iface
+		}
+	}
+
+	return
+}
+
 func HasExternal() (exists bool) {
 	externalIfaces := node.Self.ExternalInterfaces
 	externalIface := ""
