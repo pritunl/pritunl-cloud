@@ -218,24 +218,21 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Repair(db *database.Database) (err error) {
-	err = n.Validate()
-	if err != nil {
-		return
-	}
-
 	err = n.Iface1()
 	if err != nil {
 		return
 	}
 
-	err = n.Address(db)
-	if err != nil {
-		return
-	}
+	var addrErr error
+	if n.VmAdapter.Attachments != nil {
+		n.LoadAttachments()
+	} else {
+		addrErr = n.AddressInfo(db)
 
-	err = n.Iface2(db, false)
-	if err != nil {
-		return
+		err = n.Iface2(db, false)
+		if err != nil {
+			return
+		}
 	}
 
 	err = n.Base(db)
@@ -244,8 +241,8 @@ func (n *NetConf) Repair(db *database.Database) (err error) {
 	}
 
 	err = n.Master(db)
-	if err != nil {
-		return
+	if addrErr != nil {
+		err = addrErr
 	}
 
 	return
