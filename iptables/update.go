@@ -281,8 +281,8 @@ func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule,
 	firewallMaps map[string][]*firewall.Mapping) {
 
-	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall,
-		firewalls, firewallMaps)
+	newState := LoadState(nodeSelf, vpcs, instances, namespaces,
+		nodeFirewall, firewalls, firewallMaps)
 
 	ApplyUpdate(newState, namespaces, false)
 }
@@ -292,8 +292,8 @@ func UpdateStateRecover(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule,
 	firewallMaps map[string][]*firewall.Mapping) {
 
-	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall,
-		firewalls, firewallMaps)
+	newState := LoadState(nodeSelf, vpcs, instances, namespaces,
+		nodeFirewall, firewalls, firewallMaps)
 
 	ApplyUpdate(newState, namespaces, true)
 }
