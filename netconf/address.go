@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
@@ -170,5 +171,110 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		n.NodePortAddrCidr = nodePortStaticCidr
 	}
 
+	return
+}
+
+func (n *NetConf) AddressInfo(db *database.Database) (err error) {
+	n.PhysicalExternalIface = ""
+	n.PhysicalExternalIfaceBridge = false
+
+	iface := ""
+	if n.NetworkMode == node.Static {
+		blck, blckIp, e := block.GetInstanceIp(
+			db, n.Virt.Id, block.External)
+		if e != nil {
+			err = e
+			return
+		}
+		if blckIp == nil {
+			err = &errortypes.NotFoundError{
+				errors.New("netconf: Missing existing external address"),
+			}
+			return
+		}
+
+		for _, attachment := range node.Self.Blocks {
+			if attachment.Block == blckIp.Block {
+				iface = attachment.Interface
+				break
+			}
+		}
+		if iface == "" {
+			err = &errortypes.NotFoundError{
+				errors.New("netconf: Existing external address " +
+					"block is not attached"),
+			}
+			return
+		}
+
+		gateway := blck.GetGateway()
+		mask := blck.GetMask()
+		if gateway == nil || mask == nil {
+			err = &errortypes.ParseError{
+				errors.New("netconf: Invalid block gateway cidr"),
+			}
+			return
+		}
+
+		prefix, _ := mask.Size()
+		n.ExternalAddrCidr = fmt.Sprintf("%s/%d", blckIp.GetIp(), prefix)
+		n.ExternalGatewayAddr = gateway
+		n.ExternalVlan = blck.Vlan
+		if n.ExternalVlan != 0 {
+			n.SpaceExternalIfaceMod = n.SpaceExternalIface + "x"
+		}
+	} else if n.NetworkMode == node.Dhcp ||
+		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Cloud) {
+
+		iface = interfaces.GetExternalReadOnly(n.SystemExternalIface)
+	}
+
+	if n.NetworkMode6 == node.Static {
+		vc, e := vpc.Get(db, n.VmAdapter.Vpc)
+		if e != nil {
+			err = e
+			return
+		}
+		n.VlanId = vc.VpcId
+
+		blck, addr, prefix, iface6, e := node.Self.GetStaticAddr6(
+			db, n.Virt.Id, vc.VpcId, iface)
+		if e != nil {
+			err = e
+			return
+		}
+		if iface != "" && iface != iface6 {
+			err = &errortypes.ParseError{
+				errors.Newf("netconf: Unsupported mismatched external "+
+					"IPv4 and IPv6 iface %s - %s", iface, iface6),
+			}
+			return
+		}
+		iface = iface6
+
+		n.ExternalAddrCidr6 = fmt.Sprintf("%s/%d", addr, prefix)
+		n.ExternalGatewayAddr6 = blck.GetGateway6()
+		n.ExternalVlan6 = blck.Vlan
+		if n.ExternalVlan6 != 0 {
+			if n.ExternalVlan == n.ExternalVlan6 {
+				n.SpaceExternalIfaceMod6 = n.SpaceExternalIfaceMod
+			} else {
+				n.SpaceExternalIfaceMod6 = n.SpaceExternalIface + "y"
+			}
+		}
+	}
+
+	if iface == "" &&
+		((n.NetworkMode != node.Disabled && n.NetworkMode != node.Cloud) ||
+			(n.NetworkMode6 != node.Disabled &&
+				n.NetworkMode6 != node.Cloud)) {
+
+		err = &errortypes.NotFoundError{
+			errors.New("netconf: Missing external interface for repair"),
+		}
+		return
+	}
+
+	n.PhysicalExternalIface = iface
 	return
 }
