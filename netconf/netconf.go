@@ -105,12 +105,7 @@ type NetConf struct {
 	NodePortMacAddr string
 }
 
-func (n *NetConf) Init(db *database.Database) (err error) {
-	err = n.Validate()
-	if err != nil {
-		return
-	}
-
+func (n *NetConf) Prepare(db *database.Database) (err error) {
 	err = n.Iface1()
 	if err != nil {
 		return
@@ -122,6 +117,17 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 	}
 
 	err = n.Iface2(db, false)
+	if err != nil {
+		return
+	}
+
+	n.SaveAttachments()
+
+	return
+}
+
+func (n *NetConf) Init(db *database.Database) (err error) {
+	err = n.Validate()
 	if err != nil {
 		return
 	}
