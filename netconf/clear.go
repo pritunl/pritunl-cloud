@@ -30,7 +30,9 @@ func (n *NetConf) Clear(db *database.Database) (err error) {
 
 	clearIface("", n.SpaceExternalIface)
 	clearIface("", n.SpaceInternalIface)
-	clearIface("", n.SpaceInternalIfaceOld)
+	if ifaceExists("", n.SpaceInternalIfaceOld) {
+		clearIface("", n.SpaceInternalIfaceOld)
+	}
 	clearIface("", n.SpaceHostIface)
 	clearIface("", n.SpaceNodePortIface)
 
@@ -38,7 +40,9 @@ func (n *NetConf) Clear(db *database.Database) (err error) {
 	clearIface(n.Namespace, n.SpaceExternalIfaceMod)
 	clearIface(n.Namespace, n.SpaceExternalIfaceMod6)
 	clearIface(n.Namespace, n.SpaceInternalIface)
-	clearIface(n.Namespace, n.SpaceInternalIfaceOld)
+	if ifaceExists(n.Namespace, n.SpaceInternalIfaceOld) {
+		clearIface(n.Namespace, n.SpaceInternalIfaceOld)
+	}
 	clearIface(n.Namespace, n.SpaceHostIface)
 	clearIface(n.Namespace, n.SpaceNodePortIface)
 	clearIface(n.Namespace, n.SpaceBridgeIface)
