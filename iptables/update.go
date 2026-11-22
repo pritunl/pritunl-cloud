@@ -261,6 +261,21 @@ func ApplyUpdate(newState *State, namespaces []string, recover bool) {
 	}
 }
 
+func RemoveNamespace(namespace string) {
+	lockId := stateLock.Lock()
+	defer stateLock.Unlock(lockId)
+
+	if curState == nil {
+		return
+	}
+
+	for key, rules := range curState.Interfaces {
+		if rules.Namespace == namespace {
+			delete(curState.Interfaces, key)
+		}
+	}
+}
+
 func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	instances []*instance.Instance, namespaces []string,
 	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule,
