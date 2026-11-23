@@ -22,6 +22,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iproute"
+	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
@@ -666,6 +667,12 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	nc := netconf.New(virt)
+	err = nc.Prepare(db)
+	if err != nil {
+		return
+	}
+
 	err = writeService(virt)
 	if err != nil {
 		return
@@ -743,7 +750,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		}
 	}
 
-	err = NetworkConf(db, virt)
+	err = nc.Init(db)
 	if err != nil {
 		return
 	}
