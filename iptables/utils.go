@@ -534,50 +534,30 @@ func loadIptables(namespace, instIface string, state *State,
 				}
 			}
 
-			if iface == "" {
+			if cmd[0] != "PREROUTING" {
 				logrus.WithFields(logrus.Fields{
-					"namespace":     namespace,
-					"iface":         iface,
 					"iptables_rule": line,
-				}).Error("iptables: Missing instance iface for map")
+				}).Error("iptables: Invalid iptables map chain")
+
+				err = &errortypes.ParseError{
+					errors.New("iptables: Invalid iptables map chain"),
+				}
+				return
+			}
+
+			rules := state.Interfaces[namespace+"-"+iface]
+			if rules == nil {
+				rules = &Rules{
+					Namespace: namespace,
+					Interface: iface,
+				}
+				state.Interfaces[namespace+"-"+iface] = rules
+			}
+
+			if ipv6 {
+				rules.Maps6 = append(rules.Maps6, cmd)
 			} else {
-				if cmd[0] != "PREROUTING" {
-					logrus.WithFields(logrus.Fields{
-						"iptables_rule": line,
-					}).Error("iptables: Invalid iptables map chain")
-
-					err = &errortypes.ParseError{
-						errors.New("iptables: Invalid iptables map chain"),
-					}
-					return
-				}
-
-				rules := state.Interfaces[namespace+"-"+iface]
-				if rules == nil {
-					rules = &Rules{
-						Namespace:        namespace,
-						Interface:        iface,
-						Base:             [][]string{},
-						Base6:            [][]string{},
-						Header:           [][]string{},
-						Header6:          [][]string{},
-						SourceDestCheck:  [][]string{},
-						SourceDestCheck6: [][]string{},
-						Ingress:          [][]string{},
-						Ingress6:         [][]string{},
-						Maps:             [][]string{},
-						Maps6:            [][]string{},
-						Holds:            [][]string{},
-						Holds6:           [][]string{},
-					}
-					state.Interfaces[namespace+"-"+iface] = rules
-				}
-
-				if ipv6 {
-					rules.Maps6 = append(rules.Maps6, cmd)
-				} else {
-					rules.Maps = append(rules.Maps, cmd)
-				}
+				rules.Maps = append(rules.Maps, cmd)
 			}
 		} else if natComment {
 			if cmd[0] != "PREROUTING" && cmd[0] != "POSTROUTING" {
@@ -668,7 +648,7 @@ func loadIptables(namespace, instIface string, state *State,
 		cloudNatRules = append(cloudNatRules, cmd)
 	}
 
-	if postIface != "" {
+	if len(natRules) != 0 {
 		rules := state.Interfaces[namespace+"-"+postIface]
 		if rules == nil {
 			rules = &Rules{
@@ -695,7 +675,7 @@ func loadIptables(namespace, instIface string, state *State,
 		}
 	}
 
-	if cloudPostIface != "" {
+	if len(cloudNatRules) != 0 {
 		rules := state.Interfaces[namespace+"-"+cloudPostIface]
 		if rules == nil {
 			rules = &Rules{
@@ -733,30 +713,35 @@ func RecoverNode() (err error) {
 	}
 
 	cmds = append(cmds, []string{
-		"-I", "INPUT", "1",
 		"-m", "comment",
-		"--comment", "pritunl_cloud_rule",
+		"--comment", "pritunl_cloud_hold",
 		"-j", "DROP",
 	})
 	cmds = append(cmds, []string{
-		"-I", "INPUT", "1",
 		"-m", "conntrack",
 		"--ctstate", "INVALID",
 		"-m", "comment",
-		"--comment", "pritunl_cloud_rule",
+		"--comment", "pritunl_cloud_hold",
 		"-j", "DROP",
 	})
 	cmds = append(cmds, []string{
-		"-I", "INPUT", "1",
 		"-m", "conntrack",
 		"--ctstate", "RELATED,ESTABLISHED",
-		"-m", "comment", "--comment", "pritunl_cloud_rule",
+		"-m", "comment", "--comment", "pritunl_cloud_hold",
 		"-j", "ACCEPT",
 	})
 
 	for _, cmd := range cmds {
 		Lock()
-		output, e := utils.ExecCombinedOutput("", "iptables", cmd...)
+		_, e := utils.ExecCombinedOutput("", "iptables",
+			append([]string{"-C", "INPUT"}, cmd...)...)
+		if e == nil {
+			Unlock()
+			continue
+		}
+
+		output, e := utils.ExecCombinedOutput("", "iptables",
+			append([]string{"-I", "INPUT", "1"}, cmd...)...)
 		Unlock()
 		if e != nil {
 			err = e
@@ -771,7 +756,15 @@ func RecoverNode() (err error) {
 
 	for _, cmd := range cmds {
 		Lock()
-		output, e := utils.ExecCombinedOutput("", "ip6tables", cmd...)
+		_, e := utils.ExecCombinedOutput("", "ip6tables",
+			append([]string{"-C", "INPUT"}, cmd...)...)
+		if e == nil {
+			Unlock()
+			continue
+		}
+
+		output, e := utils.ExecCombinedOutput("", "ip6tables",
+			append([]string{"-I", "INPUT", "1"}, cmd...)...)
 		Unlock()
 		if e != nil {
 			err = e
@@ -882,7 +875,10 @@ func Init(namespaces []string, vpcs []*vpc.Vpc,
 		}
 	}
 
+	lockId := stateLock.Lock()
 	curState = state
+	curFailures = map[string]*Failure{}
+	stateLock.Unlock(lockId)
 
 	UpdateState(node.Self, vpcs, instances,
 		namespaces, nodeFirewall, firewalls, firewallMaps)
