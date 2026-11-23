@@ -25,6 +25,7 @@ type Lease struct {
 	TransactionId6     string        `json:"-"`
 	IaId6              [4]byte       `json:"-"`
 	ServerId6          dhcpv6.DUID   `json:"-"`
+	Status6            string        `json:"-"`
 	progress4          time.Time
 	progress6          time.Time
 	lock               sync.Mutex
@@ -80,6 +81,7 @@ func (l *Lease) Copy() *Lease {
 		TransactionId6:     l.TransactionId6,
 		IaId6:              l.IaId6,
 		ServerId6:          l.ServerId6,
+		Status6:            l.Status6,
 	}
 }
 
