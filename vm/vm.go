@@ -198,12 +198,20 @@ func (d *Disk) Copy() (dsk *Disk) {
 }
 
 type NetworkAdapter struct {
-	Type       string        `json:"type"`
-	MacAddress string        `json:"mac_address"`
-	Vpc        bson.ObjectID `json:"vpc"`
-	Subnet     bson.ObjectID `json:"subnet"`
-	IpAddress  string        `json:"ip_address,omitempty"`
-	IpAddress6 string        `json:"ip_address6,omitempty"`
+	Type        string        `json:"type"`
+	MacAddress  string        `json:"mac_address"`
+	Vpc         bson.ObjectID `json:"vpc"`
+	Subnet      bson.ObjectID `json:"subnet"`
+	IpAddress   string        `json:"ip_address,omitempty"`
+	IpAddress6  string        `json:"ip_address6,omitempty"`
+	Attachments *Attachments  `json:"attachments,omitempty"`
+}
+
+type Attachments struct {
+	External string `json:"external,omitempty"`
+	Internal string `json:"internal,omitempty"`
+	Host     string `json:"host,omitempty"`
+	NodePort string `json:"node_port,omitempty"`
 }
 
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {
