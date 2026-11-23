@@ -107,8 +107,12 @@ func (l *Lease) Exchange4() (ok bool, err error) {
 	}
 
 	if l.Address != nil && l.Address.IP != nil {
-		opts = append(opts, dhcpv4.WithOption(
-			dhcpv4.OptRequestedIPAddress(l.Address.IP)))
+		requestedIp := dhcpv4.OptRequestedIPAddress(l.Address.IP)
+		opts = append(opts, func(msg *dhcpv4.DHCPv4) {
+			if msg.MessageType() == dhcpv4.MessageTypeDiscover {
+				msg.UpdateOption(requestedIp)
+			}
+		})
 	}
 
 	nclientLease, err := client.Request(
