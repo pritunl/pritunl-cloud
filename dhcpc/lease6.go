@@ -2,6 +2,7 @@ package dhcpc
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/dropbox/godropbox/errors"
@@ -107,9 +108,11 @@ func (l *Lease) Renew6() (ok bool, err error) {
 	}
 
 	renewed := extractDhcpv6Lease(reply, l.Iface)
-	if renewed != nil && renewed.Address6 != nil {
+
+	l.lock.Lock()
+	l.Status6 = renewed.Status6
+	if renewed.Address6 != nil {
 		ok = true
-		l.lock.Lock()
 		l.Address6 = renewed.Address6
 		l.ServerAddress6 = renewed.ServerAddress6
 		l.PreferredLifetime6 = renewed.PreferredLifetime6
@@ -117,8 +120,8 @@ func (l *Lease) Renew6() (ok bool, err error) {
 		l.LeaseTime6 = renewed.LeaseTime6
 		l.TransactionId6 = renewed.TransactionId6
 		l.ServerId6 = renewed.ServerId6
-		l.lock.Unlock()
 	}
+	l.lock.Unlock()
 
 	return
 }
@@ -164,42 +167,86 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 		dhcpv6.WithIAID(l.IaId6),
 	}
 
+	solicit, err := dhcpv6.NewSolicit(iface.HardwareAddr, modifiers...)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "dhcpc: Failed to create DHCPv6 solicit"),
+		}
+		return
+	}
+	dhcpv6.WithRapidCommit(solicit)
+
 	if l.Address6 != nil && l.Address6.IP != nil {
 		iaAddr := &dhcpv6.OptIAAddress{
 			IPv6Addr: l.Address6.IP,
 		}
-		iaNa := &dhcpv6.OptIANA{
+		solicit.UpdateOption(&dhcpv6.OptIANA{
 			IaId: l.IaId6,
 			Options: dhcpv6.IdentityOptions{
 				Options: []dhcpv6.Option{iaAddr},
 			},
-		}
-		modifiers = append(modifiers, dhcpv6.WithOption(iaNa))
+		})
 	}
 
-	rapidCtx, rapidCancel := context.WithTimeout(
+	solicitCtx, solicitCancel := context.WithTimeout(
 		context.Background(), DhcpExchangeTimeout)
-	reply, err := client.RapidSolicit(rapidCtx, modifiers...)
-	rapidCancel()
+	reply, err := client.SendAndRead(
+		solicitCtx,
+		client.RemoteAddr(),
+		solicit,
+		nclient6.IsMessageType(
+			dhcpv6.MessageTypeReply,
+			dhcpv6.MessageTypeAdvertise,
+		),
+	)
+	solicitCancel()
 	if err != nil {
-		l.touch6()
-
-		solicitCtx, solicitCancel := context.WithTimeout(
-			context.Background(), DhcpExchangeTimeout)
-		reply, err = client.Solicit(solicitCtx, modifiers...)
-		solicitCancel()
-		if err != nil {
-			err = &errortypes.RequestError{
-				errors.Wrap(err, "dhcpc: DHCPv6 exchange failed"),
-			}
-			return
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "dhcpc: DHCPv6 exchange failed"),
 		}
+		return
 	}
 
 	lease := extractDhcpv6Lease(reply, l.Iface)
-	if lease != nil && lease.Address6 != nil {
+
+	if reply.MessageType == dhcpv6.MessageTypeAdvertise &&
+		lease.Address6 != nil {
+
+		l.touch6()
+
+		request, e := dhcpv6.NewRequestFromAdvertise(reply, modifiers...)
+		if e != nil {
+			err = &errortypes.RequestError{
+				errors.Wrap(e, "dhcpc: Failed to create DHCPv6 request"),
+			}
+			return
+		}
+
+		requestCtx, requestCancel := context.WithTimeout(
+			context.Background(), DhcpExchangeTimeout)
+		reply, err = client.SendAndRead(
+			requestCtx,
+			client.RemoteAddr(),
+			request,
+			nclient6.IsMessageType(dhcpv6.MessageTypeReply),
+		)
+		requestCancel()
+		if err != nil {
+			err = &errortypes.RequestError{
+				errors.Wrap(err, "dhcpc: DHCPv6 request failed"),
+			}
+			return
+		}
+
+		lease = extractDhcpv6Lease(reply, l.Iface)
+	}
+
+	l.lock.Lock()
+	l.Status6 = lease.Status6
+	if reply.MessageType == dhcpv6.MessageTypeReply &&
+		lease.Address6 != nil {
+
 		ok = true
-		l.lock.Lock()
 		l.Address6 = lease.Address6
 		l.ServerAddress6 = lease.ServerAddress6
 		l.PreferredLifetime6 = lease.PreferredLifetime6
@@ -207,8 +254,8 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 		l.LeaseTime6 = lease.LeaseTime6
 		l.TransactionId6 = lease.TransactionId6
 		l.ServerId6 = lease.ServerId6
-		l.lock.Unlock()
 	}
+	l.lock.Unlock()
 
 	return
 }
@@ -251,12 +298,22 @@ func extractDhcpv6Lease(reply *dhcpv6.Message, ifaceName string) *Lease {
 		lease.ServerAddress6 = dhcpv6.AllDHCPRelayAgentsAndServers
 	}
 
-	iana := reply.Options.OneIANA()
-	if iana != nil {
-		lease.IaId6 = iana.IaId
+	status := reply.Options.Status()
 
-		for _, opt := range iana.Options.Options {
+	iaNa := reply.Options.OneIANA()
+	if iaNa != nil {
+		lease.IaId6 = iaNa.IaId
+
+		if status == nil || status.StatusCode == iana.StatusSuccess {
+			status = iaNa.Options.Status()
+		}
+
+		for _, opt := range iaNa.Options.Options {
 			if addr, ok := opt.(*dhcpv6.OptIAAddress); ok {
+				if addr.ValidLifetime == 0 {
+					continue
+				}
+
 				lease.Address6 = &net.IPNet{
 					IP:   addr.IPv6Addr,
 					Mask: net.CIDRMask(64, 128),
@@ -267,6 +324,11 @@ func extractDhcpv6Lease(reply *dhcpv6.Message, ifaceName string) *Lease {
 				break
 			}
 		}
+	}
+
+	if status != nil && status.StatusCode != iana.StatusSuccess {
+		lease.Status6 = fmt.Sprintf(
+			"%s: %s", status.StatusCode, status.StatusMessage)
 	}
 
 	return lease
