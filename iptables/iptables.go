@@ -280,21 +280,17 @@ func (r *Rules) Apply(diff *RulesDiff) (err error) {
 		}
 	}
 
-	if diff == nil || diff.IngressDiff {
-		err = r.run("", r.Holds, "-D", false)
-		if err != nil {
-			return
-		}
-		r.Holds = [][]string{}
+	err = r.run("", r.Holds, "-D", false)
+	if err != nil {
+		return
 	}
+	r.Holds = [][]string{}
 
-	if diff == nil || diff.Ingress6Diff {
-		err = r.run("", r.Holds6, "-D", true)
-		if err != nil {
-			return
-		}
-		r.Holds6 = [][]string{}
+	err = r.run("", r.Holds6, "-D", true)
+	if err != nil {
+		return
 	}
+	r.Holds6 = [][]string{}
 
 	return
 }
