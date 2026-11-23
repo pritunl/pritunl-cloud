@@ -8,6 +8,8 @@ const (
 	MaxMessageSize      = 1500
 	DefaultInterval     = 60 * time.Second
 	TouchInterval       = 30 * time.Second
+	RetryInterval       = 1 * time.Second
+	RetryMaxInterval    = 60 * time.Second
 	DhcpTimeout         = 10 * time.Second
 	DhcpRetries         = 3
 	DhcpExchangeTimeout = DhcpTimeout * ((1 << DhcpRetries) - 1)
