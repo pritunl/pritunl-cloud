@@ -23,15 +23,3 @@ func NetworkConfClear(db *database.Database,
 
 	return
 }
-
-func NetworkConf(db *database.Database,
-	virt *vm.VirtualMachine) (err error) {
-
-	nc := netconf.New(virt)
-	err = nc.Init(db)
-	if err != nil {
-		return
-	}
-
-	return
-}
