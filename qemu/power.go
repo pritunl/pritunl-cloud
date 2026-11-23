@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/guest"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -153,6 +154,12 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	nc := netconf.New(virt)
+	err = nc.Prepare(db)
+	if err != nil {
+		return
+	}
+
 	err = writeService(virt)
 	if err != nil {
 		return
@@ -224,7 +231,7 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		}
 	}
 
-	err = NetworkConf(db, virt)
+	err = nc.Init(db)
 	if err != nil {
 		return
 	}
