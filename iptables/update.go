@@ -1,11 +1,10 @@
 package iptables
 
 import (
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/ipvs"
@@ -20,6 +19,7 @@ type Update struct {
 	NewState         *State
 	Namespaces       []string
 	FailedNamespaces set.Set
+	SkipNamespaces   set.Set
 }
 
 func (u *Update) Apply() {
@@ -42,9 +42,15 @@ func (u *Update) Apply() {
 
 	oldIfaces.Subtract(newIfaces)
 	for iface := range oldIfaces.Iter() {
+		rules := u.OldState.Interfaces[iface.(string)]
+		if u.SkipNamespaces.Contains(rules.Namespace) {
+			continue
+		}
+
 		removed = append(removed, iface.(string))
-		err := u.OldState.Interfaces[iface.(string)].Remove(nil)
+		err := rules.Remove(nil)
 		if err != nil {
+			u.FailedNamespaces.Add(rules.Namespace)
 			logrus.WithFields(logrus.Fields{
 				"iface": iface,
 				"error": err,
@@ -59,6 +65,10 @@ func (u *Update) Apply() {
 	}
 
 	for _, rules := range u.NewState.Interfaces {
+		if u.SkipNamespaces.Contains(rules.Namespace) {
+			continue
+		}
+
 		if u.FailedNamespaces.Contains(rules.Namespace) {
 			logrus.WithFields(logrus.Fields{
 				"namespace": rules.Namespace,
@@ -107,9 +117,16 @@ func (u *Update) Apply() {
 				}).Info("iptables: Updating iptables")
 			}
 
-			if (diff.IngressDiff || diff.Ingress6Diff) &&
-				rules.Interface != "host" {
-
+			if rules.Interface == "host" {
+				if diff.IngressDiff {
+					rules.Holds = append(rules.Holds, oldRules.Holds...)
+					oldRules.Holds = [][]string{}
+				}
+				if diff.Ingress6Diff {
+					rules.Holds6 = append(rules.Holds6, oldRules.Holds6...)
+					oldRules.Holds6 = [][]string{}
+				}
+			} else if diff.IngressDiff || diff.Ingress6Diff {
 				err := rules.Hold()
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
@@ -164,106 +181,157 @@ func (u *Update) Apply() {
 	return
 }
 
-func (u *Update) Recover() {
-	if u.FailedNamespaces.Contains("0") {
-		err := RecoverNode()
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to recover node iptables, retrying")
-			time.Sleep(10 * time.Second)
-		}
+func (u *Update) reload(namespace string) (err error) {
+	state := &State{
+		Interfaces: map[string]*Rules{},
 	}
 
-	if u.FailedNamespaces.Len() > 0 {
-		logrus.Error("deploy: Failed to update iptables, " +
-			"reloading state")
-
-		time.Sleep(10 * time.Second)
-
-		err := u.reload()
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to recover iptables")
-		}
-	}
-}
-
-func (u *Update) reload() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
-	nodeDatacenter, err := node.Self.GetDatacenter(db)
-	if err != nil {
-		return
-	}
-
-	vpcs := []*vpc.Vpc{}
-	if !nodeDatacenter.IsZero() {
-		vpcs, err = vpc.GetDatacenter(db, nodeDatacenter)
+	exists := true
+	if namespace != "0" {
+		exists, err = utils.Exists("/var/run/netns/" + namespace)
 		if err != nil {
 			return
 		}
 	}
 
-	namespaces, err := utils.GetNamespaces()
-	if err != nil {
-		return
+	if exists {
+		instIface := ""
+		for _, st := range []*State{u.OldState, u.NewState} {
+			for _, rules := range st.Interfaces {
+				if rules.Namespace == namespace &&
+					strings.HasPrefix(rules.Interface, "p") {
+
+					instIface = rules.Interface
+				}
+			}
+		}
+
+		err = loadIptables(namespace, instIface, state, false)
+		if err != nil {
+			return
+		}
+
+		err = loadIptables(namespace, instIface, state, true)
+		if err != nil {
+			return
+		}
 	}
 
-	instances, err := instance.GetAllVirt(db, &bson.M{
-		"node": node.Self.Id,
-	}, nil, nil)
-	if err != nil {
-		return
+	for key, rules := range u.OldState.Interfaces {
+		if rules.Namespace == namespace {
+			delete(u.OldState.Interfaces, key)
+		}
 	}
-
-	specRules, nodePortsMap, err := firewall.GetSpecRulesSlow(
-		db, node.Self.Id, instances)
-	if err != nil {
-		return
-	}
-
-	nodeFirewall, firewalls, firewallMaps, _, err := firewall.GetAllIngress(
-		db, node.Self, instances, specRules, nodePortsMap)
-	if err != nil {
-		return
-	}
-
-	err = Init(namespaces, vpcs, instances, nodeFirewall,
-		firewalls, firewallMaps)
-	if err != nil {
-		return
+	for key, rules := range state.Interfaces {
+		u.OldState.Interfaces[key] = rules
 	}
 
 	return
 }
 
+func (u *Update) Refresh() {
+	now := time.Now()
+
+	for namespace, failure := range curFailures {
+		if now.Before(failure.Retry) {
+			u.SkipNamespaces.Add(namespace)
+			continue
+		}
+
+		err := u.reload(namespace)
+		if err != nil {
+			u.SkipNamespaces.Add(namespace)
+			delay := failure.Delay()
+
+			logrus.WithFields(logrus.Fields{
+				"namespace": namespace,
+				"failures":  failure.Count,
+				"retry":     delay.String(),
+				"error":     err,
+			}).Error("iptables: Failed to reload namespace iptables")
+		}
+	}
+}
+
+func (u *Update) Commit() {
+	state := &State{
+		Interfaces: map[string]*Rules{},
+	}
+
+	for key, rules := range u.NewState.Interfaces {
+		if !u.SkipNamespaces.Contains(rules.Namespace) &&
+			!u.FailedNamespaces.Contains(rules.Namespace) {
+
+			state.Interfaces[key] = rules
+		}
+	}
+	for key, rules := range u.OldState.Interfaces {
+		if u.SkipNamespaces.Contains(rules.Namespace) ||
+			u.FailedNamespaces.Contains(rules.Namespace) {
+
+			state.Interfaces[key] = rules
+		}
+	}
+
+	curState = state
+
+	for namespace := range curFailures {
+		if !u.SkipNamespaces.Contains(namespace) &&
+			!u.FailedNamespaces.Contains(namespace) {
+
+			delete(curFailures, namespace)
+		}
+	}
+
+	for namespaceInf := range u.FailedNamespaces.Iter() {
+		namespace := namespaceInf.(string)
+
+		failure := curFailures[namespace]
+		if failure == nil {
+			failure = &Failure{}
+			curFailures[namespace] = failure
+		}
+		delay := failure.Delay()
+
+		logrus.WithFields(logrus.Fields{
+			"namespace": namespace,
+			"failures":  failure.Count,
+			"retry":     delay.String(),
+		}).Error("iptables: Failed to update namespace iptables")
+	}
+}
+
 func ApplyUpdate(newState *State, namespaces []string, recover bool) {
 	lockId := stateLock.Lock()
+	defer stateLock.Unlock(lockId)
 
 	update := &Update{
 		OldState:         curState,
 		NewState:         newState,
 		Namespaces:       namespaces,
 		FailedNamespaces: set.NewSet(),
+		SkipNamespaces:   set.NewSet(),
 	}
 
+	update.Refresh()
 	update.Apply()
+	update.Commit()
 
-	curState = newState
-
-	stateLock.Unlock(lockId)
-
-	if recover {
-		update.Recover()
+	if recover && update.FailedNamespaces.Contains("0") {
+		err := RecoverNode()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("iptables: Failed to recover node iptables")
+		}
 	}
 }
 
 func RemoveNamespace(namespace string) {
 	lockId := stateLock.Lock()
 	defer stateLock.Unlock(lockId)
+
+	delete(curFailures, namespace)
 
 	if curState == nil {
 		return
