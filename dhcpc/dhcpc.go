@@ -205,18 +205,20 @@ func (d *Dhcpc) run6() (err error) {
 					"address6":   d.lease.Address6.String(),
 					"error":      e,
 				}).Error("dhcpc: Failed to exchange lease6")
-				time.Sleep(500 * time.Millisecond)
+				sleeper.Retry()
 				continue
 			}
 
 			if !ok {
 				logger.WithFields(logger.Fields{
 					"interface6": d.DhcpIface6,
+					"status6":    d.lease.Status6,
 				}).Error("dhcpc: Failed to receive lease6")
-				time.Sleep(1000 * time.Millisecond)
+				sleeper.Retry()
 				continue
 			}
 
+			sleeper.Reset()
 			break
 		}
 
@@ -272,6 +274,7 @@ func (d *Dhcpc) run6() (err error) {
 				logger.WithFields(logger.Fields{
 					"interface6": d.DhcpIface6,
 					"address6":   d.lease.Address6.String(),
+					"status6":    d.lease.Status6,
 					"error":      err,
 				}).Error("dhcpc: Failed to receive lease6 renewal")
 				break
