@@ -1107,6 +1107,8 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		cmd = append(cmd,
 			"-s", addr+"/32",
 			"-d", addr+"/32",
+			"-m", "conntrack",
+			"--ctorigdst", pubAddr,
 		)
 		cmd = rules.commentCommandNat(cmd)
 		cmd = append(cmd,
