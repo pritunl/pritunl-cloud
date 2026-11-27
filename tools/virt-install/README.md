@@ -79,9 +79,11 @@ curl -o /root/setup.sh http://192.168.122.1:8000/arch.sh
 echo "7385d5a8093b4c1363870a6454e34768aa4f8158b91e0a4bd2988b8b1a9bdaa9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # debian
-sudo true
 sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
 echo "cfd58b0b0a4c5da755f5f28eb71159fc32c75836a058ce8927cd3f3b853754ea /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
+ctrl+shift+k
+echo $?
+unset HISTFILE && history -c && sudo poweroff
 
 # fedora
 curl -o /root/setup.sh http://192.168.122.1:8000/fedora.sh
