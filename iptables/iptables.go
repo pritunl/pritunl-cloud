@@ -1050,7 +1050,7 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 				if addr6 != "" {
 					cmd = rules.newCommandMap()
 					cmd = append(cmd,
-						"-s", addr+"/128",
+						"-s", addr6+"/128",
 						"-d", mp.Destination,
 					)
 					cmd = rules.commentCommandMap(cmd)
