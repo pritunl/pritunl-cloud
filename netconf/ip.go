@@ -385,6 +385,8 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 			"-A", "POSTROUTING",
 			"-s", n.InternalAddr.String()+"/32",
 			"-d", n.InternalAddr.String()+"/32",
+			"-m", "conntrack",
+			"--ctorigdst", n.HostAddr.String(),
 			"-m", "comment",
 			"--comment", "pritunl_cloud_host_nat",
 			"-j", "SNAT",
