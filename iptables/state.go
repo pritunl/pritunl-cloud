@@ -146,6 +146,9 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 				false, true, dhcp, dhcp6, addr, pubAddr, addr6, pubAddr6,
 				ingress)
 			state.Interfaces[namespace+"-"+ifaceExternal] = rules
+		} else {
+			rules := generateBase(namespace, ifaceExternal, addr)
+			state.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
 
 		if nodeNetworkMode == node.Cloud {
@@ -167,6 +170,9 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		if nodePortNetwork {
 			rules := generateNodePort(namespace, ifaceNodePort,
 				addr, nodePortGateway, nodePortMappings)
+			state.Interfaces[namespace+"-"+ifaceNodePort] = rules
+		} else {
+			rules := generateBase(namespace, ifaceNodePort, addr)
 			state.Interfaces[namespace+"-"+ifaceNodePort] = rules
 		}
 
