@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/shape"
@@ -1254,6 +1255,157 @@ func (s *Spec) Parse(db *database.Database,
 			return
 		}
 	}
+
+	return
+}
+
+func (s *Spec) MigrateInstance(db *database.Database,
+	inst *instance.Instance, nde *node.Node, spc *Spec) (
+	fields set.Set, err error) {
+
+	fields = set.NewSet()
+
+	if s.Instance.Uefi != spc.Instance.Uefi {
+		if spc.Instance.Uefi != nil {
+			fields.Add("uefi")
+			inst.Uefi = *spc.Instance.Uefi
+		}
+	}
+	if s.Instance.SecureBoot != spc.Instance.SecureBoot {
+		if spc.Instance.SecureBoot != nil {
+			fields.Add("secure_boot")
+			inst.SecureBoot = *spc.Instance.SecureBoot
+		}
+	}
+	if s.Instance.CloudType != spc.Instance.CloudType {
+		if spc.Instance.CloudType != "" {
+			fields.Add("cloud_type")
+			inst.CloudType = spc.Instance.CloudType
+		}
+	}
+	if s.Instance.CloudInterface != spc.Instance.CloudInterface {
+		if spc.Instance.CloudInterface != "" {
+			fields.Add("cloud_interface")
+			inst.CloudInterface = spc.Instance.CloudInterface
+		}
+	}
+	if s.Instance.Tpm != spc.Instance.Tpm {
+		fields.Add("tpm")
+		inst.Tpm = spc.Instance.Tpm
+	}
+	if s.Instance.Vnc != spc.Instance.Vnc {
+		fields.Add("vnc")
+		inst.Vnc = spc.Instance.Vnc
+	}
+	if s.Instance.DeleteProtection != spc.Instance.DeleteProtection {
+		fields.Add("delete_protection")
+		inst.DeleteProtection = spc.Instance.DeleteProtection
+	}
+	if s.Instance.SkipSourceDestCheck != spc.Instance.SkipSourceDestCheck {
+		fields.Add("skip_source_dest_check")
+		inst.SkipSourceDestCheck = spc.Instance.SkipSourceDestCheck
+	}
+	if s.Instance.Gui != spc.Instance.Gui {
+		fields.Add("gui")
+		inst.Gui = spc.Instance.Gui
+	}
+	if s.Instance.HostAddress != spc.Instance.HostAddress {
+		if spc.Instance.HostAddress != nil {
+			fields.Add("no_host_address")
+			inst.NoHostAddress = !*spc.Instance.HostAddress
+		}
+	}
+	if s.Instance.PublicAddress != spc.Instance.PublicAddress {
+		if spc.Instance.PublicAddress != nil {
+			fields.Add("no_public_address")
+			inst.NoPublicAddress = !*spc.Instance.PublicAddress
+		} else {
+			fields.Add("no_public_address")
+			inst.NoPublicAddress = nde.DefaultNoPublicAddress
+		}
+	}
+	if s.Instance.PublicAddress6 != spc.Instance.PublicAddress6 {
+		if spc.Instance.PublicAddress6 != nil {
+			fields.Add("no_public_address6")
+			inst.NoPublicAddress6 = !*spc.Instance.PublicAddress6
+		} else {
+			fields.Add("no_public_address6")
+			inst.NoPublicAddress6 = nde.DefaultNoPublicAddress6
+		}
+	}
+	if s.Instance.DhcpServer != spc.Instance.DhcpServer {
+		fields.Add("dhcp_server")
+		inst.DhcpServer = spc.Instance.DhcpServer
+	}
+
+	if s.Instance.Shape != spc.Instance.Shape ||
+		s.Instance.Processors != spc.Instance.Processors ||
+		s.Instance.Memory != spc.Instance.Memory {
+
+		if !spc.Instance.Shape.IsZero() {
+			shpe, e := shape.Get(db, spc.Instance.Shape)
+			if e != nil {
+				err = e
+				return
+			}
+
+			inst.Processors = shpe.Processors
+			fields.Add("processors")
+			inst.Memory = shpe.Memory
+			fields.Add("memory")
+
+			if shpe.Flexible {
+				if spc.Instance.Processors != 0 {
+					inst.Processors = spc.Instance.Processors
+				}
+				if spc.Instance.Memory != 0 {
+					inst.Memory = spc.Instance.Memory
+				}
+			}
+		} else {
+			inst.Processors = spc.Instance.Processors
+			fields.Add("processors")
+			inst.Memory = spc.Instance.Memory
+			fields.Add("memory")
+		}
+	}
+
+	if !utils.CompareStringSlicesUnsorted(s.Instance.Roles,
+		spc.Instance.Roles) {
+
+		fields.Add("roles")
+		inst.Roles = spc.Instance.Roles
+	}
+
+	if s.Instance.DiffNodePorts(spc.Instance.NodePorts) {
+		fields.Add("node_ports")
+
+		newNodePorts := []*nodeport.Mapping{}
+		for _, ndePort := range spc.Instance.NodePorts {
+			newNodePorts = append(newNodePorts, &nodeport.Mapping{
+				Protocol:     ndePort.Protocol,
+				ExternalPort: ndePort.ExternalPort,
+				InternalPort: ndePort.InternalPort,
+			})
+		}
+
+		inst.UpsertNodePorts(newNodePorts)
+	}
+
+	inst.Mounts = []*instance.Mount{}
+	for _, mount := range spc.Instance.Mounts {
+		if mount.Type != HostPath {
+			continue
+		}
+
+		inst.Mounts = append(inst.Mounts, &instance.Mount{
+			Name:     mount.Name,
+			Type:     instance.HostPath,
+			Path:     mount.Path,
+			HostPath: mount.HostPath,
+		})
+	}
+	fields.Add("mounts")
 
 	return
 }
