@@ -15,6 +15,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
+func getSourceCidr(ip string) string {
+	addr := strings.Split(ip, "/")[0]
+	if strings.Contains(addr, ":") {
+		return addr + "/128"
+	}
+	return addr + "/32"
+}
+
 func GetSpecRules(instances []*instance.Instance,
 	deploymentsNode map[bson.ObjectID]*deployment.Deployment,
 	specsMap map[bson.ObjectID]*spec.Spec,
@@ -80,56 +88,56 @@ func GetSpecRules(instances []*instance.Instance,
 						for _, ip := range instData.PrivateIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "private_ips6":
 						for _, ip := range instData.PrivateIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "public_ips":
 						for _, ip := range instData.PublicIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "public_ips6":
 						for _, ip := range instData.PublicIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "cloud_private_ips":
 						for _, ip := range instData.CloudPrivateIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "cloud_public_ips":
 						for _, ip := range instData.CloudPublicIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "cloud_public_ips6":
 						for _, ip := range instData.CloudPublicIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "host_ips":
 						for _, ip := range instData.HostIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					}
@@ -394,56 +402,56 @@ func GetSpecRulesSlow(db *database.Database,
 						for _, ip := range instData.PrivateIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "private_ips6":
 						for _, ip := range instData.PrivateIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "public_ips":
 						for _, ip := range instData.PublicIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "public_ips6":
 						for _, ip := range instData.PublicIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "cloud_private_ips":
 						for _, ip := range instData.CloudPrivateIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "cloud_public_ips":
 						for _, ip := range instData.CloudPublicIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "cloud_public_ips6":
 						for _, ip := range instData.CloudPublicIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					case "host_ips":
 						for _, ip := range instData.HostIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
-								strings.Split(ip, "/")[0]+"/32",
+								getSourceCidr(ip),
 							)
 						}
 					}
