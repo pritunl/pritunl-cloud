@@ -1531,28 +1531,22 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) (bool, string) {
 		}
 	}
 
-	if i.Virt.Mounts != nil {
-		if len(i.Virt.Mounts) > 0 && curVirt.Mounts == nil {
-			return true, "Mounts changed"
+	if len(i.Virt.Mounts) != len(curVirt.Mounts) {
+		return true, "Mounts changed"
+	}
+
+	for i, mount := range i.Virt.Mounts {
+		if mount.Name != curVirt.Mounts[i].Name {
+			return true, "Mount name changed"
 		}
-
-		for i, mount := range i.Virt.Mounts {
-			if len(curVirt.Mounts) <= i {
-				return true, "Mounts changed"
-			}
-
-			if mount.Name != curVirt.Mounts[i].Name {
-				return true, "Mount name changed"
-			}
-			if mount.Type != curVirt.Mounts[i].Type {
-				return true, "Mount type changed"
-			}
-			if mount.Path != curVirt.Mounts[i].Path {
-				return true, "Mount path changed"
-			}
-			if mount.HostPath != curVirt.Mounts[i].HostPath {
-				return true, "Mount host path changed"
-			}
+		if mount.Type != curVirt.Mounts[i].Type {
+			return true, "Mount type changed"
+		}
+		if mount.Path != curVirt.Mounts[i].Path {
+			return true, "Mount path changed"
+		}
+		if mount.HostPath != curVirt.Mounts[i].HostPath {
+			return true, "Mount host path changed"
 		}
 	}
 
