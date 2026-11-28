@@ -48,6 +48,11 @@ func (n *NetConf) Clear(db *database.Database) (err error) {
 	clearIface(n.Namespace, n.SpaceBridgeIface)
 	clearIface(n.Namespace, n.SpaceImdsIface)
 
+	clearIface(n.Namespace, n.SpaceCloudIface)
+	clearIface(n.Namespace, n.SpaceCloudVirtIface)
+	clearIface("", n.SpaceCloudVirtIface)
+	restoreIface(n.Namespace, n.SpaceCloudIface)
+
 	interfaces.RemoveVirtIface(n.SystemExternalIface)
 	interfaces.RemoveVirtIface(n.SystemInternalIface)
 	interfaces.RemoveVirtIface(n.SystemNodePortIface)
@@ -181,4 +186,16 @@ func clearIface(namespace, iface string) {
 		})
 	}
 
+}
+
+func restoreIface(namespace, iface string) {
+	if namespace == "" || iface == "" || !ifaceExists(namespace, iface) {
+		return
+	}
+
+	utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link", "set", "dev", iface, "netns", "1",
+	)
 }
