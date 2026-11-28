@@ -849,6 +849,11 @@ func (i *Instance) IsActive() bool {
 		i.State == vm.Starting || i.State == vm.Provisioning
 }
 
+func (i *Instance) IsStopped() bool {
+	return i.Action == Stop && (i.State == vm.Stopped ||
+		i.State == vm.Failed || i.State == "")
+}
+
 func (i *Instance) IsAvailable(namespacesSet set.Set, n int) bool {
 	return i.IsActive() || namespacesSet.Contains(vm.GetNamespace(i.Id, n))
 }
