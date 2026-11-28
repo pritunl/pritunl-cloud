@@ -1555,6 +1555,31 @@ func (s *Spec) CanMigrate(db *database.Database,
 		}
 	}
 
+	if inst != nil {
+		nde, e := node.Get(db, inst.Node)
+		if e != nil {
+			err = e
+			return
+		}
+
+		inst.PreCommit()
+
+		_, err = s.MigrateInstance(db, inst, nde, spc)
+		if err != nil {
+			return
+		}
+
+		errData, err = inst.Validate(db)
+		if err != nil {
+			return
+		}
+
+		if errData != nil {
+			errData.Message = s.errMsg(errData.Message)
+			return
+		}
+	}
+
 	return
 }
 
