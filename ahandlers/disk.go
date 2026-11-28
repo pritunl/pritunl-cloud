@@ -22,7 +22,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 type diskData struct {
@@ -603,10 +602,7 @@ func diskResizePut(c *gin.Context) {
 			inst = nil
 		}
 
-		if inst != nil && (inst.Action != instance.Stop ||
-			(inst.State != vm.Stopped && inst.State != vm.Failed &&
-				inst.State != "")) {
-
+		if inst != nil && !inst.IsStopped() {
 			errData := &errortypes.ErrorData{
 				Error:   "instance_running",
 				Message: "Instance must be stopped to resize partitions",
