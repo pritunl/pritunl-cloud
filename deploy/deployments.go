@@ -19,8 +19,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/nodeport"
-	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -184,160 +182,16 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			}
 		}()
 
-		instFields := set.NewSet()
-
-		if curSpec.Instance.Uefi != newSpec.Instance.Uefi {
-			if newSpec.Instance.Uefi != nil {
-				instFields.Add("uefi")
-				inst.Uefi = *newSpec.Instance.Uefi
-			}
+		instFields, err := curSpec.MigrateInstance(db, inst, nde, newSpec)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   newSpec.Id.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to get spec shape")
+			return
 		}
-		if curSpec.Instance.SecureBoot != newSpec.Instance.SecureBoot {
-			if newSpec.Instance.SecureBoot != nil {
-				instFields.Add("secure_boot")
-				inst.SecureBoot = *newSpec.Instance.SecureBoot
-			}
-		}
-		if curSpec.Instance.CloudType != newSpec.Instance.CloudType {
-			if newSpec.Instance.CloudType != "" {
-				instFields.Add("cloud_type")
-				inst.CloudType = newSpec.Instance.CloudType
-			}
-		}
-		if curSpec.Instance.CloudInterface != newSpec.Instance.CloudInterface {
-			if newSpec.Instance.CloudInterface != "" {
-				instFields.Add("cloud_interface")
-				inst.CloudInterface = newSpec.Instance.CloudInterface
-			}
-		}
-		if curSpec.Instance.Tpm != newSpec.Instance.Tpm {
-			instFields.Add("tpm")
-			inst.Tpm = newSpec.Instance.Tpm
-		}
-		if curSpec.Instance.Vnc != newSpec.Instance.Vnc {
-			instFields.Add("vnc")
-			inst.Vnc = newSpec.Instance.Vnc
-		}
-		if curSpec.Instance.DeleteProtection !=
-			newSpec.Instance.DeleteProtection {
-
-			instFields.Add("delete_protection")
-			inst.DeleteProtection = newSpec.Instance.DeleteProtection
-		}
-		if curSpec.Instance.SkipSourceDestCheck !=
-			newSpec.Instance.SkipSourceDestCheck {
-
-			instFields.Add("skip_source_dest_check")
-			inst.SkipSourceDestCheck = newSpec.Instance.SkipSourceDestCheck
-		}
-		if curSpec.Instance.Gui != newSpec.Instance.Gui {
-			instFields.Add("gui")
-			inst.Gui = newSpec.Instance.Gui
-		}
-		if curSpec.Instance.HostAddress != newSpec.Instance.HostAddress {
-			if newSpec.Instance.HostAddress != nil {
-				instFields.Add("no_host_address")
-				inst.NoHostAddress = !*newSpec.Instance.HostAddress
-			}
-		}
-		if curSpec.Instance.PublicAddress != newSpec.Instance.PublicAddress {
-			if newSpec.Instance.PublicAddress != nil {
-				instFields.Add("no_public_address")
-				inst.NoPublicAddress = !*newSpec.Instance.PublicAddress
-			} else {
-				instFields.Add("no_public_address")
-				inst.NoPublicAddress = nde.DefaultNoPublicAddress
-			}
-		}
-		if curSpec.Instance.PublicAddress6 != newSpec.Instance.PublicAddress6 {
-			if newSpec.Instance.PublicAddress6 != nil {
-				instFields.Add("no_public_address6")
-				inst.NoPublicAddress6 = !*newSpec.Instance.PublicAddress6
-			} else {
-				instFields.Add("no_public_address6")
-				inst.NoPublicAddress6 = nde.DefaultNoPublicAddress6
-			}
-		}
-		if curSpec.Instance.DhcpServer != newSpec.Instance.DhcpServer {
-			instFields.Add("dhcp_server")
-			inst.DhcpServer = newSpec.Instance.DhcpServer
-		}
-
-		if curSpec.Instance.Shape != newSpec.Instance.Shape ||
-			curSpec.Instance.Processors != newSpec.Instance.Processors ||
-			curSpec.Instance.Memory != newSpec.Instance.Memory {
-
-			if !newSpec.Instance.Shape.IsZero() {
-				shpe, e := shape.Get(db, newSpec.Instance.Shape)
-				if e != nil {
-					err = e
-
-					logrus.WithFields(logrus.Fields{
-						"deployment_id": deply.Id.Hex(),
-						"cur_spec_id":   curSpec.Id.Hex(),
-						"new_spec_id":   newSpec.Id.Hex(),
-						"error":         err,
-					}).Error("deploy: Failed to get spec shape")
-					return
-				}
-
-				inst.Processors = shpe.Processors
-				instFields.Add("processors")
-				inst.Memory = shpe.Memory
-				instFields.Add("memory")
-
-				if shpe.Flexible {
-					if newSpec.Instance.Processors != 0 {
-						inst.Processors = newSpec.Instance.Processors
-					}
-					if newSpec.Instance.Memory != 0 {
-						inst.Memory = newSpec.Instance.Memory
-					}
-				}
-			} else {
-				inst.Processors = newSpec.Instance.Processors
-				instFields.Add("processors")
-				inst.Memory = newSpec.Instance.Memory
-				instFields.Add("memory")
-			}
-		}
-
-		if !utils.CompareStringSlicesUnsorted(curSpec.Instance.Roles,
-			newSpec.Instance.Roles) {
-
-			instFields.Add("roles")
-			inst.Roles = newSpec.Instance.Roles
-		}
-
-		if curSpec.Instance.DiffNodePorts(newSpec.Instance.NodePorts) {
-			instFields.Add("node_ports")
-
-			newNodePorts := []*nodeport.Mapping{}
-			for _, ndePort := range newSpec.Instance.NodePorts {
-				newNodePorts = append(newNodePorts, &nodeport.Mapping{
-					Protocol:     ndePort.Protocol,
-					ExternalPort: ndePort.ExternalPort,
-					InternalPort: ndePort.InternalPort,
-				})
-			}
-
-			inst.UpsertNodePorts(newNodePorts)
-		}
-
-		inst.Mounts = []*instance.Mount{}
-		for _, mount := range newSpec.Instance.Mounts {
-			if mount.Type != spec.HostPath {
-				continue
-			}
-
-			inst.Mounts = append(inst.Mounts, &instance.Mount{
-				Name:     mount.Name,
-				Type:     instance.HostPath,
-				Path:     mount.Path,
-				HostPath: mount.HostPath,
-			})
-		}
-		instFields.Add("mounts")
 
 		if instFields.Len() > 0 {
 			errData, err = inst.Validate(db)
@@ -349,6 +203,30 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 					"error":         err,
 					"error_data":    errData,
 				}).Error("deploy: Migrate failed, invalid instance options")
+				return
+			}
+
+			if errData != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error_data":    errData,
+				}).Error("deploy: Incompatible migrate")
+
+				deply.Action = ""
+				deply.NewSpec = bson.NilObjectID
+				err = deply.CommitFields(db, set.NewSet("action", "new_spec"))
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"cur_spec_id":   curSpec.Id.Hex(),
+						"new_spec_id":   newSpec.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to commit deployment")
+					return
+				}
+
 				return
 			}
 
