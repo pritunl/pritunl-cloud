@@ -130,6 +130,7 @@ type Instance struct {
 	curSubnet           bson.ObjectID                       `bson:"-" json:"-"`
 	curDeleteProtection bool                                `bson:"-" json:"-"`
 	curAction           string                              `bson:"-" json:"-"`
+	curStopped          bool                                `bson:"-" json:"-"`
 	curNoPublicAddress  bool                                `bson:"-" json:"-"`
 	curNoHostAddress    bool                                `bson:"-" json:"-"`
 	curNodePorts        map[bson.ObjectID]*nodeport.Mapping `bson:"-" json:"-"`
@@ -202,6 +203,42 @@ func (i *Instance) Validate(db *database.Database) (
 			Message: "Invalid instance action",
 		}
 		return
+	}
+
+	stopped := i.curAction == "" || i.curStopped
+
+	if !stopped {
+		if i.NoPublicAddress && !i.curNoPublicAddress {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_running",
+				Message: "Instance must be stopped to disable public address",
+			}
+			return
+		}
+
+		if i.NoHostAddress && !i.curNoHostAddress {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_running",
+				Message: "Instance must be stopped to disable host address",
+			}
+			return
+		}
+
+		if !i.curVpc.IsZero() && i.curVpc != i.Vpc {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_running",
+				Message: "Instance must be stopped to change VPC",
+			}
+			return
+		}
+
+		if !i.curSubnet.IsZero() && i.curSubnet != i.Subnet {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_running",
+				Message: "Instance must be stopped to change subnet",
+			}
+			return
+		}
 	}
 
 	if i.Organization.IsZero() {
@@ -460,7 +497,7 @@ func (i *Instance) Validate(db *database.Database) (
 				return
 			}
 		}
-	} else {
+	} else if stopped {
 		i.RootPasswd = ""
 	}
 
@@ -604,7 +641,7 @@ func (i *Instance) Validate(db *database.Database) (
 				return
 			}
 		}
-	} else {
+	} else if stopped {
 		i.VncPassword = ""
 	}
 
@@ -615,7 +652,7 @@ func (i *Instance) Validate(db *database.Database) (
 				return
 			}
 		}
-	} else {
+	} else if stopped {
 		i.SpicePassword = ""
 	}
 
@@ -870,6 +907,7 @@ func (i *Instance) PreCommit() {
 	i.curSubnet = i.Subnet
 	i.curDeleteProtection = i.DeleteProtection
 	i.curAction = i.Action
+	i.curStopped = i.IsStopped()
 	i.curNoPublicAddress = i.NoPublicAddress
 	i.curNoHostAddress = i.NoHostAddress
 
