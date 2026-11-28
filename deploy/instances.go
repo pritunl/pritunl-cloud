@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -26,6 +27,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/store"
+	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -143,13 +145,25 @@ func (s *Instances) start(inst *instance.Instance) {
 			startLimiter.Release()
 		}()
 
+		unitState, _, err := systemd.GetState(paths.GetUnitName(inst.Id))
+		if err != nil {
+			return
+		}
+
+		if unitState != "inactive" && unitState != "failed" {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+			}).Warning("deploy: Skipping instance start on running instance")
+			return
+		}
+
 		db := database.GetDatabase()
 		defer db.Close()
 
 		if inst.Restart || inst.RestartBlockIp {
 			inst.Restart = false
 			inst.RestartBlockIp = false
-			err := inst.CommitFields(db,
+			err = inst.CommitFields(db,
 				set.NewSet("restart", "restart_block_ip"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
@@ -162,7 +176,7 @@ func (s *Instances) start(inst *instance.Instance) {
 
 		s.syncDisks(db, inst)
 
-		err := qemu.PowerOn(db, inst, inst.Virt)
+		err = qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
